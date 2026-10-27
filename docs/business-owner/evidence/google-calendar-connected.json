@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-25T18:52:26.967Z",
+  "mode": "real production controller and Google provider after proxy fix",
+  "httpStatus": 200,
+  "toolkit": "googlecalendar",
+  "status": "connected",
+  "identitySha256": "[withheld from public copy; retained in private evidence]",
+  "verifiedAt": 1792954320815,
+  "version": 1,
+  "browserDisplaysConnected": true,
+  "appointmentsRead": false,
+  "appointmentsMutated": false
+}

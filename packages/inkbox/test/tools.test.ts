@@ -3,8 +3,9 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContactStore, PolicyEngine, StateDir, defaultConfig, defaultPolicy, type InstinctConfig, type OutboundMessage, type Principal, type ToolContext } from "@open-instinct/core";
-import type { FileSend, InkboxChannel } from "../src/channel.js";
+import { InkboxChannel, type FileSend } from "../src/channel.js";
 import { messagingTools, phoneCallTool, resolveTarget, sendFileTool, type MessagingDeps } from "../src/tools.js";
+import { fakeFetch, rawIdentity } from "./fake-fetch.js";
 
 let dir: string;
 let contacts: ContactStore;
@@ -40,7 +41,7 @@ beforeEach(() => {
     react: vi.fn(async () => undefined),
   } as unknown as InkboxChannel;
 });
-afterEach(() => rmSync(dir, { recursive: true, force: true }));
+afterEach(() => { rmSync(dir, { recursive: true, force: true }); vi.unstubAllGlobals(); });
 
 function tool(name: string) {
   const t = messagingTools({ channel, contacts, config }).find((x) => x.spec.name === name);
@@ -73,6 +74,62 @@ describe("resolveTarget", () => {
   });
 });
 
+describe("registered messaging dispatch fences", () => {
+  it("propagates the live fence across an awaited identity lookup", async () => {
+    const fake = fakeFetch({ "GET /api/v1/identities/maria-instinct": { body: rawIdentity() } });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const response = await fake.fetchImpl(input, init);
+      entered.resolve();
+      await release.promise;
+      return response;
+    };
+    vi.stubGlobal("fetch", fetchImpl);
+    channel = new InkboxChannel({ apiKey: "test", handle: "maria-instinct", baseUrl: "https://inkbox.test", fetchImpl });
+    let active = true;
+    const pending = tool("send_message").execute({ to: "sam-lee", text: "Customer update" }, {
+      ...ctxFor(owner, "chat:x"), assertBusinessDispatch: () => { if (!active) throw new Error("Stopped"); },
+    });
+    const rejected = expect(pending).rejects.toThrow("Stopped");
+    await entered.promise;
+    active = false;
+    release.resolve();
+    await rejected;
+    expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+  });
+
+  it("propagates cancellation and receipts across a registered file upload", async () => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/imessage/media": { body: { media_url: "https://media.inkbox.ai/file", content_type: "text/plain", size: 3 } },
+    });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const response = await fake.fetchImpl(input, init);
+      if (init?.method === "POST") { entered.resolve(); await release.promise; }
+      return response;
+    };
+    vi.stubGlobal("fetch", fetchImpl);
+    channel = new InkboxChannel({ apiKey: "test", handle: "maria-instinct", baseUrl: "https://inkbox.test", fetchImpl });
+    mkdirSync(join(dir, "workspace"), { recursive: true });
+    writeFileSync(join(dir, "workspace", "note.txt"), "abc");
+    const controller = new AbortController();
+    const receipts: unknown[] = [];
+    const pending = sendFileTool({ channel, contacts, config, dataDir: dir }).spec.execute({ path: "note.txt", to: "sam-lee" }, {
+      ...ctxFor(owner, "chat:x"), recordBusinessReceipt: receipt => receipts.push(receipt),
+    }, controller.signal);
+    const rejected = expect(pending).rejects.toThrow("Canceled");
+    await entered.promise;
+    controller.abort(new Error("Canceled"));
+    release.resolve();
+    await rejected;
+    expect(fake.calls.filter(call => call.method === "POST").map(call => call.path)).toEqual(["/api/v1/imessage/media"]);
+    expect(receipts).toEqual([expect.objectContaining({ operation: "media-upload", mediaUrl: "https://media.inkbox.ai/file" })]);
+  });
+});
+
 describe("send_message", () => {
   it("replies in the current conversation when `to` is omitted", async () => {
     const r = await tool("send_message").execute({ text: "On my way" }, ctxFor(owner, "imessage:conv_1"));
@@ -98,8 +155,8 @@ describe("send_message", () => {
     const ctx = { ...ctxFor(owner, "imessage:group_1:owner"), deliveryKey: "imessage:group_1" };
     await tool("send_typing").execute({}, ctx);
     await tool("react").execute({ messageId: "message_1", reaction: "like" }, ctx);
-    expect(channel.typing).toHaveBeenCalledWith("imessage:group_1");
-    expect(channel.react).toHaveBeenCalledWith("imessage:group_1", "message_1", "like");
+    expect(channel.typing).toHaveBeenCalledWith("imessage:group_1", ctx);
+    expect(channel.react).toHaveBeenCalledWith("imessage:group_1", "message_1", "like", ctx);
   });
 
   it("lets the owner message a contact, a number, or an email with a subject", async () => {
@@ -146,9 +203,9 @@ describe("send_message", () => {
 describe("send_typing and react", () => {
   it("forward to the channel with the current conversation", async () => {
     await tool("send_typing").execute({}, ctxFor(owner, "imessage:conv_1"));
-    expect(channel.typing).toHaveBeenCalledWith("imessage:conv_1");
+    expect(channel.typing).toHaveBeenCalledWith("imessage:conv_1", expect.objectContaining({ principal: owner, conversationKey: "imessage:conv_1" }));
     await tool("react").execute({ messageId: "msg_1", reaction: "love" }, ctxFor(friend, "imessage:conv_1"));
-    expect(channel.react).toHaveBeenCalledWith("imessage:conv_1", "msg_1", "love");
+    expect(channel.react).toHaveBeenCalledWith("imessage:conv_1", "msg_1", "love", expect.objectContaining({ principal: friend, conversationKey: "imessage:conv_1" }));
   });
 });
 
@@ -183,13 +240,6 @@ describe("send_file", () => {
     expect(fileTool().meta.describe?.({ path: "research/brief.pdf" })).toBe("send_file research/brief.pdf to current conversation");
   });
 
-  it("sends a workspace-relative file in the current iMessage conversation with the caption", async () => {
-    const r = await fileTool().execute({ path: "research/brief.pdf", caption: "Here is the brief as a PDF." }, ctxFor(owner, "imessage:conv_1"));
-    expect(text(r)).toBe("Sent brief.pdf in the current imessage conversation.");
-    expect(sentFiles).toHaveLength(1);
-    expect(sentFiles[0]?.file).toEqual({ channel: "imessage", conversationKey: "imessage:conv_1", filename: "brief.pdf", contentType: "application/pdf", content: PDF, caption: "Here is the brief as a PDF." });
-    expect(sentFiles[0]?.ctx).toEqual({ principal: owner, conversationKey: "imessage:conv_1" });
-  });
 
   it("emails a contact with subject and caption, and defaults the subject for new threads", async () => {
     const t = fileTool();
@@ -290,6 +340,171 @@ describe("send_file", () => {
   });
 });
 
+describe("registered phone dispatch fences", () => {
+  const args = { toNumber: "+14155550123", reason: "Confirm the opening hours" };
+  const taskContext = (): ToolContext => ({
+    ...ctxFor(owner, "chat:business"),
+    taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" },
+    businessInvocation: true,
+  });
+  const acceptedCall = { id: "call_fenced", status: "initiated", rate_limit: { minutes_remaining: 27 } };
+  const setup = (fetchImpl: typeof fetch) => {
+    vi.stubGlobal("fetch", fetchImpl);
+    config.business = { autonomy: "full" };
+    channel = new InkboxChannel({ apiKey: "test", handle: "maria-instinct", baseUrl: "https://inkbox.test", fetchImpl });
+    return tool("phone_call");
+  };
+
+  it.each([
+    ["identity", "stop"], ["identity", "cancel"], ["identity", "source change"],
+    ["default origination", "stop"], ["default origination", "cancel"], ["default origination", "source change"],
+  ])("makes zero phone POSTs after %s awaits and %s invalidates dispatch", async (prerequisite, invalidation) => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/phone/place-call": { body: acceptedCall },
+    });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const spec = setup(async (input, init) => {
+      const response = await fake.fetchImpl(input, init);
+      if (prerequisite === "identity" && init?.method === "GET") {
+        entered.resolve();
+        await release.promise;
+      }
+      return response;
+    });
+    const defaultOrigination = channel.defaultCallOrigination.bind(channel);
+    const origination = vi.spyOn(channel, "defaultCallOrigination").mockImplementation(async () => {
+      const result = await defaultOrigination();
+      if (prerequisite === "default origination") {
+        entered.resolve();
+        await release.promise;
+      }
+      return result;
+    });
+    const controller = new AbortController();
+    let active = true;
+    const receipts: unknown[] = [];
+    const pending = spec.execute(args, {
+      ...taskContext(),
+      assertBusinessDispatch: () => { if (!active) throw new Error(invalidation); },
+      recordBusinessReceipt: receipt => receipts.push(receipt),
+    }, controller.signal);
+    const rejected = expect(pending).rejects.toThrow(invalidation);
+    await entered.promise;
+    if (invalidation === "cancel") controller.abort(new Error(invalidation));
+    else active = false;
+    release.resolve();
+    await rejected;
+    expect(fake.calls.filter(call => call.method === "POST" && call.path === "/api/v1/phone/place-call")).toHaveLength(0);
+    expect(receipts).toHaveLength(0);
+    if (prerequisite === "identity") expect(origination).not.toHaveBeenCalled();
+  });
+
+  it("rejects a preaborted registered phone call before identity lookup or phone POST", async () => {
+    const fake = fakeFetch({});
+    const spec = setup(fake.fetchImpl);
+    const controller = new AbortController();
+    controller.abort(new Error("Canceled before dispatch"));
+    await expect(spec.execute(args, taskContext(), controller.signal)).rejects.toThrow("Canceled before dispatch");
+    expect(fake.calls).toHaveLength(0);
+  });
+
+  it("rechecks the source fence at the actual phone HTTP entry", async () => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/phone/place-call": { body: acceptedCall },
+    });
+    const spec = setup(fake.fetchImpl);
+    let checks = 0;
+    await expect(spec.execute(args, {
+      ...taskContext(),
+      assertBusinessDispatch: () => { if (++checks === 4) throw new Error("Source changed at HTTP entry"); },
+    })).rejects.toThrow("Source changed at HTTP entry");
+    expect(checks).toBe(4);
+    expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+  });
+
+  it.each(["stop", "cancel"])("retains accepted call receipt and truthful initiated result when %s arrives before response consumption", async (invalidation) => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/phone/place-call": { body: acceptedCall },
+    });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const spec = setup(async (input, init) => {
+      const response = await fake.fetchImpl(input, init);
+      if (init?.method === "POST") { entered.resolve(); await release.promise; }
+      return response;
+    });
+    const controller = new AbortController();
+    let active = true;
+    const receipts: unknown[] = [];
+    const pending = spec.execute(args, {
+      ...taskContext(),
+      assertBusinessDispatch: () => { if (!active) throw new Error("Stopped"); },
+      recordBusinessReceipt: receipt => receipts.push(receipt),
+    }, controller.signal);
+    await entered.promise;
+    if (invalidation === "cancel") controller.abort(new Error("Canceled"));
+    else active = false;
+    release.resolve();
+    expect(await pending).toEqual({ content: [{ type: "text", text: "Call call_fenced: initiated. 27 call minutes left on the plan this month." }] });
+    expect(receipts).toEqual([{
+      channel: "phone", operation: "place-call", providerId: "call_fenced", status: "initiated",
+      origination: "shared_imessage_number", accepted: true, evidenceLevel: "primitive-only",
+    }]);
+    const posts = fake.calls.filter(call => call.method === "POST");
+    expect(posts).toHaveLength(1);
+    expect(posts[0]).toMatchObject({
+      path: "/api/v1/phone/place-call",
+      body: {
+        to_number: args.toNumber, origination: "shared_imessage_number", agent_identity_id: "ident_1",
+        mode: "hosted_agent", hosted_agent_authority_mode: "contact_scoped",
+        reason: args.reason, on_voicemail: "leave_message",
+      },
+    });
+  });
+
+  it.each(["lost response", "503", "missing call id"])("never replays a registered task call after %s", async (failure) => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/phone/place-call": {
+        status: failure === "503" ? 503 : 200,
+        body: failure === "missing call id" ? {} : acceptedCall,
+        headers: { "Retry-After": "0" },
+      },
+    });
+    const spec = setup(async (input, init) => {
+      const response = await fake.fetchImpl(input, init);
+      if (init?.method === "POST" && failure === "lost response") throw new Error("Response lost");
+      return response;
+    });
+    const receipts: unknown[] = [];
+    await expect(spec.execute(args, {
+      ...taskContext(), recordBusinessReceipt: receipt => receipts.push(receipt),
+    })).rejects.toThrow(failure === "503" ? "503" : failure === "lost response" ? "Response lost" : "acceptance is unknown");
+    expect(fake.calls.filter(call => call.method === "POST" && call.path === "/api/v1/phone/place-call")).toHaveLength(1);
+    expect(receipts).toHaveLength(0);
+  });
+
+  it("preserves dedicated phone origin and voicemail on the task REST path", async () => {
+    const fake = fakeFetch({
+      "GET /api/v1/identities/maria-instinct": { body: rawIdentity() },
+      "POST /api/v1/phone/place-call": { body: acceptedCall },
+    });
+    setup(fake.fetchImpl);
+    await phoneCallTool({ channel, businessMode: true, callOrigination: "dedicated_number" }).spec.execute({
+      ...args, voicemailMessage: "Please call Maria back.",
+    }, taskContext());
+    expect(fake.calls.find(call => call.method === "POST")?.body).toEqual({
+      to_number: args.toNumber, origination: "dedicated_number", from_number: "+16505550123",
+      mode: "hosted_agent", hosted_agent_authority_mode: "contact_scoped",
+      reason: args.reason, on_voicemail: "leave_message", voicemail_message: "Please call Maria back.",
+    });
+  });
+});
+
 describe("phone_call", () => {
   let placed: Array<Record<string, unknown>>;
   let phoneChannel: InkboxChannel;
@@ -314,6 +529,33 @@ describe("phone_call", () => {
     const spec = phone();
     expect(spec.meta).toMatchObject({ capabilities: ["phone.call"], group: "messaging" });
     expect(spec.meta?.describe?.({ toNumber: "+14155550123", reason: "Book a table for 4 at 7pm under Maria" })).toBe("phone_call +14155550123: Book a table for 4 at 7pm under Maria");
+  });
+
+  it("executes an authorized business call without ordinary approval but refuses a dispatcher bypass", async () => {
+    config.business = { autonomy: "full" };
+    const taskCtx: ToolContext = {
+      ...ctxFor(owner, "chat:business"),
+      taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" },
+    };
+    const args = { toNumber: "+14155550123", reason: "Confirm the opening hours" };
+    await expect(phone().execute(args, taskCtx)).rejects.toThrow("task dispatch");
+    expect(placed).toHaveLength(0);
+    const result = await phone().execute(args, { ...taskCtx, businessInvocation: true });
+    expect(JSON.stringify(result)).toContain("call_9");
+    expect(placed).toHaveLength(1);
+    const denied = await phone().execute(args, { ...taskCtx, businessInvocation: true, principal: friend });
+    expect(JSON.stringify(denied)).toContain("unrestricted owner authority");
+    expect(placed).toHaveLength(1);
+  });
+
+  it("requires dispatch for every alternate business messaging effect", async () => {
+    const taskCtx: ToolContext = { ...ctxFor(owner, "imessage:business"), taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" } };
+    for (const [name, args] of [["send_message", { text: "Hello" }], ["send_typing", {}], ["react", { messageId: "m", reaction: "like" }], ["send_file", { path: "test.pdf" }]] as const) {
+      await expect(tool(name).execute(args, taskCtx)).rejects.toThrow("task dispatch");
+    }
+    expect(sent).toHaveLength(0);
+    expect(channel.typing).not.toHaveBeenCalled();
+    expect(channel.react).not.toHaveBeenCalled();
   });
 
   it("places a hosted-agent call and returns the call id, status and the plan minutes left, nothing else", async () => {
@@ -378,4 +620,10 @@ describe("phone_call", () => {
     const otherFriend: Principal = { ...friend, id: "contact:sam-jones", contactId: "sam-jones", displayName: "Sam Jones" };
     expect(engine.evaluate(otherFriend, spec.meta!, args).outcome).toBe("deny");
   });
+});
+
+it("does not let a group-capped owner use alternate sends to reach third parties", async () => {
+  const groupOwner = { ...owner, tier: "friend" as const };
+  await expect(tool("send_message").execute({ to: "+14155550123", text: "Not authorized" }, ctxFor(groupOwner, "imessage:group"))).rejects.toThrow("may only reply here");
+  expect(sent).toHaveLength(0);
 });

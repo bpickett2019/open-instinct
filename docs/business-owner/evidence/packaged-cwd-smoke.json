@@ -1,0 +1,38 @@
+{
+  "kind": "actual-packaged-process-smoke",
+  "result": "passed",
+  "node": "v22.22.3",
+  "cwdOutsideCheckout": true,
+  "isolatedState": true,
+  "commands": [
+    "node /tmp/open-instinct/packages/cli/dist/bin.js init --name 'Packaging Fixture' --phone +12025550101 --business --skip-inkbox --model openai-compatible/packaging --data-dir <isolated-temp-state>",
+    "node /tmp/open-instinct/packages/server/dist/main.js"
+  ],
+  "checks": [
+    "compiled CLI initialization",
+    "actual compiled main startup from unrelated cwd",
+    "unauthenticated owner API refused",
+    "workspace HTML and exact compiled JS/CSS assets served",
+    "authenticated Stop persisted",
+    "SIGTERM shutdown and restart preserve Stop"
+  ],
+  "assets": [
+    {
+      "name": "workspace.js",
+      "bytes": 38625,
+      "sha256": "946c1677285c7284eb9f1b4aa8f7447c33cfeadc7f757e2490ce084e0c184f24"
+    },
+    {
+      "name": "workspace.css",
+      "bytes": 4929,
+      "sha256": "9ab0e2e53dd8c8d0e26be16b1bac734d4a619ff8118660205017440519339f3c"
+    }
+  ],
+  "modelOrProviderRequests": 0,
+  "containerImageExecuted": false,
+  "containerBlocker": "Docker desktop-linux daemon unavailable; podman/colima/limactl absent. Existing Docker Desktop was not started because it may resume unrelated containers.",
+  "verifiedNativeRuntimes": [
+    "v25.8.1",
+    "v22.22.3"
+  ]
+}

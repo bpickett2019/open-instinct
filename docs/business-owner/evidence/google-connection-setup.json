@@ -1,0 +1,96 @@
+{
+  "status": "calendar_oauth_identity_and_clean_restart_verified",
+  "userRequest": "Configure the app connection service so owner texting can initiate Google Calendar authorization",
+  "implementation": [
+    "packages/apps/src/composio.ts",
+    "packages/apps/test/composio.test.ts",
+    "packages/server/testing/emulators/composio.ts",
+    "packages/server/test/apps-shutdown.test.ts",
+    "packages/server/src/boot.ts",
+    "packages/server/src/workspace-http.ts",
+    "private pilot config.json and start-local.mjs outside the repository"
+  ],
+  "preConfigurationObservation": {
+    "privatePilotAppsEnabled": true,
+    "privatePilotToolkits": ["gmail", "googlecalendar"],
+    "composioApiKeyInExecutionEnvironment": false,
+    "privateSecretsDirectory": "Contains Inkbox credentials only; no Composio credential",
+    "liveReadiness": "Gmail and Google Calendar report setup_required",
+    "providerContract": "Server consumes COMPOSIO_API_KEY; existing Tool Router integration creates owner-specific sessions and secure authorization links",
+    "browser": "Composio dashboard redirected to account sign-in; email, Google and GitHub choices available"
+  },
+  "verifiedSetup": {
+    "project": "open_instinct_test",
+    "serviceKey": "Replacement scoped key stored in private secrets/composio.json, outside repository and worker workspace; regular file, one hard link, mode 0600",
+    "permissions": ["Tools read", "Session management read/write", "Session tool execution write", "Connected accounts read/write", "Auth configs read", "Toolkits read", "Proxy execute write"],
+    "excludedPermissions": ["Triggers", "Webhooks", "Observability", "Legacy tool execution", "Legacy MCP", "Auth config writes"],
+    "providerPermissionContract": "https://docs.composio.dev/reference/authenticating-to-composio/project-api-key-permissions",
+    "authConfigs": [
+      {"toolkit": "googlecalendar", "name": "open-instinct-test-calendar", "status": "ENABLED", "managed": true, "scopes": ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"]},
+      {"toolkit": "gmail", "name": "open-instinct-test-gmail", "status": "ENABLED", "managed": true, "scopes": ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/gmail.modify"]}
+    ],
+    "providerReadback": "Actual GET /api/v3/auth_configs returned HTTP 200 with both enabled configurations",
+    "privateLauncher": "Loads COMPOSIO_API_KEY from private file using O_NOFOLLOW, regular-file/link/permission validation, generic parse errors and descriptor cleanup; no credential in argv or repository",
+    "service": "instinct-google-connector",
+    "pid": 56709,
+    "startup": "Actual production CLI boot connected Composio MCP, registered 66 tools, retained ChatGPT Pro model, connected Inkbox tunnel; service persistent",
+    "workspace": "Authenticated real browser changed both apps from setup_required to Ready to connect when you are",
+    "calendarFlow": "Clicked Connect Google Calendar in actual owner workspace; genuine provider authorization link opened Composio and redirected to accounts.google.com account chooser",
+    "screenshots": ["docs/business-owner/evidence/google-connector-auth-configs.png", "docs/business-owner/evidence/google-connector-workspace-ready.png"],
+    "commands": [
+      {"command": "node --check $PRIVATE_STATE/start-local.mjs", "result": "exit 0"},
+      {"command": "kill -TERM 55058", "result": "idle previous pilot exited 0 gracefully"},
+      {"command": "node $PRIVATE_STATE/start-local.mjs", "result": "ready on loopback port 8787; real Composio MCP and Inkbox tunnel connected"}
+    ]
+  },
+  "verifiedCalendarConnection": {
+    "consent": "Owner completed genuine Google OAuth in the browser",
+    "identity": "Independently verified through GET primary-calendar metadata; published evidence retains SHA-256 rather than the email address",
+    "controller": "Actual authenticated connections endpoint returned HTTP 200 and connected status",
+    "browser": "Actual connected desktop surface inspected before and after clean restart; private identity-bearing screenshots retained outside repository",
+    "evidence": ["docs/business-owner/evidence/google-proxy-live-contract.json", "docs/business-owner/evidence/google-calendar-connected.json", "docs/business-owner/evidence/google-calendar-restarted.json"],
+    "privateScreenshots": ["$PRIVATE_STATE/evidence/google-calendar-connected.png", "$PRIVATE_STATE/evidence/google-calendar-restarted.png"],
+    "appointmentsRead": false,
+    "appointmentsMutated": false,
+    "testAccountSuitability": "Not established for synthetic appointment writes; require isolated test targets and consenting attendee before those scenarios"
+  },
+  "integrationCorrections": {
+    "proxyContract": "Actual v3 session rejected toolkit array with HTTP 400, causing controller HTTP 500. Corrected raw REST body to toolkits.enable array; retained single-string connected_accounts binding. Actual provider returned 201; identity proxy and repaired controller returned 200",
+    "authorityNegative": "Actual provider rejected a valid account bound to a foreign synthetic workspace with HTTP 400; no session or provider operation created",
+    "shutdown": "SDK telemetry re-sent SIGTERM after the CLI once listener fired, interrupting cleanup. Disabled SDK tracking using supported allowTracking:false. Isolated actual-SDK child failed before with SIGTERM and passed after with cleanup marker and exit 0",
+    "liveLifecycle": "Idle pre-fix pilot exited 1; corrected live pilot pid 59386 exited 0 on SIGTERM. Restarted same state and verified same connected account in actual browser",
+    "runningService": "instinct-google-calendar",
+    "runningPid": 59497,
+    "serviceMode": "persistent, loopback 8787 with Inkbox webhook-only tunnel",
+    "evidence": ["docs/business-owner/evidence/google-proxy-regression-before.txt", "docs/business-owner/evidence/google-proxy-integrated-checks.txt", "docs/business-owner/evidence/google-proxy-live-negative.json", "docs/business-owner/evidence/google-shutdown-regression-before.txt", "docs/business-owner/evidence/google-shutdown-integrated-checks.txt", "docs/business-owner/evidence/google-clean-shutdown.txt"],
+    "commandsEvidence": "docs/business-owner/evidence/google-setup-verification.json",
+    "verification": "Proxy revision: 12-package build/typecheck, 178 app tests, 338 server tests, smoke, 34 Chromium tests and publication scan passed. Later shutdown-only revision: apps build/typecheck, 178 app tests, actual-SDK subprocess regression and smoke passed; live exit-0 and connected browser restart observed. No unnecessary second full browser suite claimed"
+  },
+  "credentialIncident": {
+    "finding": "Initial 23-character generated key appeared in a tool snapshot because a length-based redactor did not match it",
+    "resolution": "Immediately revoked unused initial key through provider UI; observed API key revoked and empty key list. Created scoped replacement, extracted directly into private mode-0600 file without printing its value, then closed credential display",
+    "verificationLimit": "Provider revocation UI confirmation observed; no old-key HTTP 401 probe performed",
+    "impactLimit": "Initial key was never installed in the pilot; no Google account was connected to the isolated project at that time"
+  },
+  "browserHandoff": {
+    "taskSpaceId": 4,
+    "taskSpaceName": "Configure Google Calendar connector",
+    "page": "p3",
+    "ownerWorkspacePage": "p2",
+    "status": "finished_connection_task_owner_workspace_retained",
+    "completion": "Task finished once with p2 retained for the owner; provider dashboard and OAuth completion tabs closed"
+  },
+  "requiredInput": "Before live Calendar mutation scenarios: establish an isolated test Google account/target, consenting attendee email, agreed test time/timezone and duration. Gmail still needs separate OAuth consent. Do not paste credentials into chat.",
+  "remainingLiveScenarios": [
+    "Create, revise and cancel a synthetic Calendar invitation with independent readback",
+    "Authorize Gmail and exercise the mandatory isolated mail/follow-through scenarios",
+    "Other original live scenarios still require hosted computer, canonical HTTPS workspace and deployment-image execution"
+  ],
+  "securityReview": {
+    "status": "scoped_pass",
+    "releaseBlockingFindings": [],
+    "evidence": ["docs/business-owner/evidence/security-review-google-connector-setup.md", "docs/business-owner/evidence/security-review-google-proxy-contract.md", "docs/business-owner/evidence/security-review-google-shutdown.md"],
+    "scope": "Independent read-only setup, proxy/authority and SDK-lifecycle review; scoped pass, not full-product or live-workflow acceptance"
+  },
+  "limits": "Calendar OAuth, read-only identity, account-bound production proxy, foreign-workspace rejection, actual connected browser and clean idle restart verified. No appointments listed or changed. Gmail consent not initiated. Test-only suitability and consenting attendee remain unestablished. No full-product readiness claim; hosted computer, HTTPS workspace, live business workflows and deployment-image gates remain open."
+}

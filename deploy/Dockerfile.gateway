@@ -1,6 +1,6 @@
 # Open Instinct gateway image: the stateless relay from Inkbox webhooks to Maritime agents,
 # plus the signup and connect pages. One per deployment, many users.
-FROM node:22-slim AS base
+FROM node:22.22.3-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN apt-get update \

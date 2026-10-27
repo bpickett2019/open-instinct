@@ -17,6 +17,8 @@ import { decodeEvent, systemTaskOf } from "@open-instinct/core";
 import type { AgentRuntime, HandleResult, InboundMessage, InstinctConfig, OutboundMessage, ScheduleEntry, Scheduler, StateDir } from "@open-instinct/core";
 import { DurableInbox, parseCallEnded, parseInkboxEvent, verifyInkboxSignature } from "@open-instinct/inkbox";
 import type { CallEndedEvent } from "@open-instinct/inkbox";
+import type { BusinessService } from "./business-service.js";
+import { createWorkspaceHandler, type WorkspaceOptions } from "./workspace-http.js";
 
 /** Replies the console outbox is holding for a chat conversation. */
 export interface ChatBuffer {
@@ -37,8 +39,10 @@ export interface WalletCallback {
 /** The slice of a boot() result the HTTP layer needs. Tests pass stubs. */
 export interface HttpApp {
   state?: StateDir;
+  business?: BusinessService;
+  ownerWorkspace?: Pick<WorkspaceOptions, "artifacts" | "connections" | "computer" | "operations" | "commitments">;
   hydrateInbound?(msg: InboundMessage): Promise<InboundMessage>;
-  runtime: Pick<AgentRuntime, "handleInbound" | "stats"> & Partial<Pick<AgentRuntime, "runScheduled" | "runSystemTask">>;
+  runtime: Pick<AgentRuntime, "handleInbound" | "stats"> & Partial<Pick<AgentRuntime, "runScheduled" | "runSystemTask" | "handleBusinessPriority">>;
   scheduler: Pick<Scheduler, "toMaritimeSchedules"> & Partial<Pick<Scheduler, "list" | "markRan">>;
   config: InstinctConfig;
   computerKind?: string;
@@ -129,6 +133,8 @@ async function processInbound(app: HttpApp, msg: InboundMessage): Promise<Handle
 }
 
 async function acceptInbound(app: HttpApp, msg: InboundMessage): Promise<ChatResponse> {
+  const priority = await app.runtime.handleBusinessPriority?.(msg);
+  if (priority) return summarize(priority, true);
   const inbox = inboxes.get(app);
   if (inbox) {
     const fresh = inbox.queue.enqueue(msg.id, msg);
@@ -307,6 +313,10 @@ export function createHttpServer(app: HttpApp, opts: HttpServerOptions = {}): ht
   const signingKey = (): string | undefined => opts.signingKey ?? opts.signingKeyProvider?.() ?? env.INKBOX_SIGNING_KEY;
   const chatToken = opts.chatToken ?? env.INSTINCT_CHAT_TOKEN?.trim() ?? undefined;
   const tunnelOnly = opts.tunnelOnly === true;
+  const workspace = !tunnelOnly && app.business && env.INSTINCT_WORKSPACE_ORIGIN ? createWorkspaceHandler({
+    ...app.ownerWorkspace, business: app.business, token: chatToken ?? "", origin: env.INSTINCT_WORKSPACE_ORIGIN,
+    allowLoopbackHttp: env.INSTINCT_WORKSPACE_ALLOW_HTTP === "1", now: () => now().getTime(),
+  }) : undefined;
   if (inboxes.get(app)?.closing) throw new Error("The agent's webhook inbox is still closing");
   if (app.state && !inboxes.has(app)) {
     inboxes.set(app, {
@@ -335,6 +345,8 @@ export function createHttpServer(app: HttpApp, opts: HttpServerOptions = {}): ht
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
     if (tunnelOnly && !TUNNEL_ROUTES.has(`${method} ${path}`)) return sendJson(res, 404, { error: "not found" });
+    if (workspace && await workspace(req, res)) return;
+    if (app.business && (path === "/workspace" || path.startsWith("/workspace/") || path === "/api/owner" || path.startsWith("/api/owner/"))) return sendJson(res, 503, { error: "Configure INSTINCT_WORKSPACE_ORIGIN and a nonempty INSTINCT_CHAT_TOKEN; insecure loopback development additionally requires INSTINCT_WORKSPACE_ALLOW_HTTP=1" });
 
     if (method === "GET" && path === "/health") return sendJson(res, 200, { ok: true });
 
@@ -358,6 +370,9 @@ export function createHttpServer(app: HttpApp, opts: HttpServerOptions = {}): ht
     if (method === "GET" && path === "/oauth/link/callback") return linkCallback(url, res);
 
     // Everything below is the owner's surface.
+    if (app.business && (!chatToken || (req.headers.origin && req.headers.origin !== env.INSTINCT_WORKSPACE_ORIGIN))) {
+      return sendJson(res, 401, { error: "Business owner bearer authentication required" });
+    }
     if (!tokenMatches(chatToken, presentedToken(req.headers))) {
       return sendJson(res, 401, { error: "missing or invalid token" });
     }

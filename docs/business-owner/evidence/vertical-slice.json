@@ -1,0 +1,20 @@
+{
+  "verificationMode": "emulated",
+  "at": "2026-10-23T07:58:28.559Z",
+  "boundary": "Actual authenticated HTTP, compiled workspace, Pi runtime, registry, dispatcher, SQLite, files and provider protocols; controlled model and isolated external services. Not live-provider proof.",
+  "assertions": [
+    "Invalid owner session cannot admit work",
+    "Rejected authentication leaves no task",
+    "Authenticated admission persists owner intent before responding",
+    "Registered file action crosses durable dispatcher and verifies readback",
+    "Independent filesystem bytes match the requested result",
+    "Direct stop persists without a model queue",
+    "Restart preserves immutable workspace identity",
+    "Restart preserves global stop",
+    "Restart preserves completed task and verified action evidence",
+    "Stopped controller dispatches no later file effect",
+    "Authenticated owner history survives restart"
+  ],
+  "taskId": "60a672f3-3167-4a22-8f03-cfc4bd0e781d",
+  "actionId": "24aba7bf-cee8-42a6-bdae-13b9b80d2ace"
+}

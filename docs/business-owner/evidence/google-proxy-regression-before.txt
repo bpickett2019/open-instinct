@@ -1,0 +1,66 @@
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/apps
+
+ ❯ test/composio.test.ts (37 tests | 1 failed | 36 skipped) 4ms
+   ↓ business fixed Google proxy > exposes only bound concrete app operations, not nested router or raw Google bypasses
+   × business fixed Google proxy > binds account overrides, decodes inner status and never forwards model credentials 4ms
+     → Composio request failed (400)
+   ↓ business fixed Google proxy > rejects another workspace account before creating a credentialed session
+   ↓ ComposioApps.connect > creates a direct_tools session with manage connections and saves it
+   ↓ ComposioApps.connect > omits the preset in router mode
+   ↓ ComposioApps.connect > reuses a saved session when user, toolkits and mode match
+   ↓ ComposioApps.connect > creates a new session when the saved toolkits differ
+   ↓ ComposioApps.connect > creates a new session when the saved one belongs to another user
+   ↓ ComposioApps.connect > falls back to a new session when the saved one cannot be used
+   ↓ ComposioApps.connect > connects once even when called concurrently
+   ↓ ComposioApps.connect > rejects missing credentials up front
+   ↓ ComposioApps when the project lacks an auth config > drops the toolkits Composio refused, retries once, and keeps the rest of the apps
+   ↓ ComposioApps when the project lacks an auth config > reports connection state only for the toolkits that made it into the session
+   ↓ ComposioApps when the project lacks an auth config > does not retry other errors
+   ↓ ComposioApps when the project lacks an auth config > gives up when every toolkit lacks an auth config, and retries only once
+   ↓ toolkitsWithoutAuthConfig > returns the requested toolkits the error names, as whole words
+   ↓ toolkitsWithoutAuthConfig > ignores errors that are not about auth configs
+   ↓ composioModeFor > uses router for an OpenAI-style chat completions model, which caps tools at 128
+   ↓ composioModeFor > lets COMPOSIO_MODE override in either direction and ignores anything else
+   ↓ ComposioApps in all-toolkits mode > "all" creates a session with no toolkit allowlist and no preset
+   ↓ ComposioApps in all-toolkits mode > "*" creates a session with no toolkit allowlist and no preset
+   ↓ ComposioApps in all-toolkits mode > "ALL" creates a session with no toolkit allowlist and no preset
+   ↓ ComposioApps in all-toolkits mode > " All " creates a session with no toolkit allowlist and no preset
+   ↓ ComposioApps in all-toolkits mode > "gmail" creates a session with no toolkit allowlist and no preset
+   ↓ ComposioApps in all-toolkits mode > ignores an explicit direct mode and says so
+   ↓ ComposioApps in all-toolkits mode > reuses a saved all-mode session and makes a new one when switching to a list
+   ↓ ComposioApps in all-toolkits mode > reports the active connections, paging through the list, and never a no-auth toolkit
+   ↓ ComposioApps in all-toolkits mode > stops paging after a bounded number of pages
+   ↓ ComposioApps in all-toolkits mode > still hands out connect links for any toolkit
+   ↓ ComposioApps.tools > wraps the MCP tools with app_ names and capabilities, and caches
+   ↓ ComposioApps.connectLink and connectedToolkits > returns the authorize redirect url, lowercasing the toolkit
+   ↓ ComposioApps.connectLink and connectedToolkits > returns undefined when there is no redirect
+   ↓ ComposioApps.connectLink and connectedToolkits > reports every configured toolkit, treating missing ones as not connected
+   ↓ ComposioApps.close > closes the MCP client and reconnects on the next use
+   ↓ normalizeToolkits > lowercases, trims, dedupes and sorts
+   ↓ normalizeToolkits > collapses to the all marker when any entry is all or *
+   ↓ wantsAllToolkits > accepts all and * in any case, nothing else
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/composio.test.ts > business fixed Google proxy > binds account overrides, decodes inner status and never forwards model credentials
+Error: Composio request failed (400)
+ ❯ ComposioApps.api src/composio.ts:197:29
+    195|       ...init, redirect: "error", headers: { "x-api-key": this.opts.ap…
+    196|     });
+    197|     if (!response.ok) throw new Error(`Composio request failed (${resp…
+       |                             ^
+    198|     if (response.status === 204) return {};
+    199|     const data: unknown = await response.json();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 36 skipped (37)
+   Start at  11:47:56
+   Duration  516ms (transform 76ms, setup 0ms, collect 268ms, tests 4ms, environment 0ms, prepare 39ms)
+
+undefined
+/private/tmp/open-instinct/packages/apps:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/composio.test.ts -t binds account overrides

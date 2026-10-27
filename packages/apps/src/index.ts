@@ -32,3 +32,7 @@ export { wrapMcpTool, wrapMcpTools, toolNameFor, describeCall, parametersFor, me
 
 /** Toolkits a new agent starts with. */
 export const DEFAULT_TOOLKITS: string[] = ["gmail", "googlecalendar", "googlecontacts"];
+export { GoogleWorkspace, type GoogleData, type MailInput, type PreparedMail, type MailAttachment, type CalendarInput } from "./google-workspace.js";
+export { type GoogleTransport, type GoogleRequest, GoogleProviderError, googleToolkit } from "./google-transport.js";
+export { BusinessProviders, createBusinessProviders, type ProviderArtifacts } from "./business-providers.js";
+export { GmailIntake } from "./gmail-intake.js";

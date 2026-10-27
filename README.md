@@ -30,7 +30,7 @@ The agent never holds your card. For each purchase it asks your Stripe Link wall
 
 ## Quick start
 
-Node 22.19+ and pnpm 10. You bring your own keys; [KEYS.md](docs/KEYS.md) lists which ones and how to get them. No key is stored in this repository.
+Node >=22.22.3 and pnpm 10.6.1. You bring your own keys; [KEYS.md](docs/KEYS.md) lists which ones and how to get them. No key is stored in this repository. Business mode requires an always-on controller, persistent local storage, an HTTPS owner workspace and a separate hosted computer; see [SELF-HOST.md](docs/SELF-HOST.md#business-owner-operation).
 
 **On your laptop, no phone number yet**
 
@@ -90,7 +90,9 @@ docs/               architecture, permissions, protocol, keys, deploy, research
 
 ## Status
 
-Version 0.1. Nine packages, 837 tests, a scripted end-to-end smoke test, and a cold-start test from a fresh clone. Live iMessage and Maritime deployment were exercised against real identities during development; treat them as beta. Logins, 2FA and payments go to you through a desktop takeover or a Link approval, never to the model alone.
+Version 0.1. Personal mode and business-owner mode share the same runtime and provider adapters. Business mode adds durable delegation, knowledge/artifacts, an authenticated owner workspace, proactive routines, recovery and direct stop controls; see [operation](docs/SELF-HOST.md#business-owner-operation).
+
+Business acceptance is **not complete**: deterministic provider contracts and real desktop/mobile browser flows have been exercised. An isolated pilot has verified owner texting and ChatGPT Pro-backed chat, including assistant-led onboarding; mandatory Google, hosted-computer and full live business scenarios remain incomplete. The requirement checklist, executed checks, security review and exact external prerequisites are recorded in [business-owner acceptance](docs/business-owner/ACCEPTANCE.md).
 
 Merit Systems publishes an unrelated project called [OpenInstinct](https://github.com/Merit-Systems/OpenInstinct). This project is not affiliated with it or with Instinct.
 

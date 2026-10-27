@@ -1,13 +1,13 @@
 ---
 name: daily-brief
-description: Proactive morning text for the owner. Use when a scheduled job says to run the daily brief, when the owner asks "what's my day", or when setting up or changing the morning text. Pulls weather, today's calendar, unread mail that matters, open threads and pending approvals into one short message. Created with schedule_create during onboarding.
+description: Send the owner's morning brief with weather, calendar, relevant mail and open work. Business routines use durable tasks and report genuine blockers, not an ordinary approval queue; personal schedules retain pending approvals.
 ---
 
 # Daily brief
 
-One text, sent at the time the owner chose, that lets them start the day
-without opening anything. It is a scheduled run in the owner conversation, so
-the principal is the owner and all owner tools are available.
+One text at the owner's chosen time. Personal scheduled runs use the owner
+conversation. Business runs are bound durable tasks under an enabled owner routine,
+not new owner turns and not permission to widen the routine's scope.
 
 ## Setup
 
@@ -16,6 +16,11 @@ owner's timezone and the prompt "Run the daily-brief skill for the owner."
 Example for 8am Eastern: cron `0 8 * * *`, tz `America/New_York`. Weekdays only
 is `0 8 * * 1-5`. To change the time, `schedule_list`, `schedule_delete` the old
 job, create the new one, and confirm in one line.
+
+In business mode these schedule tools use durable commitments. Read tasks, waits,
+source-backed knowledge and notification state, not a journal summary as truth.
+Report disconnected required sources honestly. A missed run causes one fresh brief,
+not a burst. Stop and quiet hours remain effective; never infer authority from mail.
 
 ## Collect
 
@@ -30,8 +35,9 @@ the gap unless the owner has asked for it before.
    `email-triage`, read step only). Count the rest.
 4. Open threads: `memory_read` and yesterday's journal for things you are
    waiting on (a reply from Sam's Instinct, a delivery, a booking hold).
-5. Approvals: anything you asked the owner that is still unanswered. Repeat
-   the ask in one line with the same wording.
+5. Personal mode: repeat pending approval questions in one line. Business mode:
+   summarize genuine missing-information/provider/reconciliation blockers, not
+   fresh approval requests for ordinary authorized work.
 6. Scheduled items for today you created (check-ins, rides) so the owner knows
    you have them.
 
@@ -62,11 +68,12 @@ needs you. I'm around if anything comes up.
 
 ## After sending
 
-`journal_append` one line: "Daily brief sent, N events, N emails flagged, N
-approvals open." Do not write to memory from the brief.
+Personal mode: `journal_append` one line with event, email and approval counts.
+Business mode: use the task evidence and durable notification outbox. Carrier
+acceptance is not delivery; a browser read does not consume the notice.
 
 ## Do not
 
 - Do not send more than one brief a day unless asked.
 - Do not read mail bodies aloud. Sender and ask only.
-- Do not add tasks the owner did not ask for; offers are fine, actions are not.
+- Do not add work outside the owner's request or enabled routine's scope.

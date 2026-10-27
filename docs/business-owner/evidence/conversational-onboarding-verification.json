@@ -1,0 +1,173 @@
+{
+  "status": "passed_scoped_onboarding",
+  "scope": "Conversational in-app onboarding correction; not full-product acceptance",
+  "fullProductReadiness": "blocked_by_mandatory_live_provider_and_deployment_image_proof",
+  "implementation": [
+    "packages/core/src/runtime.ts",
+    "packages/server/src/business-service.ts",
+    "packages/server/src/boot.ts",
+    "packages/server/src/workspace-http.ts",
+    "packages/server/src/business-onboarding.ts",
+    "packages/server/src/business-knowledge-tools.ts",
+    "packages/server/web/workspace.ts",
+    "packages/server/web/workspace.css",
+    "skills/business-onboarding/SKILL.md"
+  ],
+  "regressions": [
+    "packages/server/test/scenarios/onboarding.test.ts",
+    "packages/server/testing/scenario-app.ts",
+    "packages/server/e2e/workspace.spec.ts",
+    "packages/server/e2e/fixtures.ts",
+    "packages/server/e2e/changed-flows.spec.ts",
+    "packages/server/e2e/evidence-manifest.ts"
+  ],
+  "verification": [
+    {
+      "command": "pnpm typecheck",
+      "result": "passed; all 12 packages built and typechecked",
+      "evidence": "conversational-onboarding-initial-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/core test",
+      "result": "332 passed",
+      "evidence": "conversational-onboarding-initial-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server build && pnpm --filter @open-instinct/server typecheck && pnpm --filter @open-instinct/server test && pnpm smoke",
+      "result": "passed; 321 server tests and smoke",
+      "evidence": "conversational-onboarding-integrated-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server build && pnpm --filter @open-instinct/server exec vitest run test/scenarios/onboarding.test.ts",
+      "result": "passed; 9 integrated scenarios after canonical event hash change",
+      "evidence": "conversational-onboarding-cap-checks.txt"
+    },
+    {
+      "command": "pnpm test:e2e && pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "result": "34 passed; 128 checkpoints; zero missing, failures or capture errors; scan passed 260 files/4 archive entries",
+      "evidence": [
+        "conversational-onboarding-browser-gate.txt",
+        "../../../packages/server/evidence/manifest.json",
+        "../../../packages/server/playwright-report/results.json"
+      ],
+      "caveat": "Full single-run manifest precedes final initial-history-scroll fix; affected checks below are separate, not silently merged."
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server build && pnpm --filter @open-instinct/server exec playwright test --config playwright.config.ts e2e/workspace.spec.ts --reporter=list --output=/tmp/open-instinct-conversation-scroll-results",
+      "result": "passed; 4 desktop/mobile light/dark workspace scenarios after scroll fix",
+      "evidence": "conversational-onboarding-scroll-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "result": "Final rescan passed: 260 files, 4 archive entries",
+      "evidence": "conversational-onboarding-final-scan.json"
+    }
+  ],
+  "negativeEvidence": [
+    "Guidance advertises and executes no tools, including after a real ordinary owner turn; attempted delegation/profile/connect/control/Google effects denied",
+    "Opening with a saved carrier route sends no new carrier notification",
+    "Unauthenticated, CSRF-less, foreign-origin, public tunnel, nonowner/capped principal and nonempty-body cases denied",
+    "Concurrent opens, reload and restart do not duplicate welcome",
+    "Consistent SQLite pre-answer phase snapshot restores as interrupted without replay; subsequent real owner answer saves cited facts; not a SIGKILL claim",
+    "Pause/stop remain effective across opening/restart",
+    "HTML stays inert; links use safeExternal; ordinary conversation sends no direct profile PATCH; drafts/focus retained"
+  ],
+  "live": {
+    "verificationMode": "live-provider",
+    "provider": "openai-codex",
+    "model": "gpt-6-astra",
+    "observedAt": "2026-10-24T10:17:56.344Z",
+    "opening": {
+      "id": "answer:workspace-onboarding",
+      "text": "What kind of business are we setting up?"
+    },
+    "continuation": [
+      {
+        "id": "web:92a60aed-375f-4ab5-905e-fc8f642f1f4c",
+        "role": "owner",
+        "text": "Can we start with what I need help with rather than collecting all my business details?"
+      },
+      {
+        "id": "answer:web:92a60aed-375f-4ab5-905e-fc8f642f1f4c",
+        "role": "assistant",
+        "text": "Yes. What\u2019s the main thing you\u2019d like me to take off your plate?"
+      }
+    ],
+    "profileVersion": 0,
+    "factCount": 0,
+    "taskCount": 0,
+    "gracefulRestart": {
+      "observedAt": "2026-10-24T10:19:40.588Z",
+      "sameMessageIds": true,
+      "sameUsage": true,
+      "openingAnswers": 1,
+      "messageCount": 12,
+      "lastReply": "Yes. What\u2019s the main thing you\u2019d like me to take off your plate?"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 1000,
+      "bottomGap": 0,
+      "screenshot": "conversational-onboarding-live-desktop.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "documentWidth": 390,
+      "bottomGap": 0,
+      "screenshot": "conversational-onboarding-live-mobile.png"
+    },
+    "limitations": [
+      "Live Pro proves automatic opening and natural change of direction only; multi-fact extraction/save is emulator-backed",
+      "No customer contact, production appointments, live Google OAuth or hosted-computer workflow exercised",
+      "Graceful pilot restart is distinct from emulator phase-snapshot recovery and earlier process-kill regressions"
+    ]
+  },
+  "repairs": [
+    "Fixture and assertions now use Pi getCurrentTools over transcript system deltas, not deprecated transcript.tools; no production authorization relaxed",
+    "Removed incidental allowance assumptions that no model usage had occurred; retained owner-cap persistence and exact ledger/UI projection assertions",
+    "Live browser exposed initial history at top (scrollTop 0, scrollHeight 1361, clientHeight 443); attached history now starts at latest reply and four affected flows passed"
+  ],
+  "security": {
+    "status": "passed_scoped_source_and_evidence",
+    "sourceFindings": [],
+    "evidence": "security-review-conversational-onboarding.md",
+    "releaseBlockingFindings": []
+  },
+  "remainingExternalPrerequisites": "live-prerequisites.json",
+  "runningWorkspace": {
+    "url": "http://127.0.0.1:8787/workspace",
+    "service": "instinct-owner-conversation",
+    "persistent": true
+  },
+  "documentation": [
+    "docs/SELF-HOST.md",
+    "docs/business-owner/integration-contracts.md",
+    "docs/business-owner/ACCEPTANCE.md",
+    "docs/business-owner/acceptance.json"
+  ],
+  "visualEvidence": [
+    {
+      "path": "conversational-onboarding-live-desktop.png",
+      "mode": "live-provider",
+      "inspected": true
+    },
+    {
+      "path": "conversational-onboarding-live-mobile.png",
+      "mode": "live-provider",
+      "inspected": true
+    },
+    {
+      "path": "conversational-onboarding-emulated-mobile-connected.png",
+      "mode": "emulated",
+      "inspected": true
+    },
+    {
+      "path": "conversational-onboarding-emulated-desktop-waiting.png",
+      "mode": "emulated",
+      "inspected": true
+    }
+  ],
+  "temporaryCaptureCleanup": "Removed /tmp/open-instinct-conversation-scroll-results after preserving inspected selected captures and the passing affected-run log.",
+  "browserHandoff": "Ego task space 19 finished, retaining the verified owner conversation page for the owner."
+}

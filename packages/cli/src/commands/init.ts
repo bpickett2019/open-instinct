@@ -26,6 +26,7 @@ export const initOptions: OptionSpec = {
   "use-existing": { type: "boolean" },
   "rotate-signing-key": { type: "boolean" },
   apps: { type: "boolean" },
+  business: { type: "boolean" },
   "no-apps": { type: "boolean" },
   toolkits: { type: "string" },
 };
@@ -47,6 +48,7 @@ export interface InitFlags {
   apps?: boolean;
   /** Comma-separated Composio toolkit slugs. Setting them also enables apps. */
   toolkits?: string[];
+  business?: boolean;
 }
 
 export function splitToolkits(value: string | undefined): string[] | undefined {
@@ -86,6 +88,7 @@ export function parseInitFlags(argv: string[], env: NodeJS.ProcessEnv = {}): Ini
     useExisting: flag(values, "use-existing"),
     rotateSigningKey: flag(values, "rotate-signing-key"),
     apps,
+    business: flag(values, "business"),
     toolkits: apps === false ? undefined : toolkits,
   };
 }
@@ -103,9 +106,14 @@ export function applyInitFlags(config: InstinctConfig, flags: InitFlags): Instin
   const model = { ...config.model };
   if (flags.model) model.primary = flags.model;
   const apps = { ...config.apps };
+  const business = config.business ?? (flags.business ? { autonomy: "full" as const } : undefined);
+  if (flags.business && !config.business && !flags.toolkits) {
+    apps.toolkits = ["gmail", "googlecalendar"];
+    apps.enabled = true;
+  }
   if (flags.toolkits) apps.toolkits = flags.toolkits;
   if (flags.apps !== undefined) apps.enabled = flags.apps;
-  return { ...config, owner, agent, model, apps };
+  return { ...config, owner, agent, model, apps, ...(business ? { business, computer: { ...config.computer, mode: "maritime" } } : {}) };
 }
 
 export async function runInit(ctx: CliContext, argv: string[]): Promise<number> {

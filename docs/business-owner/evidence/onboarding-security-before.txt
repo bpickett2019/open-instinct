@@ -1,0 +1,124 @@
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/apps
+
+ ❯ test/business-reconnect.test.ts (5 tests | 4 failed) 30ms
+   × explicit disconnect dominates older connection authority > keeps old and newly prepared reads denied after failed revocation, repeated discovery and restart 12ms
+     → expected 'connected' to be 'disabled' // Object.is equality
+   × explicit disconnect dominates older connection authority > does not restore access while DELETE is in flight or its upstream revocation job remains unresolved 5ms
+     → expected { accountId: 'account', …(10) } to match object { status: 'disabled', …(1) }
+(9 matching properties omitted from actual)
+   × explicit disconnect dominates older connection authority > rejects an authorization URL that finishes after disconnect instead of installing a fresh-looking intent 4ms
+     → promise resolved "{ url: 'https://oauth.fixture.test/o…' }" instead of rejecting
+   × explicit disconnect dominates older connection authority > does not adopt a different account created by an old OAuth link after disconnect 5ms
+     → expected { …(4) } to be undefined
+   ✓ explicit disconnect dominates older connection authority > rejects a changed provider identity even with a newer explicit reconnect instruction 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/business-reconnect.test.ts > explicit disconnect dominates older connection authority > keeps old and newly prepared reads denied after failed revocation, repeated discovery and restart
+AssertionError: expected 'connected' to be 'disabled' // Object.is equality
+
+Expected: "disabled"
+Received: "connected"
+
+ ❯ test/business-reconnect.test.ts:46:84
+     44|     expect((await providers.connections.disconnect("account")).revocat…
+     45|     for (let attempt = 0; attempt < 2; attempt++) await providers.conn…
+     46|     expect(f.store.get<BusinessConnection>("connection", "account")!.v…
+       |                                                                                    ^
+     47|     await expect(prepared.profile()).rejects.toThrow("disabled");
+     48|     expect(() => providers.googleForAccount("account")).toThrow("conne…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/business-reconnect.test.ts > explicit disconnect dominates older connection authority > does not restore access while DELETE is in flight or its upstream revocation job remains unresolved
+AssertionError: expected { accountId: 'account', …(10) } to match object { status: 'disabled', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "revocation": "requested",
+-   "status": "disabled",
++   "revocation": "none",
++   "status": "connected",
+  }
+
+ ❯ test/business-reconnect.test.ts:63:77
+     61|     const disconnecting = providers.connections.disconnect("account");…
+     62|     await providers.connections.list();
+     63|     expect(f.store.get<BusinessConnection>("connection", "account")!.v…
+       |                                                                             ^
+     64|     await providers.connections.connect("gmail"); await providers.conn…
+     65|     expect(f.store.get<BusinessConnection>("connection", "account")!.v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/business-reconnect.test.ts > explicit disconnect dominates older connection authority > rejects an authorization URL that finishes after disconnect instead of installing a fresh-looking intent
+AssertionError: promise resolved "{ url: 'https://oauth.fixture.test/o…' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "url": "https://oauth.fixture.test/obsolete-link",
+  }
+
+ ❯ test/business-reconnect.test.ts:79:28
+     77|     await providers.connections.disconnect("account");
+     78|     gate.resolve({ redirectUrl: "https://oauth.fixture.test/obsolete-l…
+     79|     await expect(connecting).rejects.toThrow();
+       |                            ^
+     80|     await providers.connections.list();
+     81|     expect(f.store.get<BusinessConnection>("connection", "account")!.v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/business-reconnect.test.ts > explicit disconnect dominates older connection authority > does not adopt a different account created by an old OAuth link after disconnect
+AssertionError: expected { …(4) } to be undefined
+
+- Expected: 
+undefined
+
++ Received: 
+{
+  "id": "account-from-obsolete-oauth",
+  "updatedAt": 1792832772042,
+  "value": {
+    "accountId": "account-from-obsolete-oauth",
+    "connectedBy": "owner",
+    "epoch": 0,
+    "id": "account-from-obsolete-oauth",
+    "identity": "owner@example.test",
+    "revocation": "none",
+    "revokeJobId": null,
+    "scopes": [],
+    "status": "connected",
+    "toolkit": "gmail",
+    "verifiedAt": 1792832772042,
+  },
+  "version": 1,
+}
+
+ ❯ test/business-reconnect.test.ts:90:56
+     88|     f.wire.activeId = "account-from-obsolete-oauth";
+     89|     await providers.connections.list(); f.restart(); await f.providers…
+     90|     expect(f.store.get("connection", f.wire.activeId)).toBeUndefined();
+       |                                                        ^
+     91|     expect(f.wire.profileReads).toBe(0);
+     92|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  02:06:11
+   Duration  637ms (transform 108ms, setup 0ms, collect 478ms, tests 30ms, environment 0ms, prepare 25ms)
+
+undefined
+/private/tmp/open-instinct/packages/apps:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/business-reconnect.test.ts --maxWorkers=1 --no-file-parallelism

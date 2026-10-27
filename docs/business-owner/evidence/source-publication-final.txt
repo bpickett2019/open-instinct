@@ -1,0 +1,202 @@
+
+> @open-instinct/server@0.1.0 test /private/tmp/open-instinct-publish-20261027/packages/server
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct-publish-20261027/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/scenarios/calendar-read.test.ts (16 tests) 2480ms
+   ✓ Calendar day reads through the real business dispatcher (emulated) > reads today's Pacific overlaps and explicit recurring instances in chronological pages, not historical masters  463ms
+ ✓ test/scenarios/messaging-feedback.test.ts (17 tests) 2924ms
+   ✓ Business iMessage feedback through production boot and signed ingress > commits read and typing before a gated final reply and never repeats read or reaction on duplicate/restart  430ms
+   ✓ Business iMessage feedback through production boot and signed ingress > uses all seven registered named tapbacks without tasks and lets a reaction-only turn stay text-free  508ms
+ ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2991ms
+   ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1551ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  456ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  749ms
+ ✓ test/scenarios/dispatch-boundaries.test.ts (11 tests) 3298ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request  685ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request  374ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request  338ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'empty subject and final body newline' sends once per task but permits an intentional distinct owner request  302ms
+   ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  566ms
+   ✓ Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy  388ms
+Warning: Indexing all PDF objects
+ ✓ test/business-extraction.test.ts (12 tests) 4785ms
+   ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  872ms
+   ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  592ms
+   ✓ bounded real document workers > rejects unsafe office entry '../../outside.txt' before parsing  307ms
+   ✓ bounded real document workers > rejects unsafe office entry 'xl/externalLinks/link.xml' before parsing  308ms
+   ✓ bounded real document workers > rejects unsafe office entry 'word/encrypted.xml' before parsing  314ms
+   ✓ bounded real document workers > rejects unsafe office entry 'word/link.xml' before parsing  319ms
+   ✓ bounded real document workers > rejects unsafe office entry 'word/relationships.rels' before parsing  358ms
+   ✓ bounded real document workers > rejects unsafe office entry 'word/entity.xml' before parsing  302ms
+   ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  856ms
+ ✓ test/scenarios/workflows.test.ts (23 tests) 4275ms
+   ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  790ms
+   ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  539ms
+   ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  499ms
+   ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  329ms
+ ✓ test/business-knowledge.test.ts (17 tests) 5112ms
+   ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  881ms
+   ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  587ms
+   ✓ immutable shared artifacts and safe retrieval > removes deleted sources from retrieval, keeps honest evidence retention and preserves the manifest  300ms
+   ✓ immutable shared artifacts and safe retrieval > rejects traversal, unsafe types, HTML, upload excess, symlinks and modified originals  326ms
+   ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1497ms
+   ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  526ms
+   ✓ knowledge model tools enforce execution authority > records actual store revisions and rejects amounts absent from the cited source  316ms
+ ✓ test/business-hosted-artifacts.test.ts (25 tests) 1365ms
+   ✓ hosted document artifact transfer > runs the real registered wrapper and dispatcher, preserving bytes and source without transfer payload in action history  356ms
+   ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  316ms
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/scenarios/follow-through-send.test.ts (1 test) 1535ms
+   ✓ Autonomous unanswered follow-through (emulated) > sends one routine-authorized chase after controller downtime, dedupes restarts, and stops at two unanswered occurrences  1533ms
+ ✓ test/scenarios/security.test.ts (10 tests) 1183ms
+   ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  388ms
+ ✓ test/scenarios/open-thread-recovery.test.ts (5 tests) 712ms
+   ✓ BO153 production Gmail open-thread recovery (stateful emulation) > recovers an old active-thread reply after history expiry without replaying closed, unrelated or other-account mail  304ms
+ ✓ test/scenarios/onboarding.test.ts (9 tests) 1482ms
+   ✓ assistant-led onboarding (emulated) > opens once across concurrent calls and refresh, restores owner tools for natural replies, and retains shared history and facts across restart  329ms
+stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+ ✓ test/scenarios/operational-limits.test.ts (13 tests) 6416ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart  468ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: only twelve operational dispatches execute in a slice and useful work requeues without completion  3981ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: the contract's exact 60-second reasoning boundary prevents the next provider operation  320ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects missing-criterion and the owner detail never reports completed  345ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects fabricated-reference and the owner detail never reports completed  345ms
+ ✓ test/scenarios/general-delegation.test.ts (1 test) 1678ms
+   ✓ General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime  1677ms
+ ✓ test/apps-shutdown.test.ts (1 test) 1036ms
+   ✓ app SDK process lifecycle > lets the controller finish asynchronous cleanup after SIGTERM  1035ms
+ ✓ test/slow-reply-ack.test.ts (2 tests) 813ms
+   ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  583ms
+ ✓ test/business-onboarding.test.ts (6 tests) 112ms
+ ✓ test/business-commitments.test.ts (21 tests) 296ms
+ ✓ test/contracts/providers.test.ts (10 tests) 295ms
+ ✓ test/workspace-http.test.ts (2 tests) 488ms
+   ✓ returns 404 for absent records without turning missing stored bytes into a 404  460ms
+ ✓ test/http.test.ts (43 tests) 505ms
+ ✓ test/inbox.test.ts (2 tests) 135ms
+ ✓ test/business-owner-updates.test.ts (16 tests) 191ms
+ ✓ test/subscription-auth.test.ts (5 tests) 64ms
+ ✓ test/file-tools.test.ts (11 tests) 55ms
+ ✓ test/skills.test.ts (13 tests) 32ms
+ ✓ test/business-pricing.test.ts (5 tests) 26ms
+ ✓ test/workspace-session.test.ts (7 tests) 13ms
+ ✓ test/business-image-accounting.test.ts (2 tests) 36ms
+ ✓ test/maritime-schedules.test.ts (6 tests) 7ms
+ ✓ test/http-lifecycle.test.ts (1 test) 52ms
+ ✓ test/boot-phone.test.ts (5 tests) 61ms
+ ✓ test/business-acceptance-boundaries.test.ts (9 tests) 96ms
+ ✓ test/atomicmail.test.ts (5 tests) 72ms
+ ✓ test/console-outbox.test.ts (7 tests) 6ms
+ ✓ test/hooks.test.ts (5 tests) 4ms
+ ✓ test/bind.test.ts (3 tests) 1ms
+ ✓ test/evidence-redaction.test.ts (1 test) 2ms
+ ✓ test/payments.test.ts (4 tests) 4ms
+ ✓ test/webhook-setup.test.ts (7 tests) 8ms
+ ✓ test/scenarios/crash-phases.test.ts (8 tests) 14112ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  2674ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  2858ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  2321ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  2065ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  1078ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  1060ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1027ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1028ms
+
+ Test Files  41 passed (41)
+      Tests  371 passed (371)
+   Start at  07:54:10
+   Duration  15.16s (transform 1.21s, setup 0ms, collect 31.51s, tests 58.76s, environment 5ms, prepare 1.99s)
+
+
+> open-instinct@0.1.0 test:e2e /private/tmp/open-instinct-publish-20261027
+> pnpm --filter @open-instinct/server run test:e2e
+
+
+> @open-instinct/server@0.1.0 test:e2e /private/tmp/open-instinct-publish-20261027/packages/server
+> playwright test --config playwright.config.ts
+
+
+Running 34 tests using 1 worker
+
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (4.9s)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.5s)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (786ms)
+  ✓   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (3.0s)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.5s)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (705ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (411ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (715ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (1.1s)
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.2s)
+  ✓  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.2s)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (932ms)
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:35672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.2s)
+  ✓  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.3s)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (976ms)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.6s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.9s)
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (3.2s)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.5s)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (714ms)
+  ✓  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (3.0s)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.5s)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (636ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (390ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (731ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (793ms)
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✓  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.1s)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (1.2s)
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:35709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.0s)
+  ✓  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.1s)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (900ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.4s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.1s)
+
+  34 passed (1.9m)
+{"status":"passed","files":260,"archiveEntries":4,"expandedBytes":2617146,"verificationMode":"emulated","limitations":"Pattern/canary scan of exact publication bytes and expanded traces/report data; not OCR or a complete vulnerability review."}

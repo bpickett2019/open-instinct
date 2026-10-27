@@ -1,12 +1,13 @@
 /**
  * Outbound side of the Inkbox adapter. The runtime hands us an OutboundMessage
  * and a conversation key; we pick the Inkbox call that reaches that thread.
- * Sends go through the official SDK's AgentIdentity so request shapes stay
- * correct as the API evolves. The identity is fetched once and cached.
+ * Personal sends use the SDK; task sends, durable notices and feedback use
+ * single-attempt REST to avoid automatic mutation retries. Identity is cached.
  */
+import { randomUUID } from "node:crypto";
 import { Inkbox, type AgentIdentity, type CallOrigin, type MailAttachmentInput } from "@inkbox/sdk";
-import type { InboundMessage, OutboundMessage, Outbox, Principal } from "@open-instinct/core";
-import { createRest } from "./http.js";
+import type { InboundMessage, OutboundMessage, Outbox, Principal, ToolContext } from "@open-instinct/core";
+import { createRest, type RestClient } from "./http.js";
 
 export interface InkboxChannelOptions {
   apiKey: string;
@@ -20,12 +21,30 @@ export interface InkboxChannelOptions {
   fetchImpl?: typeof fetch;
 }
 
+/** Optional task fences; owner-control notices deliberately omit these options. */
+export interface DispatchOptions {
+  signal?: AbortSignal;
+  assertBusinessDispatch?: ToolContext["assertBusinessDispatch"];
+  recordBusinessReceipt?: ToolContext["recordBusinessReceipt"];
+  notificationId?: string;
+}
+
+function assertDispatch(options: DispatchOptions): void {
+  options.signal?.throwIfAborted();
+  options.assertBusinessDispatch?.();
+}
+
 /** Apple delivers long texts as one bubble; past this length they read badly. */
 export const IMESSAGE_MAX_CHARS = 1500;
 /** Inkbox's media upload cap for iMessage and SMS attachments. */
 export const MEDIA_MAX_BYTES = 10 * 1024 * 1024;
 /** A sane cap for one email attachment; most receiving servers stop around here. */
 export const EMAIL_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
+
+/** The SDK accepts named tapbacks only; custom emoji are inbound-only. */
+const SENDABLE_REACTIONS: Record<string, true> = {
+  love: true, like: true, dislike: true, laugh: true, emphasize: true, question: true, eyes: true,
+};
 
 /** A file to deliver on one channel, in the current thread or to a new recipient. */
 export interface FileSend {
@@ -156,6 +175,7 @@ export class InkboxChannel implements Outbox {
   private readonly opts: InkboxChannelOptions;
   private readonly sdk: Inkbox;
   private identityPromise: Promise<AgentIdentity> | undefined;
+  private readonly rest: RestClient;
   /** Email threads need a recipient; remember who wrote last in each thread. */
   private readonly replyContexts = new Map<string, ReplyContext>();
 
@@ -165,6 +185,7 @@ export class InkboxChannel implements Outbox {
     const sdkOpts: ConstructorParameters<typeof Inkbox>[0] = { apiKey: opts.apiKey };
     if (opts.baseUrl) sdkOpts.baseUrl = opts.baseUrl;
     this.sdk = new Inkbox(sdkOpts);
+    this.rest = createRest(opts);
   }
 
   /** Resolve the AgentIdentity once; retry on the next call if the first fetch failed. */
@@ -200,24 +221,25 @@ export class InkboxChannel implements Outbox {
     this.replyContexts.set(msg.conversationKey, ctx);
   }
 
-  async send(msg: OutboundMessage, _ctx: { principal: Principal; conversationKey: string }): Promise<void> {
+  async send(msg: OutboundMessage, ctx: { principal: Principal; conversationKey: string } & DispatchOptions): Promise<void> {
+    ctx = { ...ctx };
     const key = parseConversationKey(msg.conversationKey);
     const channel = msg.channel ?? key.channel;
     switch (channel) {
       case "imessage":
-        return this.sendIMessage(msg, key);
+        return this.sendIMessage(msg, key, ctx);
       case "sms":
-        return this.sendSms(msg, key);
+        return this.sendSms(msg, key, ctx);
       case "email":
-        return this.sendEmail(msg, key);
+        return this.sendEmail(msg, key, ctx);
       case "a2a":
-        return this.sendA2A(msg, key);
+        return this.sendA2A(msg, key, ctx);
       default:
         throw new Error(`InkboxChannel cannot deliver on channel "${String(channel)}" (key ${msg.conversationKey ?? "none"})`);
     }
   }
 
-  private async sendIMessage(msg: OutboundMessage, key: ParsedKey): Promise<void> {
+  private async sendIMessage(msg: OutboundMessage, key: ParsedKey, ctx: DispatchOptions): Promise<void> {
     const identity = await this.identity();
     const conversationId = key.channel === "imessage" && key.id ? key.id : undefined;
     const to = toList(msg.to);
@@ -237,11 +259,22 @@ export class InkboxChannel implements Outbox {
         if (msg.mediaUrls && msg.mediaUrls.length > 0) options.mediaUrls = msg.mediaUrls;
         if (msg.sendStyle) options.sendStyle = msg.sendStyle;
       }
-      await identity.sendIMessage(options);
+      assertDispatch(ctx);
+      if (ctx.signal || ctx.assertBusinessDispatch || ctx.notificationId) {
+        if (!identity.imessageEnabled) throw new Error("This identity has no iMessage capability");
+        await this.sendOnce("/imessage/messages", {
+          ...(options.conversationId ? { conversation_id: options.conversationId } : { to: options.to }),
+          ...(options.text ? { text: options.text } : {}),
+          ...(options.replyToMessageId ? { reply_to_message_id: options.replyToMessageId, plain_reply_fallback: true } : {}),
+          ...(options.mediaUrls ? { media_urls: options.mediaUrls } : {}),
+          ...(options.sendStyle ? { send_style: options.sendStyle } : {}),
+        }, ctx, { agent_identity_id: identity.id });
+      } else await identity.sendIMessage(options);
+      ctx.recordBusinessReceipt?.({ channel: "imessage", operation: "send", acceptedChunks: i + 1, totalChunks: chunks.length, mediaUrls: msg.mediaUrls ?? [], evidenceLevel: "primitive-only" });
     }
   }
 
-  private async sendSms(msg: OutboundMessage, key: ParsedKey): Promise<void> {
+  private async sendSms(msg: OutboundMessage, key: ParsedKey, ctx: DispatchOptions): Promise<void> {
     const identity = await this.identity();
     const to = toList(msg.to);
     const conversationId = to.length === 0 && key.channel === "sms" && key.id && !key.id.startsWith("+") ? key.id : undefined;
@@ -255,7 +288,16 @@ export class InkboxChannel implements Outbox {
       const text = chunks[i] ?? "";
       if (text) options.text = text;
       if (i === 0 && msg.mediaUrls && msg.mediaUrls.length > 0) options.mediaUrls = msg.mediaUrls;
-      await identity.sendText(options);
+      assertDispatch(ctx);
+      if (ctx.signal || ctx.assertBusinessDispatch || ctx.notificationId) {
+        if (!identity.phoneNumber) throw new Error("This identity has no phone number");
+        await this.sendOnce(`/phone/numbers/${encodeURIComponent(identity.phoneNumber.id)}/texts`, {
+          ...(options.conversationId ? { conversation_id: options.conversationId } : { to: options.to }),
+          ...(options.text ? { text: options.text } : {}),
+          ...(options.mediaUrls ? { media_urls: options.mediaUrls } : {}),
+        }, ctx);
+      } else await identity.sendText(options);
+      ctx.recordBusinessReceipt?.({ channel: "sms", operation: "send", acceptedChunks: i + 1, totalChunks: chunks.length, mediaUrls: msg.mediaUrls ?? [], evidenceLevel: "primitive-only" });
     }
   }
 
@@ -263,7 +305,8 @@ export class InkboxChannel implements Outbox {
    * Deliver a file. Email attaches it; iMessage and SMS upload it to Inkbox first and
    * send the returned media URL with the caption as the bubble text.
    */
-  async sendFile(file: FileSend, _ctx: { principal: Principal; conversationKey: string }): Promise<FileSendResult> {
+  async sendFile(file: FileSend, ctx: { principal: Principal; conversationKey: string } & DispatchOptions): Promise<FileSendResult> {
+    ctx = { ...ctx };
     const key = parseConversationKey(file.conversationKey);
     const base: OutboundMessage = { channel: file.channel, text: file.caption ?? "" };
     if (file.conversationKey) base.conversationKey = file.conversationKey;
@@ -273,19 +316,21 @@ export class InkboxChannel implements Outbox {
       if (file.content.length > EMAIL_ATTACHMENT_MAX_BYTES) throw new Error(`${file.filename} is ${describeBytes(file.content.length)}; email attachments are capped at ${describeBytes(EMAIL_ATTACHMENT_MAX_BYTES)}`);
       const msg: OutboundMessage = { ...base, text: file.caption?.trim() || `Attached: ${file.filename}` };
       if (file.subject) msg.replyRef = { ...(msg.replyRef ?? {}), subject: file.subject };
-      await this.sendEmail(msg, key, [{ filename: file.filename, contentType: file.contentType, contentBase64: file.content.toString("base64") }]);
+      await this.sendEmail(msg, key, ctx, [{ filename: file.filename, contentType: file.contentType, contentBase64: file.content.toString("base64") }]);
       return { channel: "email" };
     }
     if (file.content.length > MEDIA_MAX_BYTES) throw new Error(`${file.filename} is ${describeBytes(file.content.length)}; ${file.channel === "sms" ? "SMS" : "iMessage"} attachments are capped at ${describeBytes(MEDIA_MAX_BYTES)}. Send it by email instead.`);
     const identity = await this.identity();
+    assertDispatch(ctx);
     const upload = await identity.uploadIMessageMedia({ content: new Uint8Array(file.content), filename: file.filename, contentType: file.contentType });
+    ctx.recordBusinessReceipt?.({ channel: file.channel, operation: "media-upload", mediaUrl: upload.mediaUrl, evidenceLevel: "primitive-only" });
     const msg: OutboundMessage = { ...base, mediaUrls: [upload.mediaUrl] };
-    if (file.channel === "sms") await this.sendSms(msg, key);
-    else await this.sendIMessage(msg, key);
+    if (file.channel === "sms") await this.sendSms(msg, key, ctx);
+    else await this.sendIMessage(msg, key, ctx);
     return { channel: file.channel, mediaUrl: upload.mediaUrl };
   }
 
-  private async sendEmail(msg: OutboundMessage, key: ParsedKey, attachments?: MailAttachmentInput[]): Promise<void> {
+  private async sendEmail(msg: OutboundMessage, key: ParsedKey, ctx: DispatchOptions, attachments?: MailAttachmentInput[]): Promise<void> {
     const identity = await this.identity();
     const remembered = msg.conversationKey ? this.replyContexts.get(msg.conversationKey) : undefined;
     const ref = msg.replyRef ?? {};
@@ -301,10 +346,34 @@ export class InkboxChannel implements Outbox {
     const inReplyTo = ref.messageId ?? remembered?.messageId;
     if (inThread && inReplyTo) options.inReplyToMessageId = inReplyTo;
     if (attachments && attachments.length > 0) options.attachments = attachments;
-    await identity.sendEmail(options);
+    assertDispatch(ctx);
+    if (ctx.signal || ctx.assertBusinessDispatch || ctx.notificationId) {
+      if (!identity.emailAddress) throw new Error("This identity has no mailbox");
+      await this.sendOnce(`/mail/mailboxes/${encodeURIComponent(identity.emailAddress)}/messages`, {
+        recipients: { to }, subject, body_text: msg.text,
+        ...(options.inReplyToMessageId ? { in_reply_to_message_id: options.inReplyToMessageId } : {}),
+        ...(attachments?.length ? { attachments: attachments.map(attachment => ({
+          filename: attachment.filename, content_type: attachment.contentType, content_base64: attachment.contentBase64,
+          ...(attachment.contentId ? { content_id: attachment.contentId } : {}),
+        })) } : {}),
+      }, ctx);
+    } else await identity.sendEmail(options);
+    ctx.recordBusinessReceipt?.({ channel: "email", operation: "send", accepted: true, evidenceLevel: "primitive-only" });
   }
 
-  private async sendA2A(msg: OutboundMessage, key: ParsedKey): Promise<void> {
+  /** SDK retries lack dispatch hooks; an ambiguous task/notice send must remain unknown. */
+  private async sendOnce(path: string, body: unknown, ctx: DispatchOptions, query: Record<string, string> = {}): Promise<void> {
+    const url = new URL(`${this.rest.baseUrl}/api/v1${path}`);
+    for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
+    const result = await this.rest.requestUrl<{ id?: unknown; message?: { id?: unknown } } | undefined>("POST", url.toString(), body, {
+      "Idempotency-Key": randomUUID(),
+      Prefer: "idempotency-replay",
+    }, ctx);
+    const id = result?.message?.id ?? result?.id;
+    if (typeof id !== "string" || !id) throw new Error("Carrier acceptance is unknown: response has no message ID");
+  }
+
+  private async sendA2A(msg: OutboundMessage, key: ParsedKey, ctx: DispatchOptions): Promise<void> {
     const remembered = msg.conversationKey ? this.replyContexts.get(msg.conversationKey) : undefined;
     // Task id: msg.a2a, else the inbound replyRef, else what remember() saw. Intent defaults to complete.
     const taskId = msg.a2a?.taskId ?? msg.replyRef?.taskId ?? remembered?.taskId;
@@ -315,24 +384,37 @@ export class InkboxChannel implements Outbox {
     if (msg.text) parts.push({ text: msg.text });
     if (msg.a2a?.data) parts.push({ data: msg.a2a.data });
     if (parts.length === 0) parts.push({ text: "" });
+    assertDispatch(ctx);
     await identity.a2aReply(taskId, { intent, parts });
+    ctx.recordBusinessReceipt?.({ channel: "a2a", operation: "reply", taskId, intent, accepted: true, evidenceLevel: "primitive-only" });
   }
 
-  /** Typing indicators exist only on one-to-one iMessage threads; elsewhere this is a no-op. */
-  async typing(conversationKey: string): Promise<void> {
+  /** Non-iMessage keys are a no-op; Inkbox rejects group typing with HTTP 409. */
+  async typing(conversationKey: string, ctx: DispatchOptions = {}): Promise<void> {
+    ctx = { ...ctx };
     const key = parseConversationKey(conversationKey);
     if (key.channel !== "imessage" || !key.id) return;
+    assertDispatch(ctx);
     const identity = await this.identity();
-    await identity.sendIMessageTyping(key.id);
+    if (!identity.imessageEnabled) throw new Error("This identity has no iMessage capability");
+    await this.rest.request("POST", "/imessage/typing", { conversation_id: key.id }, undefined, ctx);
   }
 
-  async react(conversationKey: string, messageId: string, reaction: string): Promise<void> {
+  async react(conversationKey: string, messageId: string, reaction: string, ctx: DispatchOptions = {}): Promise<void> {
+    ctx = { ...ctx };
     const key = parseConversationKey(conversationKey);
-    if (key.channel !== "imessage") throw new Error("tapbacks are only available on iMessage conversations");
+    if (key.channel !== "imessage" || !key.id) throw new Error("tapbacks are only available on iMessage conversations");
+    if (!Object.hasOwn(SENDABLE_REACTIONS, reaction)) throw new Error(`reaction must be one of: ${Object.keys(SENDABLE_REACTIONS).join(", ")}`);
+    assertDispatch(ctx);
     const identity = await this.identity();
+    assertDispatch(ctx);
+    // The SDK scopes this read to identity.id, including with an organization API key.
     const target = await identity.getIMessage(messageId);
     if (target.conversationId !== key.id) throw new Error("The reaction target must belong to the current conversation");
-    await identity.sendIMessageReaction({ messageId, reaction });
+    if (target.direction !== "inbound") throw new Error("The reaction target must be an inbound message");
+    await this.rest.request("POST", "/imessage/reactions", {
+      message_id: messageId, reaction, part_index: 0,
+    }, undefined, ctx);
   }
 
   /**
@@ -352,10 +434,37 @@ export class InkboxChannel implements Outbox {
    * Voice AI authority is `yolo` would otherwise widen what the voice agent may do on the owner's
    * behalf, and the policy guard only ever approved the number and the brief.
    */
-  async placeCall(input: PlaceCallInput): Promise<PlacedCall> {
+  async placeCall(input: PlaceCallInput, ctx: DispatchOptions & Pick<ToolContext, "taskRun"> = {}): Promise<PlacedCall> {
+    ctx = { ...ctx };
+    assertDispatch(ctx);
     const identity = await this.identity();
+    assertDispatch(ctx);
     const origination = input.origination ?? (await this.defaultCallOrigination());
+    assertDispatch(ctx);
     if (origination === "dedicated_number" && !identity.phoneNumber) throw new Error("This identity has no dedicated phone number to call from");
+    if (ctx.taskRun || ctx.signal || ctx.assertBusinessDispatch || ctx.recordBusinessReceipt) {
+      // Keep the final fence at fetch entry and never replay an ambiguous call.
+      const call = await this.rest.request<{
+        id?: unknown; status?: unknown; rate_limit?: { minutes_remaining?: unknown };
+      } | undefined>("POST", "/phone/place-call", {
+        to_number: input.toNumber,
+        origination,
+        ...(origination === "dedicated_number" ? { from_number: identity.phoneNumber!.number } : { agent_identity_id: identity.id }),
+        mode: "hosted_agent",
+        hosted_agent_authority_mode: "contact_scoped",
+        reason: input.reason,
+        on_voicemail: "leave_message",
+        ...(input.voicemailMessage ? { voicemail_message: input.voicemailMessage } : {}),
+      }, undefined, ctx);
+      if (typeof call?.id !== "string" || !call.id || typeof call.status !== "string" || !call.status) {
+        throw new Error("Inkbox call acceptance is unknown: no call id/status returned; do not retry.");
+      }
+      // A stop after HTTP acceptance cannot undo the call or erase its receipt.
+      ctx.recordBusinessReceipt?.({ channel: "phone", operation: "place-call", providerId: call.id, status: call.status, origination, accepted: true, evidenceLevel: "primitive-only" });
+      const out: PlacedCall = { id: call.id, status: call.status, origination };
+      if (typeof call.rate_limit?.minutes_remaining === "number") out.minutesRemaining = call.rate_limit.minutes_remaining;
+      return out;
+    }
     const call = await identity.placeCall({
       toNumber: input.toNumber,
       origination: origination as CallOrigin,
@@ -387,10 +496,14 @@ export class InkboxChannel implements Outbox {
     await identity.setHostedAgentConfig({ ...(input.voice ? { voice: input.voice } : {}), instructions: input.instructions });
   }
 
-  async markRead(conversationKey: string): Promise<void> {
+  /** Non-iMessage keys are a no-op; Inkbox rejects group read receipts with HTTP 409. */
+  async markRead(conversationKey: string, ctx: DispatchOptions = {}): Promise<void> {
+    ctx = { ...ctx };
     const key = parseConversationKey(conversationKey);
     if (key.channel !== "imessage" || !key.id) return;
+    assertDispatch(ctx);
     const identity = await this.identity();
-    await identity.markIMessageConversationRead(key.id);
+    if (!identity.imessageEnabled) throw new Error("This identity has no iMessage capability");
+    await this.rest.request("POST", "/imessage/mark-read", { conversation_id: key.id }, undefined, ctx);
   }
 }

@@ -5,8 +5,8 @@ Thanks for helping build an open personal agent. This page is short on purpose.
 ## Setup
 
 ```bash
-nvm use            # Node 22.20 (see .nvmrc)
-corepack enable    # pnpm 10
+nvm use            # Node >=22.22.3 (see .nvmrc)
+corepack enable    # pnpm 10.6.1
 pnpm install
 pnpm build         # builds the packages in dependency order (core first)
 pnpm test

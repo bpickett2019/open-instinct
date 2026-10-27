@@ -53,7 +53,7 @@ described in the next section.
 | Web page | Prompt injection in page text or a screenshot | Untrusted wrapping; policy guard runs on every tool call |
 | Web page | Point `web_fetch` at the agent's own services | SSRF guard |
 | Web page | Make the agent change a payment amount or merchant | Owner sees the exact amount and merchant in Link before any card exists |
-| Web page, email or forwarded text | Prompt injection that dials a number through `phone_call` | `phone.call` is `ask` for everyone, the owner included: each call waits for the owner's own plain yes to that exact number and brief, and `approval_settle` cannot settle it; the Voice AI authority is pinned to `contact_scoped` per call, so an org-level `yolo` setting never widens what the call may do |
+| Web page, email or forwarded text | Prompt injection that dials a number through `phone_call` | Personal calls retain exact-call approval. Business calls require a dispatched owner-authorized task and current constraints, not routine approval. Nonowner/group restrictions remain. Voice AI authority is pinned to `contact_scoped` per call, so org-level `yolo` never widens it |
 | Attacker on the network | Forge a webhook that looks like an iMessage from the owner | Webhook signatures; `/chat` token and bind address |
 | Attacker on the network | Replay a captured webhook | 5 minute timestamp window; event id dedupe |
 | Attacker with the data dir | Read secrets or transcripts | Secrets at `0600`; bash sees no credentials; but see the limits below |
@@ -134,6 +134,11 @@ whose name contains `KEY`, `SECRET`, `TOKEN`, `PASSWORD` or `CREDENTIAL` is drop
 File tools are owner-only. No other tier sees them, `staff` included: `bash` needs both `files.read`
 and `files.write`, and staff has neither, nor `computer.use`.
 
+Business mode disables controller `bash` and requires a separate hosted computer bound to
+the immutable workspace identity. Hosted operations use the task dispatcher and a shared
+desktop lease. Human takeover blocks worker viewing/control until the provider reports it
+has returned control. Provider viewer links are delivered privately to the owner.
+
 ### Takeover for credentials and payments
 
 The agent never types a password, a 2FA code or a card number it was given in chat. When a
@@ -141,11 +146,15 @@ login, CAPTCHA or payment confirmation comes up, it calls `request_takeover` and
 finishes the step on the live desktop. On the hosted computer backend the owner gets a
 viewer link.
 
-Payments use Stripe Link Agent Wallet. The agent asks Link for a one-time card for an exact
-amount and merchant. The owner approves in Link. The card appears once, in one tool result,
-and is never written to disk, the audit log, the journal or a message. The spend policy
-(`askAbove`, `perActionUsd`, `perDayUsd`, blocked merchants, never-without-ask categories)
-runs before Link is called. Details: [../packages/payments/README.md](../packages/payments/README.md).
+Payments use Stripe Link Agent Wallet. Link requires provider-hosted consent for each exact
+amount and merchant even in autonomous business mode. Approved card fields stay in an
+ephemeral controller vault. Tools return opaque workspace/owner/conversation/task-scoped
+references. Only the final hosted adapter resolves a field for typing; raw values never
+enter ordinary arguments or tool results. References expire and do not survive restart.
+Credential-sensitive screenshots and provider echoes are withheld, including after restart
+in business mode. Missing references require takeover, not a blind repeat purchase.
+Personal spend approvals remain; business execution honors configured owner constraints
+without inheriting personal approval thresholds. Details: [payments](../packages/payments/README.md).
 
 ### Audit log
 

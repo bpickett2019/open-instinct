@@ -150,8 +150,26 @@ export class LinkWallet {
   // Link client
   // ---------------------------------------------------------------------------
 
-  /** A Link client whose access token this wallet keeps fresh. Cached per wallet. At runtime this is a `Link` instance. */
-  client(): LinkClientLike {
+  /**
+   * Unscoped clients are cached. Tool invocations use an isolated transport fence, since the
+   * SDK awaits access tokens (including 401 refresh) before it actually submits each request.
+   */
+  client(assertDispatch?: () => void, signal?: AbortSignal): LinkClientLike {
+    if (assertDispatch || signal) {
+      const fetchImpl = this.fetchImpl ?? globalThis.fetch;
+      return this.linkFactory({
+        getAccessToken: (o) => {
+          signal?.throwIfAborted();
+          assertDispatch?.();
+          return this.getAccessToken(o);
+        },
+        fetch: (input, init) => {
+          signal?.throwIfAborted();
+          assertDispatch?.();
+          return fetchImpl(input, signal ? { ...init, signal } : init);
+        },
+      });
+    }
     if (!this.cachedClient) {
       const options: LinkClientOptions = {
         getAccessToken: (o) => this.getAccessToken(o),

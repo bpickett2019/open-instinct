@@ -1,0 +1,819 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-23T08:29:32.272Z",
+  "scope": "Synthetic MCP transport with real production import/registration/readback; locally executed spreadsheet engine. NOT live Maritime, hosted LibreOffice, or live tenant-isolation proof.",
+  "status": "passed-local-engine-synthetic-transport",
+  "engine": {
+    "name": "HyperFormula",
+    "version": "3.1.0",
+    "execution": "Actual local offline formula evaluation from loaded XLSX formulas/input cells; input cached totals excluded from engine input",
+    "api": "HyperFormula.buildFromSheets + getCellValue",
+    "calculations": [
+      {
+        "sheet": "Quote",
+        "address": "D4",
+        "formula": "B4*C4",
+        "beforeCachedValue": 999,
+        "engineCalculatedValue": 250
+      },
+      {
+        "sheet": "Quote",
+        "address": "D5",
+        "formula": "B5*C5",
+        "beforeCachedValue": 888,
+        "engineCalculatedValue": 280
+      },
+      {
+        "sheet": "Quote",
+        "address": "D6",
+        "formula": "D5-D4",
+        "beforeCachedValue": -111,
+        "engineCalculatedValue": 30
+      }
+    ],
+    "sourceSheets": {
+      "Quote": [
+        [
+          "Synthetic quote comparison",
+          null,
+          null,
+          null
+        ],
+        [
+          "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+          null,
+          null,
+          null
+        ],
+        [
+          "Scenario",
+          "Quantity",
+          "Unit price",
+          "Total"
+        ],
+        [
+          "Original",
+          2,
+          125,
+          "=B4*C4"
+        ],
+        [
+          "Revised",
+          2,
+          140,
+          "=B5*C5"
+        ],
+        [
+          "Difference",
+          null,
+          null,
+          "=D5-D4"
+        ],
+        [
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Expected after calculation: 250.00 / 280.00 / 30.00",
+          null,
+          null,
+          null
+        ],
+        [
+          "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+          null,
+          null,
+          null
+        ]
+      ]
+    },
+    "export": "ExcelJS serializes unchanged formulas and engine-returned numeric results; no expected totals substituted"
+  },
+  "imports": [
+    {
+      "filename": "quote-stale.xlsx",
+      "downloadName": "quote-stale-imported-readback.xlsx",
+      "bytes": 7097,
+      "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c",
+      "artifact": {
+        "authority": "evidence",
+        "createdAt": 1792744172312,
+        "deleted": false,
+        "error": null,
+        "extraction": "ready",
+        "filename": "quote-stale.xlsx",
+        "format": "xlsx",
+        "id": "084aff21-11b7-4c6e-b8c5-20de909edad2",
+        "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "scope": "business",
+        "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c",
+        "size": 7097,
+        "source": "generated",
+        "sourceLocator": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2:hosted-file:%2Fdata%2Fquote-stale.xlsx",
+        "sourceVersion": 1,
+        "supersededBy": null,
+        "supersedes": null,
+        "taskIds": [
+          "83f642fa-5234-4f37-b17b-c16f215a4fc2"
+        ],
+        "uploader": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2",
+        "version": 2
+      },
+      "source": {
+        "id": "084aff21-11b7-4c6e-b8c5-20de909edad2",
+        "version": 2,
+        "value": {
+          "authority": "evidence",
+          "chunks": [
+            {
+              "locator": "sheet:Quote:row:1",
+              "text": "Synthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison"
+            },
+            {
+              "locator": "sheet:Quote:row:2",
+              "text": "LOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+            },
+            {
+              "locator": "sheet:Quote:row:3",
+              "text": "Scenario\tQuantity\tUnit price\tTotal"
+            },
+            {
+              "locator": "sheet:Quote:row:4",
+              "text": "Original\t2\t125\t[formula B4*C4; cached result unverified: 999]"
+            },
+            {
+              "locator": "sheet:Quote:row:5",
+              "text": "Revised\t2\t140\t[formula B5*C5; cached result unverified: 888]"
+            },
+            {
+              "locator": "sheet:Quote:row:6",
+              "text": "Difference\t\t\t[formula D5-D4; cached result unverified: -111]"
+            },
+            {
+              "locator": "sheet:Quote:row:8",
+              "text": "Expected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00"
+            },
+            {
+              "locator": "sheet:Quote:row:9",
+              "text": "Input caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00"
+            }
+          ],
+          "deleted": false,
+          "id": "084aff21-11b7-4c6e-b8c5-20de909edad2",
+          "scope": "business",
+          "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c",
+          "source": "generated",
+          "sourceLocator": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2:hosted-file:%2Fdata%2Fquote-stale.xlsx",
+          "sourceVersion": 1,
+          "supersededBy": null,
+          "supersedes": null,
+          "taskIds": [
+            "83f642fa-5234-4f37-b17b-c16f215a4fc2"
+          ],
+          "uploader": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2"
+        },
+        "updatedAt": 1792744172482,
+        "obsolete": false,
+        "activeLocators": [
+          "sheet:Quote:row:1",
+          "sheet:Quote:row:2",
+          "sheet:Quote:row:3",
+          "sheet:Quote:row:4",
+          "sheet:Quote:row:5",
+          "sheet:Quote:row:6",
+          "sheet:Quote:row:8",
+          "sheet:Quote:row:9"
+        ]
+      },
+      "detail": {
+        "artifact": {
+          "authority": "evidence",
+          "createdAt": 1792744172312,
+          "deleted": false,
+          "error": null,
+          "extraction": "ready",
+          "filename": "quote-stale.xlsx",
+          "format": "xlsx",
+          "id": "084aff21-11b7-4c6e-b8c5-20de909edad2",
+          "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "scope": "business",
+          "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c",
+          "size": 7097,
+          "source": "generated",
+          "sourceLocator": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2:hosted-file:%2Fdata%2Fquote-stale.xlsx",
+          "sourceVersion": 1,
+          "supersededBy": null,
+          "supersedes": null,
+          "taskIds": [
+            "83f642fa-5234-4f37-b17b-c16f215a4fc2"
+          ],
+          "uploader": "task:83f642fa-5234-4f37-b17b-c16f215a4fc2",
+          "version": 2
+        },
+        "chunks": [
+          {
+            "locator": "sheet:Quote:row:1",
+            "text": "Synthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison"
+          },
+          {
+            "locator": "sheet:Quote:row:2",
+            "text": "LOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+          },
+          {
+            "locator": "sheet:Quote:row:3",
+            "text": "Scenario\tQuantity\tUnit price\tTotal"
+          },
+          {
+            "locator": "sheet:Quote:row:4",
+            "text": "Original\t2\t125\t[formula B4*C4; cached result unverified: 999]"
+          },
+          {
+            "locator": "sheet:Quote:row:5",
+            "text": "Revised\t2\t140\t[formula B5*C5; cached result unverified: 888]"
+          },
+          {
+            "locator": "sheet:Quote:row:6",
+            "text": "Difference\t\t\t[formula D5-D4; cached result unverified: -111]"
+          },
+          {
+            "locator": "sheet:Quote:row:8",
+            "text": "Expected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00"
+          },
+          {
+            "locator": "sheet:Quote:row:9",
+            "text": "Input caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00"
+          }
+        ]
+      },
+      "calls": [
+        {
+          "name": "get_computer",
+          "args": {},
+          "leaseHeld": true
+        },
+        {
+          "name": "read_file",
+          "args": {
+            "path": "/data/quote-stale.xlsx",
+            "computer_id": "synthetic-spreadsheet-computer"
+          },
+          "leaseHeld": true
+        }
+      ],
+      "actions": [
+        {
+          "argsHash": "2835a3c576b87d79d1c7bd211dcbc46b44c1c33c35cd72303e49b5c3d648c412",
+          "arguments": {
+            "expectedText": [
+              "Synthetic quote comparison",
+              "Original",
+              "Revised",
+              "999",
+              "888",
+              "-111"
+            ],
+            "filename": "quote-stale.xlsx",
+            "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "path": "/data/quote-stale.xlsx"
+          },
+          "createdAt": 1792744172308,
+          "effectful": true,
+          "error": null,
+          "evidenceRefs": [
+            "artifact:084aff21-11b7-4c6e-b8c5-20de909edad2",
+            "file:sha256:cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c"
+          ],
+          "id": "60b30f4b-1a4f-4b71-bb6f-499555a76b46",
+          "receipt": {
+            "artifactId": "084aff21-11b7-4c6e-b8c5-20de909edad2",
+            "bytes": 7097,
+            "evidenceLevel": "document-readback",
+            "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c"
+          },
+          "runId": "c1f6b14e-4842-48d4-b2c2-cf39a2e27ed6",
+          "sourceRevisions": {},
+          "spendCapable": false,
+          "status": "verified",
+          "stepId": "synthetic-import-quote-stale.xlsx",
+          "taskId": "83f642fa-5234-4f37-b17b-c16f215a4fc2",
+          "taskRevision": 2,
+          "tool": "computer_import_artifact",
+          "toolCallId": "synthetic-import-quote-stale.xlsx",
+          "unpricedModel": false,
+          "updatedAt": 1792744172484,
+          "version": 4
+        }
+      ],
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"artifactId\":\"084aff21-11b7-4c6e-b8c5-20de909edad2\",\"sha256\":\"cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c\",\"bytes\":7097,\"evidenceLevel\":\"document-readback\",\"evidenceRefs\":[\"artifact:084aff21-11b7-4c6e-b8c5-20de909edad2\",\"file:sha256:cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c\"]}"
+          }
+        ]
+      },
+      "assertions": {
+        "registeredReady": true,
+        "exactByteReadback": true,
+        "sha256Matches": true,
+        "actionVerified": true,
+        "documentReadbackEvidence": true
+      }
+    },
+    {
+      "filename": "quote-recalculated.xlsx",
+      "downloadName": "quote-recalculated-imported-readback.xlsx",
+      "bytes": 7141,
+      "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152",
+      "artifact": {
+        "authority": "evidence",
+        "createdAt": 1792744483050,
+        "deleted": false,
+        "error": null,
+        "extraction": "ready",
+        "filename": "quote-recalculated.xlsx",
+        "format": "xlsx",
+        "id": "544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+        "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "scope": "business",
+        "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152",
+        "size": 7141,
+        "source": "generated",
+        "sourceLocator": "task:23404827-0c38-4a6e-9b80-854643d592f6:hosted-file:%2Fdata%2Fquote-recalculated.xlsx",
+        "sourceVersion": 1,
+        "supersededBy": null,
+        "supersedes": null,
+        "taskIds": [
+          "23404827-0c38-4a6e-9b80-854643d592f6"
+        ],
+        "uploader": "task:23404827-0c38-4a6e-9b80-854643d592f6",
+        "version": 2
+      },
+      "source": {
+        "id": "544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+        "version": 2,
+        "value": {
+          "authority": "evidence",
+          "chunks": [
+            {
+              "locator": "sheet:Quote:row:1",
+              "text": "Synthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison"
+            },
+            {
+              "locator": "sheet:Quote:row:2",
+              "text": "LOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+            },
+            {
+              "locator": "sheet:Quote:row:3",
+              "text": "Scenario\tQuantity\tUnit price\tTotal"
+            },
+            {
+              "locator": "sheet:Quote:row:4",
+              "text": "Original\t2\t125\t[formula B4*C4; cached result unverified: 250]"
+            },
+            {
+              "locator": "sheet:Quote:row:5",
+              "text": "Revised\t2\t140\t[formula B5*C5; cached result unverified: 280]"
+            },
+            {
+              "locator": "sheet:Quote:row:6",
+              "text": "Difference\t\t\t[formula D5-D4; cached result unverified: 30]"
+            },
+            {
+              "locator": "sheet:Quote:row:8",
+              "text": "Expected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00"
+            },
+            {
+              "locator": "sheet:Quote:row:9",
+              "text": "Input caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00"
+            }
+          ],
+          "deleted": false,
+          "id": "544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+          "scope": "business",
+          "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152",
+          "source": "generated",
+          "sourceLocator": "task:23404827-0c38-4a6e-9b80-854643d592f6:hosted-file:%2Fdata%2Fquote-recalculated.xlsx",
+          "sourceVersion": 1,
+          "supersededBy": null,
+          "supersedes": null,
+          "taskIds": [
+            "23404827-0c38-4a6e-9b80-854643d592f6"
+          ],
+          "uploader": "task:23404827-0c38-4a6e-9b80-854643d592f6"
+        },
+        "updatedAt": 1792744483239,
+        "obsolete": false,
+        "activeLocators": [
+          "sheet:Quote:row:1",
+          "sheet:Quote:row:2",
+          "sheet:Quote:row:3",
+          "sheet:Quote:row:4",
+          "sheet:Quote:row:5",
+          "sheet:Quote:row:6",
+          "sheet:Quote:row:8",
+          "sheet:Quote:row:9"
+        ]
+      },
+      "detail": {
+        "artifact": {
+          "authority": "evidence",
+          "createdAt": 1792744483050,
+          "deleted": false,
+          "error": null,
+          "extraction": "ready",
+          "filename": "quote-recalculated.xlsx",
+          "format": "xlsx",
+          "id": "544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+          "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "scope": "business",
+          "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152",
+          "size": 7141,
+          "source": "generated",
+          "sourceLocator": "task:23404827-0c38-4a6e-9b80-854643d592f6:hosted-file:%2Fdata%2Fquote-recalculated.xlsx",
+          "sourceVersion": 1,
+          "supersededBy": null,
+          "supersedes": null,
+          "taskIds": [
+            "23404827-0c38-4a6e-9b80-854643d592f6"
+          ],
+          "uploader": "task:23404827-0c38-4a6e-9b80-854643d592f6",
+          "version": 2
+        },
+        "chunks": [
+          {
+            "locator": "sheet:Quote:row:1",
+            "text": "Synthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison\tSynthetic quote comparison"
+          },
+          {
+            "locator": "sheet:Quote:row:2",
+            "text": "LOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider\tLOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+          },
+          {
+            "locator": "sheet:Quote:row:3",
+            "text": "Scenario\tQuantity\tUnit price\tTotal"
+          },
+          {
+            "locator": "sheet:Quote:row:4",
+            "text": "Original\t2\t125\t[formula B4*C4; cached result unverified: 250]"
+          },
+          {
+            "locator": "sheet:Quote:row:5",
+            "text": "Revised\t2\t140\t[formula B5*C5; cached result unverified: 280]"
+          },
+          {
+            "locator": "sheet:Quote:row:6",
+            "text": "Difference\t\t\t[formula D5-D4; cached result unverified: 30]"
+          },
+          {
+            "locator": "sheet:Quote:row:8",
+            "text": "Expected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00\tExpected after calculation: 250.00 / 280.00 / 30.00"
+          },
+          {
+            "locator": "sheet:Quote:row:9",
+            "text": "Input caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00\tInput caches intentionally wrong: 999.00 / 888.00 / -111.00"
+          }
+        ]
+      },
+      "calls": [
+        {
+          "name": "get_computer",
+          "args": {},
+          "leaseHeld": true
+        },
+        {
+          "name": "read_file",
+          "args": {
+            "path": "/data/quote-recalculated.xlsx",
+            "computer_id": "synthetic-spreadsheet-computer"
+          },
+          "leaseHeld": true
+        }
+      ],
+      "actions": [
+        {
+          "argsHash": "68c52273084f826002ed377a3765f90a609630cca3ae552e392f9ae7bdc2b4da",
+          "arguments": {
+            "expectedText": [
+              "Original",
+              "Revised",
+              "250",
+              "280",
+              "30"
+            ],
+            "filename": "quote-recalculated.xlsx",
+            "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "path": "/data/quote-recalculated.xlsx"
+          },
+          "createdAt": 1792744483047,
+          "effectful": true,
+          "error": null,
+          "evidenceRefs": [
+            "artifact:544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+            "file:sha256:98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152"
+          ],
+          "id": "a0f1c1f2-f6bb-490f-ba21-ccb264632089",
+          "receipt": {
+            "artifactId": "544f62e0-59b8-4dd0-a2eb-b654cb826fa5",
+            "bytes": 7141,
+            "evidenceLevel": "document-readback",
+            "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152"
+          },
+          "runId": "3eab55d8-fad9-494e-a651-c9af826b40a8",
+          "sourceRevisions": {},
+          "spendCapable": false,
+          "status": "verified",
+          "stepId": "synthetic-import-quote-recalculated.xlsx",
+          "taskId": "23404827-0c38-4a6e-9b80-854643d592f6",
+          "taskRevision": 2,
+          "tool": "computer_import_artifact",
+          "toolCallId": "synthetic-import-quote-recalculated.xlsx",
+          "unpricedModel": false,
+          "updatedAt": 1792744483241,
+          "version": 4
+        }
+      ],
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"artifactId\":\"544f62e0-59b8-4dd0-a2eb-b654cb826fa5\",\"sha256\":\"98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152\",\"bytes\":7141,\"evidenceLevel\":\"document-readback\",\"evidenceRefs\":[\"artifact:544f62e0-59b8-4dd0-a2eb-b654cb826fa5\",\"file:sha256:98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152\"]}"
+          }
+        ]
+      },
+      "assertions": {
+        "registeredReady": true,
+        "exactByteReadback": true,
+        "sha256Matches": true,
+        "actionVerified": true,
+        "documentReadbackEvidence": true
+      }
+    }
+  ],
+  "limitations": [
+    "The MCP provider is an explicit in-memory synthetic transport, not a live provider.",
+    "Only synthetic fixtures were opened; no existing user documents or app settings were accessed.",
+    "Visual PDF review must be performed separately.",
+    "Numbers automation timed out; LibreOffice default conversion did not recalculate stale Excel caches. HyperFormula 3.1.0 performed actual calculation; LibreOffice is only the PDF renderer."
+  ],
+  "before": [
+    {
+      "name": "Quote",
+      "rows": [
+        {
+          "row": 1,
+          "values": [
+            "Synthetic quote comparison",
+            "Synthetic quote comparison",
+            "Synthetic quote comparison",
+            "Synthetic quote comparison"
+          ]
+        },
+        {
+          "row": 2,
+          "values": [
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+          ]
+        },
+        {
+          "row": 3,
+          "values": [
+            "Scenario",
+            "Quantity",
+            "Unit price",
+            "Total"
+          ]
+        },
+        {
+          "row": 4,
+          "values": [
+            "Original",
+            2,
+            125,
+            {
+              "formula": "B4*C4",
+              "result": 999
+            }
+          ]
+        },
+        {
+          "row": 5,
+          "values": [
+            "Revised",
+            2,
+            140,
+            {
+              "formula": "B5*C5",
+              "result": 888
+            }
+          ]
+        },
+        {
+          "row": 6,
+          "values": [
+            "Difference",
+            null,
+            null,
+            {
+              "formula": "D5-D4",
+              "result": -111
+            }
+          ]
+        },
+        {
+          "row": 7,
+          "values": []
+        },
+        {
+          "row": 8,
+          "values": [
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00"
+          ]
+        },
+        {
+          "row": 9,
+          "values": [
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00"
+          ]
+        }
+      ]
+    }
+  ],
+  "finishedAt": "2026-10-23T08:34:43.243Z",
+  "engineAttempts": [
+    {
+      "name": "Apple Numbers",
+      "result": "bounded AppleScript timed out after 45 seconds",
+      "error": {
+        "message": "spawnSync /usr/bin/osascript ETIMEDOUT",
+        "stderr": "",
+        "code": "ETIMEDOUT",
+        "signal": "SIGTERM"
+      },
+      "limitation": "No result or permission diagnostic was returned; no Numbers recalculation is claimed. No intervention or app-setting changes attempted."
+    },
+    {
+      "name": "LibreOffice Calc automatic XLSX conversion",
+      "result": "Retained stale caches (999 instead of 250); not recalculation proof",
+      "error": {
+        "message": "Expected values to be strictly equal:\n\n999 !== 250\n",
+        "code": "ERR_ASSERTION"
+      },
+      "engine": {
+        "name": "LibreOffice Calc",
+        "version": "LibreOffice 26.8.1.1 bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+        "execution": "Temporary read-only DMG, local macOS arm64 headless process, dedicated disposable profile; not hosted",
+        "download": "https://download.documentfoundation.org/libreoffice/stable/26.8.1/mac/aarch64/LibreOffice_26.8.1_MacOS_aarch64.dmg",
+        "downloadSha256": "ca074e0b13571efb30a31fc531c5f95e997030637325e5d5de92d67aefdf0dfc",
+        "commands": [
+          {
+            "operation": "Recalculate and export actual imported XLSX",
+            "stdout": "convert /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-stale-imported-readback.xlsx as a Calc document -> /private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/synthetic-spreadsheet-proof-0VvCbk/quote-stale-imported-readback.xlsx using filter : Calc MS Excel 2007 XML\n"
+          },
+          {
+            "operation": "Render recalculated XLSX to PDF",
+            "stdout": "convert /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-recalculated.xlsx as a Calc document -> /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-recalculated.pdf using filter : calc_pdf_Export\n"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Explicit LibreOffice UNO calculateAll via Python",
+      "result": "Bundled Python entrypoints exited 137; Homebrew Python 3.13 bridge exited 139. No calculation result, no success claim."
+    }
+  ],
+  "after": [
+    {
+      "name": "Quote",
+      "rows": [
+        {
+          "row": 1,
+          "values": [
+            "Synthetic quote comparison",
+            "Synthetic quote comparison",
+            "Synthetic quote comparison",
+            "Synthetic quote comparison"
+          ]
+        },
+        {
+          "row": 2,
+          "values": [
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+            "LOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+          ]
+        },
+        {
+          "row": 3,
+          "values": [
+            "Scenario",
+            "Quantity",
+            "Unit price",
+            "Total"
+          ]
+        },
+        {
+          "row": 4,
+          "values": [
+            "Original",
+            2,
+            125,
+            {
+              "formula": "B4*C4",
+              "result": 250
+            }
+          ]
+        },
+        {
+          "row": 5,
+          "values": [
+            "Revised",
+            2,
+            140,
+            {
+              "formula": "B5*C5",
+              "result": 280
+            }
+          ]
+        },
+        {
+          "row": 6,
+          "values": [
+            "Difference",
+            null,
+            null,
+            {
+              "formula": "D5-D4",
+              "result": 30
+            }
+          ]
+        },
+        {
+          "row": 7,
+          "values": []
+        },
+        {
+          "row": 8,
+          "values": [
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00",
+            "Expected after calculation: 250.00 / 280.00 / 30.00"
+          ]
+        },
+        {
+          "row": 9,
+          "values": [
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+            "Input caches intentionally wrong: 999.00 / 888.00 / -111.00"
+          ]
+        }
+      ]
+    }
+  ],
+  "renderer": {
+    "name": "LibreOffice Calc",
+    "version": "LibreOffice 26.8.1.1 bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+    "execution": "Temporary read-only DMG; local headless PDF rendering only; isolated disposable profile",
+    "downloadSha256": "ca074e0b13571efb30a31fc531c5f95e997030637325e5d5de92d67aefdf0dfc",
+    "stdout": "convert /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-recalculated.xlsx as a Calc document -> /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-recalculated.pdf using filter : calc_pdf_Export\nOverwriting: /private/tmp/open-instinct/docs/business-owner/evidence/spreadsheet/quote-recalculated.pdf\n"
+  },
+  "outputs": {
+    "input": {
+      "file": "quote-stale.xlsx",
+      "sha256": "cc275f22363e107ef7cebcc99951f6d3f8d8ec7ec99919221efc9824f39c5a0c"
+    },
+    "recalculated": {
+      "file": "quote-recalculated.xlsx",
+      "sha256": "98e47f8ee5ce4013cf2232098af9fff3aa9bc1c71ba95172f9d0cb349a119152"
+    },
+    "pdf": {
+      "file": "quote-recalculated.pdf",
+      "sha256": "340bbb87da8b5d0c64823a8985c0c2a05f1b2144e7863a573c2910309b6d12c1"
+    }
+  },
+  "assertions": {
+    "staleCachesCorrectedByActualOfflineFormulaEngine": true,
+    "formulasPreserved": true,
+    "checkedResults": {
+      "D4": 250,
+      "D5": 280,
+      "D6": 30
+    },
+    "productionRegistrationAndReadback": true
+  }
+}

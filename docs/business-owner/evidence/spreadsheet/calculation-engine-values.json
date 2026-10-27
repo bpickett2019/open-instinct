@@ -1,0 +1,88 @@
+{
+  "name": "HyperFormula",
+  "version": "3.1.0",
+  "execution": "Actual local offline formula evaluation from loaded XLSX formulas/input cells; input cached totals excluded from engine input",
+  "api": "HyperFormula.buildFromSheets + getCellValue",
+  "calculations": [
+    {
+      "sheet": "Quote",
+      "address": "D4",
+      "formula": "B4*C4",
+      "beforeCachedValue": 999,
+      "engineCalculatedValue": 250
+    },
+    {
+      "sheet": "Quote",
+      "address": "D5",
+      "formula": "B5*C5",
+      "beforeCachedValue": 888,
+      "engineCalculatedValue": 280
+    },
+    {
+      "sheet": "Quote",
+      "address": "D6",
+      "formula": "D5-D4",
+      "beforeCachedValue": -111,
+      "engineCalculatedValue": 30
+    }
+  ],
+  "sourceSheets": {
+    "Quote": [
+      [
+        "Synthetic quote comparison",
+        null,
+        null,
+        null
+      ],
+      [
+        "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+        null,
+        null,
+        null
+      ],
+      [
+        "Scenario",
+        "Quantity",
+        "Unit price",
+        "Total"
+      ],
+      [
+        "Original",
+        2,
+        125,
+        "=B4*C4"
+      ],
+      [
+        "Revised",
+        2,
+        140,
+        "=B5*C5"
+      ],
+      [
+        "Difference",
+        null,
+        null,
+        "=D5-D4"
+      ],
+      [
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Expected after calculation: 250.00 / 280.00 / 30.00",
+        null,
+        null,
+        null
+      ],
+      [
+        "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+        null,
+        null,
+        null
+      ]
+    ]
+  },
+  "export": "ExcelJS serializes unchanged formulas and engine-returned numeric results; no expected totals substituted"
+}

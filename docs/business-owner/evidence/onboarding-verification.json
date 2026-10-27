@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-10-24T09:16:11.781871+00:00",
+  "status": "implemented_verified_locally_live_oauth_blocked",
+  "overallProductAcceptance": "blocked_external",
+  "commands": [
+    {
+      "command": "npm exec --yes --package=pnpm@10.6.1 -- pnpm typecheck",
+      "result": "12 package builds and typechecks passed",
+      "evidence": "docs/business-owner/evidence/onboarding-build-typecheck.txt"
+    },
+    {
+      "command": "pnpm test && pnpm smoke",
+      "result": "1519 passed, one Darwin skip; smoke passed; before security repair and removal of three wording-only setup tests",
+      "evidence": "docs/business-owner/evidence/onboarding-package-smoke.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/apps exec vitest run test/business-reconnect.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "Before fix: 4 failed, 1 passed. Final: 6 passed, including held identity response after disconnect.",
+      "beforeEvidence": "docs/business-owner/evidence/onboarding-security-before.txt",
+      "afterEvidence": "docs/business-owner/evidence/onboarding-final-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/apps build && pnpm --filter @open-instinct/server build",
+      "result": "Passed after security repair"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec vitest run test/business-onboarding.test.ts test/scenarios/onboarding.test.ts test/scenarios/general.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "2 matching files, 9 passed; general.test.ts matched no file; no general.test.ts verification claimed"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/apps typecheck && pnpm --filter @open-instinct/server typecheck && pnpm --filter @open-instinct/apps test && pnpm --filter @open-instinct/server test",
+      "result": "Typechecks passed; apps177 passed; server had one BO097 harness timeout and other cases passed. Subsequent chained browser commands were not executed because of exit1.",
+      "evidence": "docs/business-owner/evidence/onboarding-affected-before-timeout-fix.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec vitest run test/scenarios/operational-limits.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "13 passed after changing only the slow 13-dispatch test harness deadline from5s to15s; dispatch and exact60s runtime assertions unchanged",
+      "evidence": "docs/business-owner/evidence/onboarding-final-checks.txt"
+    },
+    {
+      "command": "pnpm smoke && pnpm test:e2e && pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "result": "Smoke passed;34 browser tests passed;124 checkpoints,missing0,captureErrors0; publication scan252 files/four archive entries passed",
+      "evidence": "docs/business-owner/evidence/onboarding-final-checks.txt"
+    }
+  ],
+  "emulatedScenarios": [
+    "Signed owner greeting has no technical receipt; duplicate ingress sends no duplicate; explicit facts survive restart",
+    "Pending OAuth remains pending after done and restart; same account independently verified; confirmation deduped across sweep/restart",
+    "Nonowner/group/email/worker/forged-provenance controls denied; authenticated owner route isolated from tunnel; CSRF mutation denied",
+    "Connection never enables routines or admits historical mail; missing providers return no fabricated links",
+    "Old connect authority cannot undo disconnect: failed/held revoke, unresolved job, late URL, different account, changed identity, held identity response, restart"
+  ],
+  "browser": {
+    "mode": "real_chromium_with_emulated_providers",
+    "passed": 34,
+    "checkpoints": 124,
+    "missing": 0,
+    "captureErrors": 0,
+    "manifest": "packages/server/evidence/manifest.json",
+    "gallery": "packages/server/evidence/index.html",
+    "visuallyInspected": [
+      "desktop/light pending actual fixture OAuth URL and preserved draft",
+      "mobile/dark independently connected account and retained focused draft",
+      "real local desktop empty profile and missing-provider state"
+    ],
+    "screenshots": [
+      "docs/business-owner/evidence/onboarding-live-desktop.png",
+      "docs/business-owner/evidence/onboarding-live-missing-provider-desktop.png",
+      "packages/server/test-results/workspace-owner-workspace-complete-screen-matrix-light-desktop/onboarding-waiting-light.png",
+      "packages/server/test-results/workspace-owner-workspace-complete-screen-matrix-dark-mobile/onboarding-connected-dark.png"
+    ]
+  },
+  "live": {
+    "mode": "real_chatgpt_subscription_and_local_browser",
+    "model": "openai-codex/gpt-6-astra",
+    "service": "instinct-business-onboarding",
+    "pid": 97844,
+    "persistent": true,
+    "healthStatus": 200,
+    "publicOwnerOnboardingStatus": 404,
+    "request": "Help me get my business set up. Start with one question; do not save new facts or contact anyone yet.",
+    "response": "What name should I use for your business?",
+    "ownerMessageId": "web:005ca758-303c-405e-822c-3ff961572c73",
+    "assistantMessageId": "answer:web:005ca758-303c-405e-822c-3ff961572c73",
+    "cursors": [
+      7,
+      8
+    ],
+    "additionalTechnicalReceipt": false,
+    "profileVersion": 0,
+    "facts": 0,
+    "tasks": 0,
+    "apps": "setup_required",
+    "computer": "setup_required",
+    "newPostUpgradePhoneExchange": "not_exercised; prior authorized live text/reply retained in phone-setup.json",
+    "privateEvidence": [
+      "~/.local/share/open-instinct/business-evaluation/operator-evidence/onboarding-pro-reply.png",
+      "~/.local/share/open-instinct/business-evaluation/operator-evidence/onboarding-live-readback.json"
+    ]
+  },
+  "security": {
+    "reviewer": "OnboardingSecurity",
+    "mode": "independent_read_only_source_and_persisted_evidence_review",
+    "finding": "P1 stale OAuth intent could reverse explicit disconnect",
+    "resolution": "CAS intent reservation, atomic cancellation/local disable, version-fenced identity admission, unresolved revocation exclusion, cancellation check before notice",
+    "remainingBlockingFindings": [],
+    "evidence": "docs/business-owner/evidence/security-review-onboarding.md",
+    "limitation": "Actual provider OAuth/revocation behavior remains unexercised; durable dedupe is not guaranteed carrier delivery",
+    "status": "passed_scoped_local",
+    "reviewedFinalNegativeCases": 6
+  },
+  "remainingExternal": [
+    "Authorized Composio entitlement and isolated Gmail/Calendar sign-in",
+    "Consenting email recipient and isolated calendar attendees",
+    "Maritime Computers entitlement/key plus authorized test portal",
+    "Canonical HTTPS owner origin for nonloopback use",
+    "Isolated running container engine or authorization to start existing Docker Desktop",
+    "Complete BO296\u2013304 live scenarios; basic model/texting checks are partial proof only"
+  ],
+  "cleanup": [
+    "Removed three implementation/wording-only setup-summary tests; replaced coverage with owner/provider behavior regressions",
+    "No throwaway implementation scripts created; no production provider mock or emulator fallback installed",
+    "Ego verification task space18 closed; browser upgrade not performed",
+    "No publish/deploy/merge or permission change"
+  ]
+}

@@ -1,0 +1,41 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+Running 1 test using 1 worker
+
+(node:71261) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:71261) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop] › e2e/changed-flows.spec.ts:464:3 › intentional semantic assertion failure proves evidence failure capture (815ms)
+
+
+  1) [desktop] › e2e/changed-flows.spec.ts:464:3 › intentional semantic assertion failure proves evidence failure capture 
+
+    Error: Intentional negative assertion; redact diagnostic credential [synthetic credential redacted]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m2[39m
+    Received: [31m1[39m
+
+      152 |     await page.getByLabel("Message", { exact: true }).fill(`Unsubmitted private diagnostic: ${canary}`);
+      153 |     await page.screenshot(); // Exercise raw private pixels before failure; public traces must omit them.
+    > 154 |     expect(await page.getByRole("button", { name: "Send message" }).count(), `Intentional negative assertion; redact diagnostic credential ${canary}`).toBe(2);
+          |                                                                                                                                                        ^
+      155 |   });
+      156 | }
+      157 |
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:154:152
+
+    attachment #1: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results-negative/changed-flows-intentional--775b6-es-evidence-failure-capture-desktop/attachments/failure-screenshot-9d0934a75fb8b2315127a83dba6753a92d6d637b.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results-negative/changed-flows-intentional--775b6-es-evidence-failure-capture-desktop/error-context.md
+
+  1 failed
+    [desktop] › e2e/changed-flows.spec.ts:464:3 › intentional semantic assertion failure proves evidence failure capture 
+undefined
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: playwright test --config playwright.config.ts --project desktop --grep intentional semantic assertion failure

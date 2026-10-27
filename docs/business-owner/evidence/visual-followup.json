@@ -1,0 +1,47 @@
+{
+  "reviewer": "integration owner",
+  "verificationMode": "real-browser with synthetic fixtures; not live provider",
+  "observations": [
+    "Desktop light reconciled Gmail action now verified without stale unknown-result error; task itself remains honestly unfinished",
+    "Desktop dark validation screenshot begins at top: sticky header no longer obscures form content",
+    "Mobile dark reconciled Gmail action readable without stale failure; no observed horizontal overflow",
+    "Actual owner UI partial onboarding persisted and subsequent text artifact downloaded; Stop all work shown as globally stopped",
+    "Actual generated supplier PDF downloaded from authenticated workspace and opened in Chromium PDF viewer: 250.00 / 280.00 / difference 30.00, legible one-page output",
+    "Actual recalculated XLSX rendered by local LibreOffice and opened in Chromium PDF viewer: 250.00 / 280.00 / 30.00 visible; actual calculation performed by HyperFormula, not claimed as LibreOffice recalculation"
+  ],
+  "screenshots": [
+    "manual-mobile-stopped.png",
+    "manual-supplier-brief-rendered.png",
+    "spreadsheet/rendered-browser.png",
+    "../../../packages/server/evidence/screenshots/desktop-light-gmail-reconciled.png",
+    "../../../packages/server/evidence/screenshots/desktop-dark-validation-error.png",
+    "../../../packages/server/evidence/screenshots/mobile-dark-gmail-reconciled.png"
+  ],
+  "limitations": [
+    "Static visual review does not establish live provider outcomes or hosted tenant isolation",
+    "Spreadsheet Numbers/UNO attempts failed; see spreadsheet/proof.json"
+  ],
+  "postRepairReview": {
+    "checkpoints": 116,
+    "browserTestsPassed": 34,
+    "reviewed": [
+      {
+        "path": "packages/server/evidence/screenshots/desktop-dark-gmail-reconciled.png",
+        "sha256": "0c346a4f4f703b8952df907eff4acd5335254a4d825b0d77e912013284dac5f0"
+      },
+      {
+        "path": "packages/server/evidence/screenshots/mobile-dark-action-unknown.png",
+        "sha256": "52e8fb2ec7d35151a98e90f62744bfbd3ec7d0ac794290c76d0a79e041d52074"
+      },
+      {
+        "path": "packages/server/evidence/screenshots/desktop-light-validation-error.png",
+        "sha256": "166d008c5259cf751a4980c103f524502e3531bb2bdf766d59c2115206203e71"
+      },
+      {
+        "path": "packages/server/evidence/screenshots/mobile-dark-globally-stopped.png",
+        "sha256": "4dc472d8049baa6192f885a972ea6db4b3d59f54f8d78da33bb77b5c68e3421f"
+      }
+    ],
+    "observed": "Reconciled action verified without stale failure; mobile unknown action remains visibly unknown and task waiting; validation banner unobscured; mobile globally-stopped state and resume control readable. No observed clipping/overlap in inspected captures."
+  }
+}

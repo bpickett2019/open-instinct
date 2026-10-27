@@ -1,0 +1,73 @@
+{
+  "verificationMode": "emulated",
+  "officeExecution": "Office execution is emulated; cached formula results are not recalculated.",
+  "taskId": "428cc22c-d240-4e1d-ba97-d72dab623c32",
+  "sourceId": "27c91a7c-54b7-48f0-ad97-891a4b41579c",
+  "citation": "knowledge:27c91a7c-54b7-48f0-ad97-891a4b41579c v1 paragraph:1",
+  "providerSources": {
+    "gmailMessageId": "msg_f-TBQCHpPPWBLplq",
+    "calendarEventId": "clientdiscovery23"
+  },
+  "actionIds": [
+    "d3715b77-0b49-4283-9c0e-430f85b9dd07",
+    "ad5fc95b-417a-49b8-9480-60dd8b3bf969",
+    "12b4f894-87e2-4911-b598-fc228a01eb6e",
+    "b08b7b1d-618a-42b6-bcee-f1942fd89609",
+    "24291cee-09bc-41c8-bb39-367dda325a14",
+    "f6a10dec-2a12-4130-9d3a-0864ce5fa47f",
+    "b15e345c-bb2a-433a-8207-6f3250c9d486",
+    "8924eedf-cf0f-4688-bc5e-9af8c4c0066e",
+    "fc9ce133-4100-45f5-a808-ec2fded39b0a",
+    "103882f3-3aa9-4459-a268-9fd5d0ceae20",
+    "7a818bf6-8e1c-4bc7-a1dc-777fb5414ef2",
+    "8b96a669-e9cd-46be-baed-1bea4e4cde2c",
+    "30c1e4d6-c045-40f9-b565-fa1ca6399db6",
+    "ad02c631-2415-40cc-b1f7-3fc8902ba8af",
+    "6451d8cb-5996-471f-9b47-c1b21e38f648"
+  ],
+  "artifacts": [
+    {
+      "id": "7777fa0d-0379-42f0-89cb-af7e8ed881e0",
+      "filename": "general-client-brief.pdf",
+      "sha256": "b768c99a590f042cfe15d48b17a23a4442fb67590a3b2b2c2e2551f0da3c689e",
+      "bytes": 2324
+    },
+    {
+      "id": "418c246b-7d69-4b01-a772-6a3ee82f0665",
+      "filename": "supplier-comparison.xlsx",
+      "sha256": "fe59ec2673926a9ed73d4490f7a71a9933e82777ed1042958628db7977e0858a",
+      "bytes": 7844
+    }
+  ],
+  "checkedFigures": {
+    "quantity": 12,
+    "suppliers": [
+      {
+        "name": "Cedar Supply",
+        "unit": 18.5,
+        "days": 3,
+        "total": 222
+      },
+      {
+        "name": "Harbor Supply",
+        "unit": 21.25,
+        "days": 1,
+        "total": 255
+      }
+    ],
+    "savingsUsd": 33
+  },
+  "evidenceRefs": [
+    "artifact:7777fa0d-0379-42f0-89cb-af7e8ed881e0",
+    "file:sha256:b768c99a590f042cfe15d48b17a23a4442fb67590a3b2b2c2e2551f0da3c689e",
+    "artifact:418c246b-7d69-4b01-a772-6a3ee82f0665",
+    "file:sha256:fe59ec2673926a9ed73d4490f7a71a9933e82777ed1042958628db7977e0858a"
+  ],
+  "taskStatusAfterRestart": "completed",
+  "notProved": [
+    "Live provider authentication",
+    "LibreOffice execution",
+    "Spreadsheet formula recalculation",
+    "A purchase or customer communication"
+  ]
+}

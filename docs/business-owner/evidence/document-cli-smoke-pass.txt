@@ -1,0 +1,89 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 1137ms
+   ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  556ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  300ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  00:58:28
+   Duration  2.09s (transform 246ms, setup 0ms, collect 779ms, tests 1.14s, environment 0ms, prepare 45ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/cli@0.1.0 test /private/tmp/open-instinct/packages/cli
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/cli
+
+ ✓ test/units.test.ts (19 tests) 18ms
+ ✓ test/provision.test.ts (13 tests) 59ms
+ ✓ test/business.test.ts (19 tests) 69ms
+ ✓ test/cli.test.ts (39 tests) 78ms
+ ✓ test/dev-tunnel.test.ts (1 test) 88ms
+ ✓ test/persona.test.ts (13 tests) 612ms
+   ✓ persona > edit runs $EDITOR on the file and reports the result  317ms
+
+ Test Files  6 passed (6)
+      Tests  104 passed (104)
+   Start at  00:58:31
+   Duration  1.28s (transform 564ms, setup 0ms, collect 3.16s, tests 925ms, environment 0ms, prepare 276ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> open-instinct@0.1.0 smoke /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run smoke
+
+
+> @open-instinct/server@0.1.0 smoke /private/tmp/open-instinct/packages/server
+> node dist/smoke.js
+
+health
+  ok   GET /health is 200 {ok:true}
+1. owner remembers a preference
+  ok   POST /chat is 200
+  ok   reply is the model's final text (got "Noted: window seats from now on.")
+  ok   MEMORY.md contains the preference
+2. stranger asks for the calendar
+  ok   envelope /chat returns an empty response (reply goes through the outbox)
+  ok   outbox got exactly one iMessage for imessage:conv_stranger (got 1)
+  ok   stranger's memory_write did not land
+  note policy deny not in audit: tool was hidden from the stranger (Pi answers 'tool not found' before beforeToolCall)
+3. schedules
+  ok   GET /schedules starts empty
+  ok   schedule chat answered
+  ok   GET /schedules has one entry (got 1)
+  ok   schedule carries cron and enabled
+4. a stranger's agent asks for the calendar over A2A
+  ok   A2A envelope /chat returns an empty response
+  ok   conversation key is a2a:ctx_smoke_1 (got "a2a:ctx_smoke_1")
+  ok   owner got exactly one notification through the outbox (got 1)
+  ok   the notification names the calendar ask and the refusal
+  ok   the notification was sent on behalf of the stranger agent (got stranger:a2a:unknown-agent)
+  ok   the notification is prefixed with who asked
+  ok   exactly one A2A reply went back on the task (got 1)
+  ok   the reply completes task task_smoke_1 (got {"taskId":"task_smoke_1","intent":"complete"})
+  ok   the reply carries the inbound replyRef
+  ok   the reply declines in words
+  ok   nothing else left the process for this task (got 2 sends)
+  ok   the owner's memory did not leak to the stranger or the notice
+  ok   the caller resolved to a stranger (got stranger:a2a:unknown-agent)
+  ok   policy allowed only notify_owner for the stranger (got ["notify_owner"])
+  ok   memory_read never executed for the stranger
+5. owner asks for a PDF
+  ok   PDF chat is 200
+  ok   a real PDF exists at workspace/briefs/smoke.pdf
+  ok   create_pdf wrote the file and reported one page (got "Wrote /private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-XBRGNv/workspace/briefs/smoke.pdf (1.9 KB, 1 page).")
+  ok   send_file answered with the file's path (got "/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-XBRGNv/workspace/briefs/smoke.pdf (1929 bytes) is ready. Paste this block verbatim in your reply so the dashboard attaches it:\n```maritime-file\n{\"path\":\"/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-XB…")
+  ok   the reply carries the maritime-file block or the path
+status
+  ok   status page names the agent and model
+
+smoke passed

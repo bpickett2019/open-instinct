@@ -1,0 +1,77 @@
+{
+  "verificationMode": "emulated",
+  "runner": "Standalone Node process, production boot/routes/runtime/tools; scripted model and isolated stateful providers",
+  "admission": 204,
+  "readReceipts": [
+    {
+      "conversation_id": "runtime-smoke-thread",
+      "updated_count": 1
+    }
+  ],
+  "typingIndicators": 1,
+  "reactions": [
+    {
+      "id": "a40ddb91-5d21-43e1-9d31-b94921ea30b5",
+      "conversation_id": "runtime-smoke-thread",
+      "assignment_id": null,
+      "target_message_id": "runtime-smoke-owner",
+      "direction": "outbound",
+      "reaction": "eyes",
+      "remote_number": "+12025550101",
+      "part_index": 0,
+      "created_at": "2026-10-25T18:03:39.688Z",
+      "updated_at": "2026-10-25T18:03:39.688Z"
+    }
+  ],
+  "readAttempt": {
+    "kind": "read",
+    "route": {
+      "conversationKey": "imessage:runtime-smoke-thread",
+      "messageId": "runtime-smoke-owner"
+    },
+    "sourceId": "runtime-smoke-event",
+    "status": "accepted"
+  },
+  "reactionAttempt": {
+    "kind": "reaction",
+    "reaction": "eyes",
+    "route": {
+      "conversationKey": "imessage:runtime-smoke-thread",
+      "messageId": "runtime-smoke-owner"
+    },
+    "sourceId": "runtime-smoke-event",
+    "status": "accepted"
+  },
+  "answer": {
+    "artifactIds": [],
+    "at": 1792951419693,
+    "channel": "imessage",
+    "id": "answer:runtime-smoke-event",
+    "role": "notice",
+    "taskId": null,
+    "text": "Reaction accepted by carrier: eyes. Recipient display is unconfirmed.",
+    "thread": "imessage:runtime-smoke-thread",
+    "cursor": 2
+  },
+  "textMessages": 0,
+  "tasks": 0,
+  "feedbackAttemptsBeforeRestart": 3,
+  "feedbackAttemptsAfterDuplicateRestart": 3,
+  "allowedOrigins": [
+    "http://127.0.0.1:62258",
+    "http://127.0.0.1:62259",
+    "http://127.0.0.1:62260",
+    "http://127.0.0.1:62261",
+    "http://127.0.0.1:62262",
+    "http://127.0.0.1:62263",
+    "http://127.0.0.1:62264",
+    "http://127.0.0.1:62265",
+    "http://127.0.0.1:62276",
+    "http://127.0.0.1:62283",
+    "http://127.0.0.1:62285"
+  ],
+  "limitations": [
+    "Not live-provider or phone-rendered receipt evidence"
+  ],
+  "isolation": "passed at real teardown"
+}

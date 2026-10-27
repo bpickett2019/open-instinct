@@ -8,7 +8,7 @@
 # User: the process runs as the unprivileged `instinct` user. The entrypoint starts as root only
 # long enough to make /data writable by that user (Maritime mounts it root-owned) and then drops
 # privileges with setpriv. The owner's bash tool therefore runs as `instinct`, not root.
-FROM node:22-slim AS base
+FROM node:22.22.3-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN apt-get update \

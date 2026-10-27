@@ -84,6 +84,23 @@ describe("InkboxA2A caller side", () => {
     expect(fake.calls.filter((r) => r.path === "/a2a/down")).toHaveLength(3);
   });
 
+  it("does not replay a task submission after an ambiguous provider failure", async () => {
+    const fake = fakeFetch({ "POST /a2a/peer": { status: 503 } });
+    await expect(client(fake).send("peer", "Do the task", undefined, { assertBusinessDispatch: () => {} })).rejects.toThrow("503");
+    expect(fake.calls).toHaveLength(1);
+  });
+
+  it("checks both cancellation and the final fence at the real transport boundary", async () => {
+    const fake = fakeFetch({});
+    const controller = new AbortController();
+    controller.abort(new Error("Canceled"));
+    await expect(client(fake).send("peer", "Do the task", undefined, { signal: controller.signal })).rejects.toThrow("Canceled");
+    await expect(client(fake).reply("task", "complete", "Answer", undefined, {
+      assertBusinessDispatch: () => { throw new Error("Source changed"); },
+    })).rejects.toThrow("Source changed");
+    expect(fake.calls).toHaveLength(0);
+  });
+
   it("fetches the peer card from the public route", async () => {
     const fake = fakeFetch({ "GET /a2a/sam-instinct/card": { body: { name: "Sam's Instinct", supportedInterfaces: [] } } });
     expect(await client(fake).fetchCard("sam-instinct")).toEqual({ name: "Sam's Instinct", supportedInterfaces: [] });

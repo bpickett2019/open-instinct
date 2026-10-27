@@ -16,7 +16,8 @@ the rest of the system uses:
 
 The server supplies state-file and workspace paths for receipts and downloaded attachments.
 Every REST call this package makes itself goes through `fetchImpl ?? globalThis.fetch`.
-Sends go through the official `@inkbox/sdk` so request shapes track the API.
+Personal sends use the official `@inkbox/sdk`. Task and durable-notification message
+sends use the same wire contract through single-attempt REST, avoiding SDK mutation retries.
 
 ## Identities
 
@@ -58,12 +59,31 @@ credential before proceeding to later provisioning steps.
 ### Rate limits
 
 The REST helper retries reads (`GET`/`HEAD`) and requests explicitly marked replay-safe.
-A2A `SendMessage` is replay-safe because each attempt keeps the same message ID. For those
-requests, a 429, 502, 503 or 504 is retried up to two more times when `Retry-After` is 5 s or
-less (or absent for 5xx), waiting `max(Retry-After, 250ms * 2^attempt)`. A 429 without
-`Retry-After` is returned immediately. Provisioning mutations and worker-reply POSTs are
-not automatically retried by this helper. SDK-backed message sends retain the SDK's own
-idempotency/retry handling. `InkboxHttpError.retryAfterSeconds` lets callers report the wait.
+Personal A2A `SendMessage` retains its existing bounded retries with the same message ID.
+For retryable requests, a 429, 502, 503 or 504 is retried up to two more times when
+`Retry-After` is 5 s or less (or absent for 5xx), waiting
+`max(Retry-After, 250ms * 2^attempt)`. A 429 without `Retry-After` is returned immediately.
+Task A2A submissions, task messages and phone calls, durable notifications, provisioning
+mutations, and worker-reply POSTs are not automatically retried. An ambiguous accepted response
+stays unknown rather than triggering another submission. Personal SDK-backed messages
+retain SDK retry handling. `InkboxHttpError.retryAfterSeconds` exposes the provider's wait.
+
+Task callers propagate `signal`, `assertBusinessDispatch`, and `recordBusinessReceipt`
+to the transport. Dispatch is checked after identity lookup, after media upload, and
+immediately before each message/chunk; REST retries also check immediately before each
+request. Accepted uploads and chunks are recorded before checking the next dispatch.
+These receipts prove carrier primitives, not delivery or completion of the business goal.
+Owner control notices omit task fences so stop acknowledgments remain deliverable;
+their `notificationId` selects single-attempt transport without granting task authority.
+
+`phone_call` carries the captured task context and cancellation signal into `placeCall`.
+Task calls check before identity lookup, after identity and default-origination awaits,
+and immediately before the single `POST /api/v1/phone/place-call`. They use the REST
+transport rather than the SDK mutation path, preserving `contact_scoped` authority,
+caller identity, and voicemail settings. Once the response identifies an accepted call,
+its id/status receipt is retained even if stop/cancel arrived while that response was
+pending. The tool reports initiation, never a completed call outcome; an ambiguous
+response is not retried. Personal calls without task fences retain the SDK path.
 
 ## The iMessage router and the connect flow
 
@@ -206,6 +226,22 @@ await channel.typing("imessage:conv_1");
 await channel.send({ channel: "imessage", conversationKey: "imessage:conv_1", text: "Booked. Thu 7pm at Nopa." }, { principal, conversationKey });
 await channel.react("imessage:conv_1", messageId, "love");
 ```
+
+Business-mode private owner iMessages receive a read receipt after durable
+admission and bounded typing pulses while the foreground reply is being composed.
+The assistant may use `react` for a natural acknowledgement, including a
+reaction-only reply without an extra text bubble. Foreground courtesy reactions
+are bound to that admission's provider message ID, not the latest conversation
+route. Separately delegated reactions still require the ordinary task dispatcher
+and action journal.
+
+Feedback mutations use a single HTTP attempt. Persisted read/reaction attempts
+are not replayed after ambiguous acceptance or restart; carrier acceptance does
+not establish recipient display. Cancellation and final dispatch fences prevent
+late mutations after asynchronous identity/target lookups. Group conversations
+do not support read/typing feedback; unknown-scope messages, SMS service events,
+web messages and tool-free guidance receive no automatic business iMessage
+feedback. Existing personal-mode permissions remain unchanged.
 
 ## A2A: how two Instincts talk
 

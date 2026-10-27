@@ -1,0 +1,66 @@
+{
+  "status": "verified_user_oauth_and_real_model_probe_business_live_gates_remain",
+  "implementation": [
+    "packages/core/src/chatgpt-subscription.ts",
+    "packages/core/src/index.ts",
+    "packages/server/src/boot.ts",
+    "packages/server/src/business-usage.ts",
+    "packages/cli/src/commands/auth.ts",
+    "packages/cli/src/cli.ts",
+    "packages/cli/src/help.ts",
+    "packages/cli/src/io.ts"
+  ],
+  "checks": {
+    "all12BuildsAndTypechecks": "passed",
+    "coreTests": 332,
+    "serverTests": 307,
+    "cliTests": 125,
+    "actualRuntimeSmoke": "passed",
+    "packagedAuthStatusFromUnrelatedCwd": "passed: unsigned; metadata only",
+    "packagedAuthModelsFromUnrelatedCwd": "passed: installed catalog only"
+  },
+  "regressions": {
+    "subscriptionAccountingBefore": "2 failed: incorrectly claimed known price and allowed configured USD cap",
+    "subscriptionAccountingAfter": "both passed; unknown cost receipt and fail-closed configured cap",
+    "obsoleteCliWordingAssertions": "deleted; not repinned"
+  },
+  "evidence": [
+    "docs/business-owner/evidence/subscription-initial-checks.txt",
+    "docs/business-owner/evidence/subscription-integrated-checks.txt",
+    "docs/business-owner/evidence/subscription-cli-smoke.txt"
+  ],
+  "privateState": "~/.local/share/open-instinct/business-evaluation",
+  "globalCodexCredentials": "not read, imported or changed",
+  "liveModelRequest": {
+    "provider": "openai-codex",
+    "model": "gpt-6-astra",
+    "httpStatus": 200,
+    "passed": true,
+    "stopReason": "stop",
+    "exactExpectedReply": true,
+    "inputTokens": 35,
+    "outputTokens": 11,
+    "billedCost": "unknown_subscription",
+    "toolsAvailable": false,
+    "apiKeyFallback": false,
+    "configChanged": false,
+    "businessActions": false
+  },
+  "liveBusinessScenarios": "BO-296..304 remain unexercised",
+  "browser": "No new business UI changes or browser claims; existing browser matrix predates subscription changes",
+  "providerBilling": "No API-key fallback; subscription dollar cost unknown; provider controls limits and separately enabled credits",
+  "securityReview": {
+    "status": "pass_scoped_no_findings",
+    "path": "docs/business-owner/evidence/security-review-subscription.md",
+    "qualifications": [
+      "No live entitlement or provider readiness claim",
+      "Same-UID malicious replacement not a sandbox boundary",
+      "Refresh regression uses independent instances, not separate OS processes"
+    ]
+  },
+  "liveAuthentication": {
+    "status": "completed",
+    "localStatus": "signedIn yes; refreshRequired no",
+    "credentialValuesRecorded": false
+  }
+}

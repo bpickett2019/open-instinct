@@ -1,13 +1,15 @@
 ---
 name: travel
-description: Search and book flights and hotels. Use when the owner mentions a trip, a flight, a hotel, a check-in, or wants travel options compared. Search on the desktop browser, compare two or three options with full totals, never book without approval, set check-in reminders with schedules, and use a takeover for logins, loyalty numbers and payment.
+description: Search and book flights and hotels with full current totals and confirmation evidence. Business-owner tasks use standing authority and actual limits; personal travel retains exact-itinerary approval. Provider logins and payment consent remain.
 ---
 
 # Travel
 
-Travel is where mistakes cost real money. Slow down, show totals, and ask
-before every booking. `travel.book` is in `neverWithoutAsk` by default even for
-the owner.
+Personal mode asks before every booking; `travel.book` is in `neverWithoutAsk`
+by default. Business-owner bound tasks and enabled routines authorize ordinary
+bookings without a fresh yes, subject to actual owner constraints. Missing traveler
+identity, dates or commercial terms are blockers, not facts to invent. Nonowner
+restrictions remain unchanged. Use the hosted computer for business travel work.
 
 ## Gather
 
@@ -40,15 +42,16 @@ take JetBlue. Want me to book it?
 
 ## Book
 
-1. `ask_owner` with the exact itinerary and total: "Book JetBlue BOS-SFO Oct 20
-   7:10am, return Oct 24 4:30pm, 1 adult, $412 total? Go ahead?" Wait.
-2. On yes, fill passenger details from memory only if the owner has stored
+1. Personal mode: `ask_owner` with the exact itinerary and total, then wait.
+   Business mode: recheck final itinerary, total and actual owner limits, then proceed
+   under the task's authority without another yes.
+2. Fill passenger details from memory only if the owner has stored
    them there and told you to use them. Dates of birth, passport numbers and
    loyalty numbers that live in the Vault are entered by the owner during a
    `request_takeover`; never ask the owner to text them to you.
-3. At the payment step, call `request_takeover` with reason "Enter payment for
-   JetBlue BOS-SFO $412". If the takeover returns `success: false`, stop and
-   tell the owner. Do not retry.
+3. Provider-required payment/login challenges need `request_takeover`; Stripe Link
+   still needs provider-hosted per-purchase consent. Personal mode stops at payment
+   every time. If takeover fails, persist a blocker and do not replay the booking.
 4. Read the confirmation page. Zoom on the record locator, dates and total.
    Save a screenshot to the workspace (`workspace/travel/<trip>/confirmation.png`).
 
@@ -60,19 +63,19 @@ take JetBlue. Want me to book it?
   prompt "Check in for JetBlue BOS-SFO Oct 20, locator ABC123, then text the
   owner the boarding pass status." Online check-in itself happens when that
   fires, again through the desktop, with a takeover if the site needs a login.
-- `journal_append` the booking. The approval you got records the spend in the
-  audit; mention merchant and total in the journal line too.
+- Record the provider confirmation and checked total in business task evidence;
+  personal mode also uses `journal_append`. Never persist card secrets.
 - Text the owner: what was booked, total, locator, and that reminders are set.
 
 ## Changes and cancellations
 
-Find the fare rules first (airline site, "manage booking"). Tell the owner the
-fee and the refund form (cash, credit). Change only after a yes. Cancellation
-within 24 hours of purchase is often free in the US; mention it when relevant.
+Find current fare rules, fee and refund form first. Personal changes need a yes.
+Business changes within the owner's request use standing authority and actual limits.
+Verify the changed booking; do not call it an atomic undo or replay uncertain work.
 
 ## Do not
 
-- Do not book without an explicit yes for this exact itinerary and total.
+- Personal mode: do not book without an explicit yes for the exact itinerary and total.
 - Do not enter card numbers, passport numbers or loyalty logins yourself.
 - Do not quote a fare without the total including taxes and the bag you know
   the owner needs.

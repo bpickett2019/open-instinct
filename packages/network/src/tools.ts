@@ -49,11 +49,16 @@ const OipIntentSchema = Type.Union(OIP_INTENTS.map((i) => Type.Literal(i)));
 const PayloadSchema = Type.Record(Type.String(), Type.Unknown());
 
 function isOwner(p: Principal): boolean {
-  return p.kind === "owner";
+  return p.kind === "owner" && p.tier === "owner";
 }
 
 function refuse(text: string): ToolResultLike {
   return { content: [{ type: "text", text }], isError: true };
+}
+
+function assertDispatch(ctx: ToolContext, signal?: AbortSignal): void {
+  signal?.throwIfAborted();
+  ctx.assertBusinessDispatch?.();
 }
 
 /**
@@ -66,7 +71,7 @@ function staffRefusal(name: string, tier: string | undefined, agentHandle: strin
 }
 
 function ownerOnly(ctx: ToolContext, what: string): ToolResultLike | undefined {
-  return isOwner(ctx.principal) ? undefined : refuse(`Only the owner can ${what}. Offer to pass the request to the owner instead.`);
+  return isOwner(ctx.principal) && !ctx.taskRun ? undefined : refuse(`Only the direct owner can ${what}. Offer to pass the request to the owner instead.`);
 }
 
 function agentHandleOf(config: InstinctConfig): string {
@@ -341,7 +346,9 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
         return `ask_instinct ${[x.contact, ...(x.contacts ?? [])].filter(Boolean).join(", ")} ${x.intent}`;
       },
     },
-    async execute(args, ctx) {
+    async execute(args, ctx, signal) {
+      ctx = { ...ctx };
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Network send requires task dispatch");
       if (ctx.channel === "a2a") return refuse("Nested delegation is not supported inside an inbound A2A task. Use reply_instinct with ask_caller to request more information from the calling agent.");
       const refs = uniqueRefs([args.contact, ...(args.contacts ?? [])]);
       if (refs.length === 0) return refuse("Give `contact` or `contacts`.");
@@ -350,6 +357,7 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
       const results: AskResult[] = [];
       const seen = new Set<string>();
       for (const ref of refs) {
+        assertDispatch(ctx, signal);
         const found = resolveAskTarget(ref, ctx.principal);
         if (!found.contact) {
           results.push({ ref, ok: false, text: `${ref}: ${found.error}` });
@@ -357,7 +365,18 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
         }
         if (seen.has(found.contact.id)) continue;
         seen.add(found.contact.id);
-        results.push(await askOne(found.contact, args, ctx));
+        results.push(await askOne(found.contact, args, ctx, signal));
+        ctx.recordBusinessReceipt?.({
+          operation: "ask_instinct",
+          evidenceLevel: "primitive-only",
+          recipients: results.filter(result => result.ok).map(result => ({
+            contactId: result.contactId ?? result.ref,
+            via: result.via ?? null,
+            taskId: result.taskId ?? null,
+            contextId: result.contextId ?? null,
+            state: result.state ?? null,
+          })),
+        });
       }
 
       const okCount = results.filter((r) => r.ok).length;
@@ -395,7 +414,7 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
     return { contact: found.contact, error: "" };
   }
 
-  async function askOne(c: Contact, args: AskArgs, ctx: ToolContext): Promise<AskResult> {
+  async function askOne(c: Contact, args: AskArgs, ctx: ToolContext, signal?: AbortSignal): Promise<AskResult> {
     const owner = isOwner(ctx.principal);
     const oip: OipMessage = { oip: "1", intent: args.intent, payload: args.payload ?? {}, on_behalf_of: owner ? onBehalfOf(config) : onBehalfOfRequester(config, ctx.principal) };
     if (args.subject) oip.subject = args.subject;
@@ -410,8 +429,11 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
       }
       const messageId = randomUUID();
       deps.a2aStore?.begin({ messageId, peer: c.agentHandle, conversationKey: ctx.conversationKey, deliveryKey: ctx.deliveryKey ?? ctx.conversationKey, principal: ctx.principal, ...(ctx.replyRef ? { replyRef: { ...ctx.replyRef } } : {}), ...(args.taskId ? { taskId: args.taskId } : {}) });
+      assertDispatch(ctx, signal);
       const res = await deps.a2a.send(c.agentHandle, text, encodeOip(oip), {
         messageId,
+        ...(signal ? { signal } : {}),
+        ...(ctx.assertBusinessDispatch ? { assertBusinessDispatch: ctx.assertBusinessDispatch } : {}),
         ...(args.contextId ? { contextId: args.contextId } : {}),
         ...(args.taskId ? { taskId: args.taskId } : {}),
       });
@@ -437,7 +459,8 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
     const route = pickFallbackChannel(c);
     if (!route) return { ...base, ok: false, text: `${c.name} has no Instinct, phone or email on file. Ask the owner for a way to reach them.` };
     const body = oipToText({ ...oip, payload: { ...oip.payload, text: args.text } }, config.owner.name, { tz: config.owner.timezone });
-    await outbox.send({ channel: route.channel, to: route.to, text: body }, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+    assertDispatch(ctx, signal);
+    await outbox.send({ channel: route.channel, to: route.to, text: body }, { ...ctx, ...(signal ? { signal } : {}) });
     audit.append({
       kind: "outbound",
       conversationKey: ctx.conversationKey,
@@ -460,7 +483,9 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
       subject: Type.Optional(Type.String()),
     }),
     meta: { capabilities: ["converse"], group: "network", describe: (a) => `reply_instinct ${(a as { intent: string }).intent}` },
-    async execute(args, ctx) {
+    async execute(args, ctx, signal) {
+      ctx = { ...ctx };
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Network reply requires task dispatch");
       if (ctx.channel !== "a2a") return refuse("reply_instinct only works inside an A2A conversation. Use send_message here.");
       if (!deps.a2a) return refuse("A2A is not configured on this agent.");
       const taskId = ctx.replyRef?.taskId;
@@ -468,7 +493,11 @@ export function networkTools(deps: NetworkToolDeps): RegisteredTool[] {
       await ctx.assertA2AActive();
       const data = buildReplyData(args, config);
       try {
-        await deps.a2a.reply(taskId, args.intent as ReplyIntent, args.text, data);
+        assertDispatch(ctx, signal);
+        await deps.a2a.reply(taskId, args.intent as ReplyIntent, args.text, data, {
+          ...(signal ? { signal } : {}),
+          ...(ctx.assertBusinessDispatch ? { assertBusinessDispatch: ctx.assertBusinessDispatch } : {}),
+        });
         ctx.markA2AState?.(({ progress: "working", complete: "completed", ask_caller: "input_required", fail: "failed" } as const)[args.intent as ReplyIntent]);
       } catch (err) {
         const wait = rateLimitWait(err);

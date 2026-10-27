@@ -1,0 +1,14 @@
+
+  packages/server/testing/.messaging-feedback-smoke.mjs  61.9kb
+
+⚡ Done in 3ms
+Signed admission: 204; read receipt, typing and eyes tapback reached the stateful provider before final reply.
+file:///private/tmp/open-instinct/packages/server/testing/.messaging-feedback-smoke.mjs:1263
+  const proof = { verificationMode: "emulated", runner: "Standalone Node process, production boot/routes/runtime/tools; scripted model and isolated stateful providers", admission: 204, readReceipts: s.providers.inkbox.readReceipts, typingIndicators: s.providers.inkbox.typingIndicators.length, reactions: s.providers.inkbox.reactions, readAttempt: store.get("cursor", "feedback:read:runtime-smoke-event")?.value, reactionAttempt: store.get("cursor", "feedback:reaction:runtime-smoke-event")?.value, answer: store.message("answer:runtime-smoke-event"), textMessages: s.providers.inkbox.accepted.length, tasks: store.tasks().length, feedbackAttemptsBeforeRestart: before, feedbackAttemptsAfterDuplicateRestart: s.providers.inkbox.feedbackAttempts.length, isolationViolations: s.isolation.violations, limitations: ["Not live-provider or phone-rendered receipt evidence"] };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^
+
+TypeError: Cannot read properties of undefined (reading 'violations')
+    at file:///private/tmp/open-instinct/packages/server/testing/.messaging-feedback-smoke.mjs:1263:787
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v25.8.1

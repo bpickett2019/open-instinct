@@ -26,6 +26,33 @@ Every tool carries `meta: { capabilities: ["computer.use"], group: "computer" }`
 engine in `@open-instinct/core` allows `computer.use` for the owner only, so a friend's Instinct
 can never drive the desktop, whatever it asks.
 
+Business mode always uses the separate hosted backend with the immutable workspace ID and
+a separate computer key. Tools remove model-selectable computer identity fields and require
+task dispatch plus the injected shared desktop lease. Takeover state is persisted by the host;
+workers cannot view or control the desktop while the owner holds it, and viewer links are
+sent only through the owner notification callback.
+
+`computer_type_credential` accepts a scoped reference and field name, not raw secrets. The
+adapter resolves the field immediately before typing and discards the response and screenshot.
+After credential entry, business screenshots and provider echoes remain withheld until an
+owner clears the sensitive desktop/session. Controller restart invalidates references, not
+the privacy fence. Use takeover if this prevents safe checkout verification; do not claim
+a typed card or a successful tool receipt proves a completed purchase.
+
+Adapter verification separates evidence levels. A returned screenshot supplies a hashed
+screen observation, not proof that a requested business outcome occurred. `read_file`
+records the exact UTF-8 content hash and byte count for recognized content/path responses.
+`write_file` records its provider receipt, then reads the same path under the same lease
+and abort signal; only matching UTF-8 bytes verify the write. Unsupported encodings and
+mismatched readback remain unresolved. Generated deliverables still need artifact ingestion
+and content validation.
+
+Provisioned computer identity, credential entry and takeover acknowledgments are
+`primitive-only` evidence. They cannot satisfy a task's business completion criteria.
+Generic shell and batch success receipts remain unverified. Proofs are bound privately to
+the actual adapter return, arguments and task run; model-supplied result objects cannot
+manufacture them. Credential-sensitive sessions produce no screenshot or file evidence.
+
 ## Picking a backend
 
 ```ts

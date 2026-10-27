@@ -14,6 +14,13 @@ export interface RestOptions {
   sleep?: (ms: number) => Promise<void>;
 }
 
+/** Rechecked on every attempt, including after retry backoff. */
+export interface RequestOptions {
+  replaySafe?: boolean;
+  signal?: AbortSignal;
+  assertBusinessDispatch?: () => void;
+}
+
 export class InkboxHttpError extends Error {
   readonly status: number;
   readonly body: unknown;
@@ -95,9 +102,9 @@ export function trimSlash(url: string): string {
 export interface RestClient {
   readonly baseUrl: string;
   /** `path` is relative to `/api/v1`, for example `/identities/maria`. */
-  request<T = unknown>(method: string, path: string, body?: unknown, query?: Record<string, string | undefined>): Promise<T>;
+  request<T = unknown>(method: string, path: string, body?: unknown, query?: Record<string, string | undefined>, options?: RequestOptions): Promise<T>;
   /** Absolute URL, same auth headers. Used for the public A2A routes under `/a2a/`. */
-  requestUrl<T = unknown>(method: string, url: string, body?: unknown, extraHeaders?: Record<string, string>, options?: { replaySafe?: boolean }): Promise<T>;
+  requestUrl<T = unknown>(method: string, url: string, body?: unknown, extraHeaders?: Record<string, string>, options?: RequestOptions): Promise<T>;
 }
 
 export function createRest(opts: RestOptions): RestClient {
@@ -105,18 +112,22 @@ export function createRest(opts: RestOptions): RestClient {
   const doFetch: typeof fetch = opts.fetchImpl ?? ((input, init) => globalThis.fetch(input, init));
   const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
 
-  async function requestUrl<T>(method: string, url: string, body?: unknown, extraHeaders?: Record<string, string>, options: { replaySafe?: boolean } = {}): Promise<T> {
+  async function requestUrl<T>(method: string, url: string, body?: unknown, extraHeaders?: Record<string, string>, options: RequestOptions = {}): Promise<T> {
+    const { signal, assertBusinessDispatch } = options;
     const headers: Record<string, string> = {
       Accept: "application/json",
       "X-API-Key": opts.apiKey,
       ...extraHeaders,
     };
     const init: RequestInit = { method, headers };
+    if (signal) init.signal = signal;
     if (body !== undefined) {
       headers["Content-Type"] = "application/json";
       init.body = JSON.stringify(body);
     }
     for (let attempt = 0; ; attempt++) {
+      signal?.throwIfAborted();
+      assertBusinessDispatch?.();
       const res = await doFetch(url, init);
       const text = await res.text();
       const parsed = parseJson(text);
@@ -132,12 +143,12 @@ export function createRest(opts: RestOptions): RestClient {
 
   return {
     baseUrl,
-    request<T>(method: string, path: string, body?: unknown, query?: Record<string, string | undefined>): Promise<T> {
+    request<T>(method: string, path: string, body?: unknown, query?: Record<string, string | undefined>, options?: RequestOptions): Promise<T> {
       const url = new URL(`${baseUrl}/api/v1${path.startsWith("/") ? path : `/${path}`}`);
       for (const [k, v] of Object.entries(query ?? {})) {
         if (v !== undefined && v !== "") url.searchParams.set(k, v);
       }
-      return requestUrl<T>(method, url.toString(), body);
+      return requestUrl<T>(method, url.toString(), body, undefined, options);
     },
     requestUrl,
   };

@@ -6,6 +6,7 @@ import { Type, type Static } from "@earendil-works/pi-ai";
 import { defineTool, type RegisteredTool, type ToolContext, type ToolResultLike } from "@open-instinct/core";
 
 export interface SetupInput {
+  business?: boolean;
   inkbox?: { handle: string };
   computerKind?: string;
   apps?: { connected: string[]; anyApp: boolean; toolkits: string[] };
@@ -17,21 +18,21 @@ export function setupSummaryFor(input: SetupInput): string {
   if (input.inkbox) {
     lines.push(`- Messaging: yes. You reach the owner by iMessage and email through Inkbox as @${input.inkbox.handle} (SMS too when the identity has a phone number). Files go out as attachments with send_file.`);
   } else {
-    lines.push("- Messaging: no Inkbox identity on this agent. Replies only reach the dashboard or terminal chat; there is no iMessage, SMS or email yet. To enable: the person running this agent sets INKBOX_API_KEY and INKBOX_AGENT_HANDLE (see docs/KEYS.md).");
+    lines.push(input.business ? "- Messaging: owner browser chat only. Phone messaging needs operator setup; do not invent a number or ask for keys in chat." : "- Messaging: no Inkbox identity on this agent. Replies only reach the dashboard or terminal chat; there is no iMessage, SMS or email yet. To enable: the person running this agent sets INKBOX_API_KEY and INKBOX_AGENT_HANDLE (see docs/KEYS.md).");
   }
   if (input.computerKind === "desktopd") {
     lines.push("- Computer: yes, this agent's own Linux desktop (Chromium, LibreOffice). Logins, 2FA and payments on it go to the owner through request_takeover, which gives you a link to send.");
   } else if (input.computerKind === "maritime") {
     lines.push("- Computer: yes, a hosted desktop through Maritime Computers. request_takeover gives you a link to send when a human must step in.");
   } else {
-    lines.push("- Computer: none. You cannot browse websites that need a login, book on the web, or hand over a screen. Research still works through web_search and web_fetch. To enable: run this agent on Maritime with a desktop, or set MARITIME_API_KEY.");
+    lines.push(input.business ? "- Computer: not enabled on this installation. Explain that website sign-ins and office-computer work need operator setup, then continue useful business onboarding. Never invent a takeover link." : "- Computer: none. You cannot browse websites that need a login, book on the web, or hand over a screen. Research still works through web_search and web_fetch. To enable: run this agent on Maritime with a desktop, or set MARITIME_API_KEY.");
   }
   if (input.apps) {
     const on = input.apps.connected.length > 0 ? input.apps.connected.join(", ") : "none yet";
     const scope = input.apps.anyApp ? "any app by name" : `these toolkits: ${input.apps.toolkits.join(", ")}`;
-    lines.push(`- Apps (Composio): yes, ${scope}. Connected: ${on}. For anything not connected, apps_connect returns a sign-in link to send the owner.`);
+    lines.push(input.business ? `- Apps: connection service available for ${scope}. Use business_onboarding or business_connections for current independently verified account state; do not treat this boot summary as a live connection check. apps_connect returns the owner's sign-in link. Pending links are checked automatically.` : `- Apps (Composio): yes, ${scope}. Connected: ${on}. For anything not connected, apps_connect returns a sign-in link to send the owner.`);
   } else {
-    lines.push("- Apps: not set up. There is no Gmail, Calendar or other app access and no connect links. To enable: the person running this agent sets COMPOSIO_API_KEY (free key at composio.dev) and restarts; then apps_connect produces sign-in links.");
+    lines.push(input.business ? "- Apps: email/calendar sign-in is not enabled on this installation. There is no real OAuth link yet. This is operator setup, not a request for the owner to share credentials or visit a made-up screen. Continue learning the business; explain the exact technical prerequisite only if the owner explicitly asks for operator instructions." : "- Apps: not set up. There is no Gmail, Calendar or other app access and no connect links. To enable: the person running this agent sets COMPOSIO_API_KEY (free key at composio.dev) and restarts; then apps_connect produces sign-in links.");
   }
   if (input.wallet) {
     lines.push(input.wallet.connected

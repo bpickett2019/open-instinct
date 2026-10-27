@@ -119,6 +119,13 @@ Admission is double gated. Inkbox contact rules decide whether the two identitie
 
 Replies are asynchronous. `ask_instinct` returns at once with the task and context ids. The worker's progress and completion arrive later as webhooks, which the server turns into new messages in the same conversation. The guidance tells the model to say so to the owner rather than wait.
 
+Business delegation rechecks cancellation and the live dispatch fence before each
+recipient, A2A submission, and carrier fallback. Fences and signals travel to the real
+transport; replies recheck after inbound-task validation. Acceptance receipts for earlier
+recipients are recorded before a later recipient can be blocked. A stopped or changed
+task cannot continue a multi-recipient send, and an ambiguous business A2A submission is
+not automatically retried. Carrier acceptance is not proof that the delegated goal is done.
+
 ## Worked example: dinner between two agents
 
 Maria and Sam are partners. Each has an Open Instinct. Maria's agent has the handle `maria-instinct`, Sam's has `sam-instinct`. Maria has Sam at tier `partner`; Sam has Maria at tier `partner`.

@@ -4,7 +4,7 @@
  * endpoint on inkbox.ai with our identity key. Both use the injectable fetch.
  */
 import { randomUUID } from "node:crypto";
-import { createRest, isHttpStatus, type RestClient } from "./http.js";
+import { createRest, isHttpStatus, type RequestOptions, type RestClient } from "./http.js";
 
 export type A2AIntent = "progress" | "complete" | "ask_caller" | "fail";
 
@@ -94,11 +94,11 @@ export class InkboxA2A {
   }
 
   /** Worker side: answer a task in our inbox and move it to the next state. */
-  async reply(taskId: string, intent: A2AIntent, text: string, data?: Record<string, unknown>): Promise<void> {
+  async reply(taskId: string, intent: A2AIntent, text: string, data?: Record<string, unknown>, options?: RequestOptions): Promise<void> {
     await this.rest.request("POST", `${this.base()}/tasks/${encodeURIComponent(taskId)}/reply`, {
       intent,
       parts: a2aParts(text, data),
-    });
+    }, undefined, options);
   }
 
   /** Caller side: SendMessage to a peer. Reuse contextId to keep one topic together. */
@@ -106,7 +106,7 @@ export class InkboxA2A {
     peerHandle: string,
     text: string,
     data?: Record<string, unknown>,
-    opts: { contextId?: string; taskId?: string; messageId?: string } = {},
+    opts: { contextId?: string; taskId?: string; messageId?: string } & RequestOptions = {},
   ): Promise<A2ASendResult> {
     const peer = peerHandle.replace(/^@+/, "");
     const message: Dict = {
@@ -124,7 +124,7 @@ export class InkboxA2A {
     };
     const payload = await this.rest.requestUrl<Dict>("POST", `${this.rest.baseUrl}/a2a/${encodeURIComponent(peer)}`, body, {
       "A2A-Version": "1.0",
-    }, { replaySafe: true });
+    }, { ...opts, replaySafe: !opts.signal && !opts.assertBusinessDispatch });
     const error = dict(payload?.error);
     if (error) {
       throw new A2ARpcError(typeof error.code === "number" ? error.code : -32603, str(error.message) ?? "Unknown A2A error", error.data);

@@ -5,6 +5,10 @@ description: First conversation with a new owner. Use when the owner has no prof
 
 # Onboarding
 
+In business mode, use `business-onboarding` instead of the personal profile and
+memory steps below. Its partial, cited profile is shared by texting and the
+owner workspace. Do not put private business rules into personal memory.
+
 You are meeting the person you will work for. The goal is a short, pleasant first
 chat that leaves you with enough to be useful tomorrow morning. Nothing here is a
 form. It is a conversation, one question at a time.

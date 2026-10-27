@@ -10,6 +10,12 @@ put it online with `ample_deploy`, and send the URL. The tools exist only when
 Ample is configured; without them, say the agent's operator needs to set
 `AMPLE_SIGNUP=1`, and offer the files instead.
 
+Business mode: a bound owner request or enabled routine supplies standing authority
+for the specified publish/change/delete operation. No routine fresh yes is needed.
+Use bounded workspace file tools; run all shell/build/test commands on the separate
+hosted computer with task-required files only. Never transfer controller state or
+credentials. Nonowner and personal approval rules remain unchanged.
+
 ## Pick the shape
 
 - Static site (one `index.html`, CSS, JS, images) for anything that only shows
@@ -41,8 +47,9 @@ Ample is configured; without them, say the agent's operator needs to set
    `DATABASE_URL` gets a Postgres database from Ample automatically; connect
    with the URL exactly as given and no SSL option (Ample's database is
    reached privately, without SSL). Do not keep sign-ups in a JSON file.
-5. Secrets the owner gives you (API keys) go in `ample_deploy`'s `env`, never
-   in the code.
+5. Never put secrets in code, ordinary tool arguments or task history. Business
+   deployment credentials must be operator-configured or opaque server-side references.
+   If the tool cannot accept them safely, report the blocker rather than exposing them.
 
 ## Deploy
 
@@ -50,21 +57,14 @@ Ample is configured; without them, say the agent's operator needs to set
    few minutes and returns when the app is live or has failed. Call it once
    and wait; do not call it again to check on it.
 2. Live means the page loads, not that the app works. Before you tell the
-   owner, try its main action once from `bash` (for example
+   owner, try its main action once from the hosted `run_shell` in business mode
+   (personal mode may use `bash`), for example
    `curl -X POST <url>/api/rsvp -H 'content-type: application/json' -d '{"name":"Test"}'`,
-   then remove the test entry if you can). If it fails, read `ample_logs`
+   then remove the test entry if you can. If it fails, read `ample_logs`
    with `kind: "runtime"`, fix, and deploy again. Then send the URL in one line.
 
-Agent: It's live: https://maya-birthday-acc-1a2b.apps.ample.computer. The RSVP
-form saves names and you can see the list at /guests.
-
-   The first deploy may create the owner's Ample account and give you a claim
-   link. Send it in the same message, once, and say why:
-
-Agent: It's live: https://maya-birthday-acc-1a2b.apps.ample.computer. One
-thing: open this link and confirm your email, or the site comes down in two
-days. https://ample.computer/claim?token=...
-
+   If the first deploy returns an account claim link, send it only to the owner.
+   Explain its actual expiry and why they must claim it; never invent a deadline.
    A later result may say the account is still unclaimed: resend the link only
    if a day has passed or the owner asks. If a result says the previous account
    was deleted, tell the owner their earlier sites went offline and offer to
@@ -111,7 +111,7 @@ only for something the owner will want again ("Maya's party site is at ...").
 - Do not collect payments, passwords or sensitive personal data in an app.
 - Do not publish for a contact or a stranger; publishing is the owner's.
 - Do not loop `ample_deploy` to poll, and do not blind-retry a failure.
-- Do not delete an app without the owner's yes.
+- Delete only within an explicit owner request; business mode needs no additional yes.
 - Do not send the claim link to anyone but the owner: it gives control of
   every site in the account.
 - If Ample says the account is suspended, stop and tell the owner to contact

@@ -1,0 +1,117 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/inkbox
+
+ ✓ test/tools.test.ts (31 tests) 82ms
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  01:22:27
+   Duration  534ms (transform 105ms, setup 0ms, collect 260ms, tests 82ms, environment 0ms, prepare 34ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Scope: 2 of 13 workspace projects
+packages/network test$ vitest run --passWithNoTests
+packages/network test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/network
+packages/network test:  ✓ test/oip.test.ts (12 tests) 13ms
+packages/network test:  ✓ test/principal.test.ts (13 tests) 3ms
+packages/network test:  ✓ test/tools.test.ts (52 tests) 25ms
+packages/network test:  Test Files  3 passed (3)
+packages/network test:       Tests  77 passed (77)
+packages/network test:    Start at  01:22:29
+packages/network test:    Duration  545ms (transform 190ms, setup 0ms, collect 415ms, tests 41ms, environment 0ms, prepare 106ms)
+packages/network test: Done
+packages/server test$ vitest run --passWithNoTests
+packages/server test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/http.test.ts (43 tests) 344ms
+packages/server test:  ✓ test/contracts/providers.test.ts (10 tests) 243ms
+packages/server test:  ✓ test/business-hosted-artifacts.test.ts (25 tests) 1266ms
+packages/server test:    ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  317ms
+packages/server test:  ✓ test/slow-reply-ack.test.ts (2 tests) 780ms
+packages/server test:    ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  556ms
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/scenarios/security.test.ts (10 tests) 1152ms
+packages/server test:    ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  346ms
+packages/server test:  ✓ test/inbox.test.ts (2 tests) 188ms
+packages/server test:  ✓ test/business-commitments.test.ts (21 tests) 287ms
+packages/server test:  ✓ test/workspace-http.test.ts (2 tests) 405ms
+packages/server test:    ✓ returns 404 for absent records without turning missing stored bytes into a 404  377ms
+packages/server test:  ✓ test/scenarios/dispatch-boundaries.test.ts (7 tests) 1735ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized completed Gmail effects cannot repeat within a task, but a distinct owner request can repeat intentionally  460ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  410ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy  423ms
+packages/server test:  ✓ test/http-lifecycle.test.ts (1 test) 68ms
+packages/server test:  ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2284ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1062ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  392ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  587ms
+packages/server test: Warning: Indexing all PDF objects
+packages/server test:  ✓ test/skills.test.ts (13 tests) 46ms
+packages/server test:  ✓ test/file-tools.test.ts (11 tests) 64ms
+packages/server test:  ✓ test/webhook-setup.test.ts (7 tests) 18ms
+packages/server test:  ✓ test/workspace-session.test.ts (7 tests) 15ms
+packages/server test:  ✓ test/business-pricing.test.ts (5 tests) 28ms
+packages/server test:  ✓ test/console-outbox.test.ts (7 tests) 8ms
+packages/server test:  ✓ test/maritime-schedules.test.ts (6 tests) 15ms
+packages/server test:  ✓ test/business-extraction.test.ts (12 tests) 4041ms
+packages/server test:    ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  654ms
+packages/server test:    ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  510ms
+packages/server test:    ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  735ms
+packages/server test:  ✓ test/hooks.test.ts (5 tests) 4ms
+packages/server test:  ✓ test/boot-phone.test.ts (5 tests) 43ms
+packages/server test:  ❯ test/business-image-accounting.test.ts (2 tests | 2 failed) 9ms
+packages/server test:    × refuses an unpriced image endpoint under a configured model cap after a priced conversational turn 8ms
+packages/server test:      → EEXIST: file already exists, mkdir '/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/image-accounting-N2YZ6W/workspace'
+packages/server test:    × records unknown image cost before uncapped provider dispatch rather than showing free known usage 1ms
+packages/server test:      → EEXIST: file already exists, mkdir '/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/image-accounting-vyNMgA/workspace'
+packages/server test:  ✓ test/payments.test.ts (4 tests) 2ms
+packages/server test:  ✓ test/atomicmail.test.ts (5 tests) 97ms
+packages/server test:  ✓ test/evidence-redaction.test.ts (1 test) 4ms
+packages/server test:  ✓ test/bind.test.ts (3 tests) 2ms
+packages/server test:  ✓ test/business-knowledge.test.ts (17 tests) 4130ms
+packages/server test:    ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  698ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  558ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1079ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  486ms
+packages/server test:  ✓ test/scenarios/workflows.test.ts (23 tests) 3382ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  489ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  440ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  440ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  318ms
+packages/server test:  ✓ test/setup-summary.test.ts (3 tests) 1ms
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+packages/server test:  FAIL  test/business-image-accounting.test.ts > refuses an unpriced image endpoint under a configured model cap after a priced conversational turn
+packages/server test: Error: EEXIST: file already exists, mkdir '/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/image-accounting-N2YZ6W/workspace'
+packages/server test:  ❯ fixture test/business-image-accounting.test.ts:14:46
+packages/server test:      12| async function fixture(limit: number | null) {
+packages/server test:      13|   const root = mkdtempSync(join(tmpdir(), "image-accounting-")), state…
+packages/server test:      14|   const workspace = join(root, "workspace"); mkdirSync(workspace);
+packages/server test:        |                                              ^
+packages/server test:      15|   const store = new BusinessStore(join(root, "business")), coordinator…
+packages/server test:      16|   cleanup.push(async () => { await coordinator.close(); store.close();…
+packages/server test:  ❯ test/business-image-accounting.test.ts:37:19
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+packages/server test:  FAIL  test/business-image-accounting.test.ts > records unknown image cost before uncapped provider dispatch rather than showing free known usage
+packages/server test: Error: EEXIST: file already exists, mkdir '/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/image-accounting-vyNMgA/workspace'
+packages/server test:  ❯ fixture test/business-image-accounting.test.ts:14:46
+packages/server test:      12| async function fixture(limit: number | null) {
+packages/server test:      13|   const root = mkdtempSync(join(tmpdir(), "image-accounting-")), state…
+packages/server test:      14|   const workspace = join(root, "workspace"); mkdirSync(workspace);
+packages/server test:        |                                              ^
+packages/server test:      15|   const store = new BusinessStore(join(root, "business")), coordinator…
+packages/server test:      16|   cleanup.push(async () => { await coordinator.close(); store.close();…
+packages/server test:  ❯ test/business-image-accounting.test.ts:42:19
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+packages/server test:  Test Files  1 failed | 28 passed (29)
+packages/server test:       Tests  2 failed | 261 passed (263)
+packages/server test:    Start at  01:22:29
+packages/server test:    Duration  4.96s (transform 1.15s, setup 0ms, collect 14.88s, tests 20.66s, environment 3ms, prepare 1.47s)
+packages/server test: Failed
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test: `vitest run --passWithNoTests`
+Exit status 1

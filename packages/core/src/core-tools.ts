@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Type } from "typebox";
+import { createHash } from "node:crypto";
 import type { ApprovalStore } from "./approvals.js";
 import type { AuditLog } from "./audit.js";
 import type { MemoryStore } from "./memory.js";
@@ -182,10 +183,11 @@ function scheduleTools({ scheduler, config }: CoreToolDeps): RegisteredTool[] {
 function ownerTools({ approvals, config, outbox, audit, onApprovalSettled }: CoreToolDeps): RegisteredTool[] {
   const ownerPhone = () => config.owner.phones[0];
 
-  const sendOwner = async (text: string, ctx: ToolContext): Promise<boolean> => {
+  const sendOwner = async (text: string, ctx: ToolContext, signal?: AbortSignal): Promise<boolean> => {
     const phone = ownerPhone();
     if (!phone) return false;
-    await outbox.send({ channel: "imessage", to: phone, text }, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+    signal?.throwIfAborted(); ctx.assertBusinessDispatch?.();
+    await outbox.send({ channel: "imessage", to: phone, text }, { principal: ctx.principal, conversationKey: ctx.conversationKey, messageId: ctx.messageId, signal, assertBusinessDispatch: ctx.assertBusinessDispatch, recordBusinessReceipt: ctx.recordBusinessReceipt });
     audit.append({ kind: "outbound", conversationKey: ctx.conversationKey, principal: ctx.principal.id, detail: { channel: "imessage", to: phone, chars: text.length, via: "owner_relay" } });
     return true;
   };
@@ -201,7 +203,7 @@ function ownerTools({ approvals, config, outbox, audit, onApprovalSettled }: Cor
       amountUsd: Type.Optional(Type.Number({ description: "Money involved, if any" })),
     }),
     meta: { capabilities: ["owner.relay"], group: "owner", amountUsd: (a) => argNumber(a, "amountUsd"), describe: (a) => `ask owner: ${argText(a, "summary")}` },
-    execute: async ({ question, summary, amountUsd }, ctx) => {
+    execute: async ({ question, summary, amountUsd }, ctx, signal) => {
       const approval = approvals.create({
         conversationKey: ctx.conversationKey,
         requestedBy: ctx.principal.id,
@@ -212,7 +214,7 @@ function ownerTools({ approvals, config, outbox, audit, onApprovalSettled }: Cor
       audit.append({ kind: "approval", conversationKey: ctx.conversationKey, principal: ctx.principal.id, detail: { token: approval.token, status: "pending", summary } });
       const who = ctx.principal.kind === "owner" ? "" : ` (from ${ctx.principal.displayName})`;
       // The token stays internal: the owner reads a plain question and answers however they like.
-      const sent = await sendOwner(`${question}${who}`, ctx);
+      const sent = await sendOwner(`${question}${who}`, ctx, signal);
       // The question is now the last thing the owner heard from us, so a bare "yes" is about it.
       if (sent) approvals.markPrompted(approval.token);
       return textResult(
@@ -229,9 +231,9 @@ function ownerTools({ approvals, config, outbox, audit, onApprovalSettled }: Cor
     description: "Send the owner a short text message. Use it to pass along a message from someone else or to flag something they should know.",
     parameters: Type.Object({ text: Type.String() }),
     meta: { capabilities: ["owner.relay"], group: "owner", describe: (a) => `notify owner: ${argText(a, "text")}` },
-    execute: async ({ text }, ctx) => {
+    execute: async ({ text }, ctx, signal) => {
       const prefix = ctx.principal.kind === "owner" ? "" : `${ctx.principal.displayName} via ${config.agent.name}: `;
-      const sent = await sendOwner(`${prefix}${text}`, ctx);
+      const sent = await sendOwner(`${prefix}${text}`, ctx, signal);
       // Something other than an approval question is now the last message; a bare "yes" would be ambiguous.
       if (sent) approvals.clearPrompted();
       return textResult(sent ? `Sent to ${config.owner.name}.` : "The owner has no phone on file; nothing was sent.");
@@ -530,17 +532,23 @@ function safeChar(code: number): string {
 export function resolveWorkspacePath(workspaceDir: string, requested: string): string | undefined {
   if (!requested || requested.includes("\0")) return undefined;
   const rawRoot = path.resolve(workspaceDir);
-  let realRoot = rawRoot;
+  let realRoot: string;
   try {
-    realRoot = fs.realpathSync(rawRoot);
-  } catch {
-    // The workspace may not exist yet; the given root still bounds the check.
-  }
+    let ancestor = rawRoot;
+    while (!fs.existsSync(ancestor)) { const parent = path.dirname(ancestor); if (parent === ancestor) return undefined; ancestor = parent; }
+    realRoot = path.join(fs.realpathSync(ancestor), path.relative(ancestor, rawRoot));
+  } catch { return undefined; }
   const inside = (root: string, target: string) => target !== root && target.startsWith(root + path.sep);
-  const target = path.resolve(rawRoot, requested);
-  if (inside(rawRoot, target)) return path.join(realRoot, path.relative(rawRoot, target));
-  if (inside(realRoot, target)) return target;
-  return undefined;
+  const requestedTarget = path.resolve(rawRoot, requested);
+  const target = inside(rawRoot, requestedTarget) ? path.join(realRoot, path.relative(rawRoot, requestedTarget)) : inside(realRoot, requestedTarget) ? requestedTarget : undefined;
+  if (!target) return undefined;
+  let current = realRoot;
+  for (const component of path.relative(realRoot, target).split(path.sep)) {
+    current = path.join(current, component);
+    try { if (fs.lstatSync(current).isSymbolicLink()) return undefined; }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") return undefined; }
+  }
+  return target;
 }
 
 function createPdfTool({ workspaceDir, config }: CoreToolDeps): RegisteredTool {
@@ -555,11 +563,20 @@ function createPdfTool({ workspaceDir, config }: CoreToolDeps): RegisteredTool {
       title: Type.Optional(Type.String({ description: "Title printed at the top and stored in the PDF metadata" })),
     }),
     meta: { capabilities: ["files.write"], group: "files", describe: (a) => `create_pdf ${argText(a, "path")}` },
-    execute: async ({ path: requested, markdown, title }) => {
+    verify: async (args, result) => {
+      const target = workspaceDir && resolveWorkspacePath(workspaceDir, args.path.trim());
+      const details = typeof result === "string" ? undefined : result.details as { sha256?: string } | undefined;
+      if (!target || !details?.sha256) throw new Error("Generated PDF has no trusted file receipt");
+      const bytes = fs.readFileSync(target), sha256 = createHash("sha256").update(bytes).digest("hex");
+      if (sha256 !== details.sha256 || !bytes.subarray(0, 5).equals(Buffer.from("%PDF-"))) throw new Error("Generated PDF readback mismatch");
+      return { verified: true, receipt: { sha256, bytes: bytes.length, evidenceLevel: "primitive-only", operation: "pdf-byte-readback" }, evidenceRefs: [`file:sha256:${sha256}`] };
+    },
+    execute: async ({ path: requested, markdown, title }, ctx, signal) => {
       if (!workspaceDir) return fail("No workspace is configured, so PDFs cannot be written.");
       if (!/\.pdf$/i.test(requested.trim())) return fail(`The path must end in .pdf: ${requested}`);
       const target = resolveWorkspacePath(workspaceDir, requested.trim());
       if (!target) return fail(`Refused: "${requested}" is outside the workspace.`);
+      if (ctx.taskRun && fs.existsSync(target)) return fail("Existing business files are immutable; choose a new PDF version filename.");
       const pdf = await renderMarkdownToPdf(markdown, {
         ...(title ? { title } : {}),
         author: config.agent.name,
@@ -569,10 +586,13 @@ function createPdfTool({ workspaceDir, config }: CoreToolDeps): RegisteredTool {
           return file && fs.existsSync(file) ? file : undefined;
         },
       });
+      signal?.throwIfAborted(); ctx.assertBusinessDispatch?.();
+      if (resolveWorkspacePath(workspaceDir, requested.trim()) !== target) return fail("Workspace destination changed during document rendering.");
       fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, pdf);
+      const fd = fs.openSync(target, fs.constants.O_WRONLY | fs.constants.O_CREAT | (ctx.taskRun ? fs.constants.O_EXCL : fs.constants.O_TRUNC) | fs.constants.O_NOFOLLOW, 0o600);
+      try { fs.writeFileSync(fd, pdf); } finally { fs.closeSync(fd); }
       const pages = pdfPageCount(pdf);
-      return { content: [{ type: "text", text: `Wrote ${target} (${formatBytes(pdf.length)}, ${pages} page${pages === 1 ? "" : "s"}).` }], details: { path: target, bytes: pdf.length, pages } };
+      return { content: [{ type: "text", text: `Wrote ${target} (${formatBytes(pdf.length)}, ${pages} page${pages === 1 ? "" : "s"}).` }], details: { path: target, bytes: pdf.length, pages, sha256: createHash("sha256").update(pdf).digest("hex") } };
     },
   });
 }
@@ -589,16 +609,26 @@ function imageGenerateTool({ workspaceDir, images, fetchImpl }: CoreToolDeps): R
       path: Type.String({ description: "Where to save, relative to the workspace, ending in .png, e.g. art/ship-01.png" }),
       size: Type.Optional(Type.Union(IMAGE_SIZES.map((s) => Type.Literal(s)), { description: "1024x1024 (default), 1024x1536 portrait or 1536x1024 landscape" })),
     }),
-    meta: { capabilities: ["files.write"], group: "files", describe: (a) => `generate image ${argText(a, "path")}: ${argText(a, "prompt")}` },
-    execute: async ({ prompt, path: requested, size }, _ctx, signal) => {
+    meta: { capabilities: ["files.write"], group: "files", unpricedModel: true, describe: (a) => `generate image ${argText(a, "path")}: ${argText(a, "prompt")}` },
+    verify: async (args, result) => {
+      const target = workspaceDir && resolveWorkspacePath(workspaceDir, args.path.trim());
+      const details = typeof result === "string" ? undefined : result.details as { sha256?: string } | undefined;
+      if (!target || !details?.sha256) throw new Error("Generated image has no trusted file receipt");
+      const bytes = fs.readFileSync(target), sha256 = createHash("sha256").update(bytes).digest("hex");
+      if (sha256 !== details.sha256) throw new Error("Generated image readback mismatch");
+      return { verified: true, receipt: { sha256, bytes: bytes.length, evidenceLevel: "primitive-only", operation: "image-byte-readback" }, evidenceRefs: [`file:sha256:${sha256}`] };
+    },
+    execute: async ({ prompt, path: requested, size }, ctx, signal) => {
       if (!workspaceDir) return fail("No workspace is configured, so images cannot be saved.");
       if (!images) return fail("Image generation is not set up on this agent: the deployer sets IMAGE_API_KEY (or OPENAI_API_KEY) and optionally IMAGE_BASE_URL and IMAGE_MODEL. Say that in one line and offer a text-only version.");
       if (!/\.png$/i.test(requested.trim())) return fail(`The path must end in .png: ${requested}`);
       const target = resolveWorkspacePath(workspaceDir, requested.trim());
       if (!target) return fail(`Refused: "${requested}" is outside the workspace.`);
+      if (ctx.taskRun && fs.existsSync(target)) return fail("Existing business files are immutable; choose a new image version filename.");
       const base = (images.baseUrl ?? DEFAULT_IMAGE_BASE_URL).replace(/\/+$/, "");
       let res: Response;
       try {
+        signal?.throwIfAborted(); ctx.assertBusinessDispatch?.();
         res = await doFetch(`${base}/images/generations`, {
           method: "POST",
           headers: { Authorization: `Bearer ${images.apiKey}`, "Content-Type": "application/json", Accept: "application/json" },
@@ -625,9 +655,12 @@ function imageGenerateTool({ workspaceDir, images, fetchImpl }: CoreToolDeps): R
         bytes = Buffer.from(await img.arrayBuffer());
       }
       if (!bytes || bytes.length === 0) return fail("Image generation failed: the endpoint returned no image.");
+      signal?.throwIfAborted(); ctx.assertBusinessDispatch?.();
+      if (resolveWorkspacePath(workspaceDir, requested.trim()) !== target) return fail("Workspace destination changed during image generation.");
       fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, bytes);
-      return { content: [{ type: "text", text: `Saved ${target} (${formatBytes(bytes.length)}). Embed it with ![caption](${requested.trim()}) in create_pdf, or send it with send_file.` }], details: { path: target, bytes: bytes.length } };
+      const fd = fs.openSync(target, fs.constants.O_WRONLY | fs.constants.O_CREAT | (ctx.taskRun ? fs.constants.O_EXCL : fs.constants.O_TRUNC) | fs.constants.O_NOFOLLOW, 0o600);
+      try { fs.writeFileSync(fd, bytes); } finally { fs.closeSync(fd); }
+      return { content: [{ type: "text", text: `Saved ${target} (${formatBytes(bytes.length)}). Embed it with ![caption](${requested.trim()}) in create_pdf, or send it with send_file.` }], details: { path: target, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") } };
     },
   });
 }

@@ -1,0 +1,59 @@
+{
+  "status": "calendar_connection_verified_live_workflows_incomplete",
+  "checks": [
+    {
+      "command": "pnpm --filter @open-instinct/apps exec vitest run test/composio.test.ts -t 'binds account overrides'",
+      "phase": "before_proxy_fix",
+      "exitCode": 1,
+      "result": "Expected regression: actual-v3-shaped fixture rejects toolkit array with HTTP 400",
+      "evidence": "google-proxy-regression-before.txt"
+    },
+    {
+      "command": "pnpm typecheck && pnpm --filter @open-instinct/apps test && pnpm --filter @open-instinct/server test && pnpm smoke && pnpm test:e2e && pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "phase": "after_proxy_fix_before_shutdown_fix",
+      "exitCode": 0,
+      "result": "12-package build/typecheck;178 apps tests;338 server tests;smoke;34 real Chromium scenarios with emulated providers;publication scan passed",
+      "evidence": "google-proxy-integrated-checks.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec vitest run test/apps-shutdown.test.ts",
+      "phase": "before_shutdown_fix",
+      "exitCode": 1,
+      "result": "Expected regression: actual SDK child terminated by SIGTERM before asynchronous cleanup",
+      "evidence": "google-shutdown-regression-before.txt"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/apps build && pnpm --filter @open-instinct/apps typecheck && pnpm --filter @open-instinct/apps test && pnpm --filter @open-instinct/server exec vitest run test/apps-shutdown.test.ts && pnpm smoke",
+      "phase": "after_shutdown_fix",
+      "exitCode": 0,
+      "result": "Apps build/typecheck;178 apps tests;actual SDK subprocess regression;smoke passed",
+      "evidence": "google-shutdown-integrated-checks.txt"
+    },
+    {
+      "command": "kill -TERM 59386",
+      "phase": "fixed_live_pilot_idle_shutdown",
+      "exitCode": 0,
+      "result": "Confirmed busy=0 before signal; managed production process subsequently reported exit 0",
+      "evidence": "google-clean-shutdown.txt"
+    },
+    {
+      "command": "node $PRIVATE_STATE/start-local.mjs",
+      "phase": "final_live_restart",
+      "result": "Persistent service instinct-google-calendar pid59497 ready on loopback8787;real Composio MCP and Inkbox tunnel connected;same account verified in authenticated real browser",
+      "evidence": "google-calendar-restarted.json"
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "phase": "final_publication_scan",
+      "exitCode": 0,
+      "result": {"status":"passed","files":260,"archiveEntries":4,"expandedBytes":2617242,"verificationMode":"emulated"},
+      "limits": "Scans the configured emulator/browser publication set, not private screenshots or every repository file; not OCR or a full vulnerability review"
+    }
+  ],
+  "browser": {
+    "realProvider": "Owner OAuth, actual connected desktop and post-clean-restart account persistence visually inspected",
+    "emulatedProviders": "34 real Chromium scenarios;desktop/mobile/light/dark matrix;mobile connected onboarding screenshot visually inspected",
+    "completion": "Task space4 finished once with connected owner workspace p2 retained"
+  },
+  "limits": "Only Calendar metadata identity read; no appointment reads/mutations, Gmail authorization or mandatory live business workflows. Full-product acceptance remains blocked by documented external prerequisites."
+}

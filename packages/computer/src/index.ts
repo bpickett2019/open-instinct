@@ -19,7 +19,10 @@ export {
   MARITIME_REQUEST_TIMEOUT_MS,
   MaritimeMcpBackend,
   maritimeMcpEndpoint,
+  takeoverFailed,
   type MaritimeMcpBackendOptions,
+  type BusinessComputerBoundary,
+  type ComputerPrivacy,
 } from "./maritime.js";
 export { detectComputer, waitForDesktopd, DESKTOPD_WAIT_MS, DESKTOPD_BACKOFF_MS, type DetectComputerOptions, type WaitForDesktopdOptions } from "./detect.js";
 export { computerGuidance } from "./guidance.js";

@@ -37,6 +37,7 @@ export interface MessagingDeps extends SendFileDeps {
 export interface PhoneCallDeps {
   channel: Pick<InkboxChannel, "placeCall">;
   callOrigination?: CallOrigination;
+  businessMode?: boolean;
 }
 
 type SendChannel = "imessage" | "sms" | "email";
@@ -197,7 +198,7 @@ function fail(text: string): ToolResultLike {
 }
 
 function isOwner(ctx: ToolContext): boolean {
-  return ctx.principal.kind === "owner";
+  return ctx.principal.kind === "owner" && ctx.principal.tier === "owner";
 }
 
 const sendMessageParams = Type.Object({
@@ -217,7 +218,7 @@ const sendMessageParams = Type.Object({
 
 const reactParams = Type.Object({
   messageId: Type.String({ description: "The iMessage id to react to (from the conversation)." }),
-  reaction: Type.String({ description: "love, like, dislike, laugh, emphasize or question." }),
+  reaction: Type.Union(["love", "like", "dislike", "laugh", "emphasize", "question", "eyes"].map(value => Type.Literal(value)), { description: "The named iMessage tapback." }),
 });
 
 export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
@@ -235,7 +236,8 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
         return `send_message to ${a.to ?? "current conversation"}: ${(a.text ?? "").slice(0, 80)}`;
       },
     },
-    execute: async (args, ctx) => {
+    execute: async (args, ctx, signal) => {
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Messaging requires task dispatch");
       const text = args.text.trim();
       if (!text) return { content: [{ type: "text", text: "Nothing to send: text is empty." }], isError: true };
 
@@ -249,7 +251,7 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
           throw new Error(`Cannot reply on "${ctx.conversationKey}". Give \`to\` to pick a recipient.`);
         }
         const msg: OutboundMessage = { channel: key.channel, conversationKey: deliveryKey, text, ...(ctx.replyRef ? { replyRef: ctx.replyRef } : {}) };
-        await deps.channel.send(msg, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+        await deps.channel.send(msg, { ...ctx, ...(signal ? { signal } : {}) });
         return textResult(`Sent in the current ${key.channel} conversation.`);
       }
 
@@ -269,7 +271,7 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
         // The owner must always know who a relayed message came from.
         msg.text = `From ${ctx.principal.displayName}: ${text}`;
       }
-      await deps.channel.send(msg, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+      await deps.channel.send(msg, { ...ctx, ...(signal ? { signal } : {}) });
       return textResult(`Sent to ${target.label} via ${target.channel}.`);
     },
   });
@@ -280,8 +282,9 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
     description: "Show a typing indicator in the current iMessage conversation while you work. No effect on other channels.",
     parameters: Type.Object({}),
     meta: { capabilities: ["converse"], group: "messaging", describe: () => "send_typing" },
-    execute: async (_args, ctx) => {
-      await deps.channel.typing(ctx.deliveryKey ?? ctx.conversationKey);
+    execute: async (_args, ctx, signal) => {
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Typing indicator requires task dispatch");
+      await deps.channel.typing(ctx.deliveryKey ?? ctx.conversationKey, { ...ctx, ...(signal ? { signal } : {}) });
       return textResult("ok");
     },
   });
@@ -289,7 +292,7 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
   const react = defineTool({
     name: "react",
     label: "Tapback",
-    description: "Add an iMessage tapback (love, like, dislike, laugh, emphasize, question) to a message in the current conversation.",
+    description: "Add an iMessage tapback (love, like, dislike, laugh, emphasize, question, eyes) to an incoming message in the current conversation. Business foreground may react only to the current owner's message.",
     parameters: reactParams,
     meta: {
       capabilities: ["converse"],
@@ -299,13 +302,19 @@ export function messagingTools(deps: MessagingDeps): RegisteredTool[] {
         return `react ${a.reaction ?? ""} on ${a.messageId ?? ""}`;
       },
     },
-    execute: async (args, ctx) => {
-      await deps.channel.react(ctx.deliveryKey ?? ctx.conversationKey, args.messageId, args.reaction);
+    execute: async (args, ctx, signal) => {
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Reaction requires task dispatch");
+      if (ctx.businessOwnerSource) {
+        if (!ctx.ownerTurn || !ctx.businessOwnerReaction) throw new Error("Current owner reaction authority is unavailable");
+        await ctx.businessOwnerReaction(args.messageId, args.reaction, signal);
+        return textResult("Reaction accepted by the carrier; recipient display is unconfirmed.");
+      }
+      await deps.channel.react(ctx.deliveryKey ?? ctx.conversationKey, args.messageId, args.reaction, { ...ctx, ...(signal ? { signal } : {}) });
       return textResult(`Reacted ${args.reaction}.`);
     },
   });
 
-  return [sendMessage, sendTyping, react, sendFileTool(deps), phoneCallTool({ channel: deps.channel, ...(deps.callOrigination ? { callOrigination: deps.callOrigination } : {}) })];
+  return [sendMessage, sendTyping, react, sendFileTool(deps), phoneCallTool({ channel: deps.channel, businessMode: !!deps.config.business, ...(deps.callOrigination ? { callOrigination: deps.callOrigination } : {}) })];
 }
 
 /** A phone number the carrier will take: `+`, a country code, 7 to 15 digits in all. */
@@ -315,7 +324,7 @@ export const CALL_REASON_MAX = 2000;
 export const VOICEMAIL_MESSAGE_MAX = 1000;
 
 const phoneCallParams = Type.Object({
-  toNumber: Type.String({ description: "The number to call, in E.164 (+14155550100). Not a contact name: look the number up first and have the owner confirm it." }),
+  toNumber: Type.String({ description: "The number to call, in E.164 (+14155550100). Not a contact name: look up the correct recipient first. Personal mode requires confirmation of the exact number and brief; authorized business tasks use standing owner authority." }),
   reason: Type.String({
     description: 'The task brief Inkbox Voice AI follows on the call, in the second person, with every name, time and detail it needs: "Book a table for 4 at 7pm tonight under Maria. If 7 is full, take 7:30. Confirm the time back."',
   }),
@@ -335,7 +344,9 @@ export function phoneCallTool(deps: PhoneCallDeps): RegisteredTool {
     name: "phone_call",
     label: "Phone call",
     description:
-      "Place a phone call that Inkbox Voice AI makes on the owner's behalf, following `reason` as its brief. Only after the owner has said yes to this exact call: the number and what will be said. Returns the call id and status; the result of the call arrives later as a text to the owner, so do not report an outcome yourself.",
+      deps.businessMode
+        ? "Place a phone call through Inkbox Voice AI for an authorized business task within the owner's constraints, without routine approval. Missing recipient details are blockers. Nonowner and group restrictions still apply. Returns a call id/status, not a completed outcome; the provider outcome arrives later."
+        : "Place a phone call that Inkbox Voice AI makes on the owner's behalf, following `reason` as its brief. Only after the owner has said yes to this exact call: the number and what will be said. Returns the call id and status; the result of the call arrives later as a text to the owner, so do not report an outcome yourself.",
     parameters: phoneCallParams,
     meta: {
       capabilities: ["phone.call"],
@@ -345,7 +356,9 @@ export function phoneCallTool(deps: PhoneCallDeps): RegisteredTool {
         return `phone_call ${a.toNumber ?? ""}: ${(a.reason ?? "").slice(0, 80)}`;
       },
     },
-    execute: async (args) => {
+    execute: async (args, ctx, signal) => {
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("Phone call requires task dispatch");
+      if (deps.businessMode && (!ctx.taskRun || ctx.principal.kind !== "owner" || ctx.principal.tier !== "owner")) return fail("Business calls require a task bound to unrestricted owner authority.");
       const toNumber = normalizePhone(args.toNumber);
       if (!E164.test(toNumber)) return fail(`"${args.toNumber}" is not a phone number in E.164 form (+14155550100).`);
       const reason = args.reason.trim();
@@ -360,7 +373,7 @@ export function phoneCallTool(deps: PhoneCallDeps): RegisteredTool {
         reason,
         ...(voicemailMessage ? { voicemailMessage } : {}),
         ...(deps.callOrigination ? { origination: deps.callOrigination } : {}),
-      });
+      }, { ...ctx, ...(signal ? { signal } : {}) });
       const minutes = call.minutesRemaining !== undefined ? ` ${call.minutesRemaining} call minutes left on the plan this month.` : "";
       return textResult(`Call ${call.id}: ${call.status}.${minutes}`);
     },
@@ -390,11 +403,16 @@ export function sendFileTool(deps: SendFileDeps): RegisteredTool {
         return `send_file ${a.path ?? ""} to ${a.to ?? "current conversation"}`;
       },
     },
-    execute: async (args, ctx) => {
+    execute: async (args, ctx, signal) => {
+      if (ctx.taskRun && !ctx.businessInvocation) throw new Error("File send requires task dispatch");
       if (!deps.dataDir) return fail("File sending is not configured (no data directory).");
       let file: ResolvedFile;
       try {
         file = resolveFilePath(deps.dataDir, args.path);
+        if (deps.config.business) {
+          const workspace = fs.realpathSync(path.join(deps.dataDir, "workspace"));
+          if (!file.path.startsWith(workspace + path.sep)) return fail("Business files must be inside the workspace; controller state is private.");
+        }
       } catch (err) {
         return fail(err instanceof Error ? err.message : String(err));
       }
@@ -403,7 +421,8 @@ export function sendFileTool(deps: SendFileDeps): RegisteredTool {
       const base = (): Omit<FileSend, "channel"> => ({ filename: file.name, contentType: file.mime, content: content(), ...(caption ? { caption } : {}) });
 
       if (!args.to) {
-        const key = parseConversationKey(ctx.conversationKey);
+        const deliveryKey = ctx.deliveryKey ?? ctx.conversationKey;
+        const key = parseConversationKey(deliveryKey);
         if (key.channel === "chat") {
           // The Maritime dashboard turns this fence into an attachment; elsewhere it still names the file.
           const fence = maritimeFileFence(file, { ...(args.subject ? { title: args.subject } : {}), ...(caption ? { message: caption } : {}) });
@@ -413,9 +432,9 @@ export function sendFileTool(deps: SendFileDeps): RegisteredTool {
         if (key.channel !== "imessage" && key.channel !== "sms" && key.channel !== "email") {
           throw new Error(`Cannot send a file on "${ctx.conversationKey}". Give \`to\` to pick a recipient.`);
         }
-        const send: FileSend = { ...base(), channel: key.channel, conversationKey: ctx.conversationKey };
+        const send: FileSend = { ...base(), channel: key.channel, conversationKey: deliveryKey };
         if (args.subject) send.subject = args.subject;
-        await wire().sendFile(send, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+        await wire().sendFile(send, { ...ctx, ...(signal ? { signal } : {}) });
         return textResult(`Sent ${file.name} in the current ${key.channel} conversation.`);
       }
 
@@ -427,7 +446,7 @@ export function sendFileTool(deps: SendFileDeps): RegisteredTool {
       const send: FileSend = { ...base(), channel: target.channel, to: target.to };
       if (target.channel === "email") send.subject = args.subject ?? (wantsOwner && !isOwner(ctx) ? `File from ${ctx.principal.displayName}` : `${file.name} from your Instinct`);
       if (!isOwner(ctx) && wantsOwner) send.caption = `From ${ctx.principal.displayName}: ${caption ?? file.name}`;
-      await wire().sendFile(send, { principal: ctx.principal, conversationKey: ctx.conversationKey });
+      await wire().sendFile(send, { ...ctx, ...(signal ? { signal } : {}) });
       return textResult(`Sent ${file.name} to ${target.label} via ${target.channel}.`);
     },
   });

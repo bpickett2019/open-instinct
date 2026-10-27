@@ -72,6 +72,26 @@ describe("init", () => {
     expect(config.owner.emails).toContain("m@example.com");
   });
 
+  it("seeds business Google access only on opt-in and preserves explicit toolkits and existing business state on re-init", async () => {
+    const personal = tmpDir(), business = tmpDir(), explicit = tmpDir();
+    expect((await run(["init", "--name", "Synthetic Personal", "--skip-inkbox"], { INSTINCT_DATA_DIR: personal })).code).toBe(0);
+    expect(readJson<InstinctConfig>(personal, "config.json").business).toBeUndefined();
+    expect((await run(["init", "--business", "--name", "Synthetic Business", "--skip-inkbox"], { INSTINCT_DATA_DIR: business })).code).toBe(0);
+    let config = readJson<InstinctConfig>(business, "config.json");
+    expect(config.business).toEqual({ autonomy: "full" });
+    expect(config.apps).toMatchObject({ enabled: true, toolkits: ["gmail", "googlecalendar"] });
+    config.business!.stateDirectory = path.join(business, "private-business");
+    fs.writeFileSync(path.join(business, "config.json"), JSON.stringify(config));
+    expect((await run(["init", "--name", "Renamed Business", "--skip-inkbox"], { INSTINCT_DATA_DIR: business })).code).toBe(0);
+    config = readJson<InstinctConfig>(business, "config.json");
+    expect(config.business).toEqual({ autonomy: "full", stateDirectory: path.join(business, "private-business") });
+    expect(config.apps).toMatchObject({ enabled: true, toolkits: ["gmail", "googlecalendar"] });
+    expect((await run(["init", "--business", "--name", "Explicit Business", "--toolkits", "notion,slack", "--skip-inkbox"], { INSTINCT_DATA_DIR: explicit })).code).toBe(0);
+    expect(readJson<InstinctConfig>(explicit, "config.json").apps).toMatchObject({ enabled: true, toolkits: ["notion", "slack"] });
+    expect((await run(["init", "--business", "--name", "Explicit Business Again", "--skip-inkbox"], { INSTINCT_DATA_DIR: explicit })).code).toBe(0);
+    expect(readJson<InstinctConfig>(explicit, "config.json").apps.toolkits).toEqual(["notion", "slack"]);
+  });
+
   it("honours --data-dir over the environment", async () => {
     const envDir = tmpDir();
     const flagDir = path.join(tmpDir(), "nested", "state");

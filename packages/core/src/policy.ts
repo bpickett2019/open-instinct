@@ -368,6 +368,28 @@ export class PolicyEngine {
     return decision;
   }
 
+  /** Standing business authority changes owner defaults, never another principal's tier. */
+  evaluateBusinessOwner(principal: Principal, meta: ToolMeta, args: unknown): PolicyDecision {
+    if (principal.kind !== "owner" || principal.tier !== "owner" || principal.cappedFrom) return { outcome: "deny", reason: "Business owner authority required" };
+    for (const capability of meta.capabilities) {
+      const saved = this.policy.tiers.owner?.[capability];
+      if (saved === "no" || saved === "ask") return { outcome: "deny", reason: `Explicit owner restriction: ${capability}` };
+    }
+    const blocked = blockedMerchantIn(args, this.policy.spend.blockedMerchants);
+    if (blocked) return { outcome: "deny", reason: `${blocked} is blocked` };
+    if (meta.capabilities.some(c => SPEND_CAPABILITIES.has(c)) && this.policy.spend.allowedMerchants.length) {
+      const merchants = merchantsOf(args);
+      if (!merchants.length || merchants.some(name => !this.policy.spend.allowedMerchants.some(m => name.includes(m.toLowerCase())))) return { outcome: "deny", reason: "Merchant is outside owner restrictions" };
+    }
+    if (meta.capabilities.some(c => SPEND_CAPABILITIES.has(c))) {
+      const defaults = defaultSpendPolicy(), saved = this.policy.spend;
+      const categoriesChanged = saved.neverWithoutAsk.length !== defaults.neverWithoutAsk.length || saved.neverWithoutAsk.some((category, index) => category !== defaults.neverWithoutAsk[index]);
+      const flagged = categoriesChanged && saved.neverWithoutAsk.find(category => textOf(args).includes(category.toLowerCase()));
+      if (flagged) return { outcome: "deny", reason: `Saved owner restriction requires intervention for ${flagged}` };
+    }
+    return { outcome: "allow", reason: "Authenticated durable business authority; configured allowances enforced by dispatcher" };
+  }
+
   /** Used to hide tools: false only when the tier default is "no" and no active grant covers it. */
   canEver(principal: Principal, capability: Capability): boolean {
     if (this.permissionFor(principal.tier, capability) !== "no") return true;

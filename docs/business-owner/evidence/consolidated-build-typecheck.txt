@@ -1,0 +1,82 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> open-instinct@0.1.0 build /private/tmp/open-instinct
+> pnpm -r --workspace-concurrency=1 --filter "./packages/*" run build
+
+Scope: 12 of 13 workspace projects
+
+> @open-instinct/core@0.1.0 build /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json
+
+
+> @open-instinct/ample@0.1.0 build /private/tmp/open-instinct/packages/ample
+> tsc -p tsconfig.json
+
+
+> @open-instinct/apps@0.1.0 build /private/tmp/open-instinct/packages/apps
+> tsc -p tsconfig.json
+
+
+> @open-instinct/atomicmail@0.1.0 build /private/tmp/open-instinct/packages/atomicmail
+> tsc -p tsconfig.json
+
+
+> @open-instinct/computer@0.1.0 build /private/tmp/open-instinct/packages/computer
+> tsc -p tsconfig.json
+
+
+> @open-instinct/context@0.1.0 build /private/tmp/open-instinct/packages/context
+> tsc -p tsconfig.json
+
+
+> @open-instinct/inkbox@0.1.0 build /private/tmp/open-instinct/packages/inkbox
+> tsc -p tsconfig.json
+
+
+> @open-instinct/payments@0.1.0 build /private/tmp/open-instinct/packages/payments
+> tsc -p tsconfig.json
+
+
+> @open-instinct/gateway@0.1.0 build /private/tmp/open-instinct/packages/gateway
+> tsc -p tsconfig.json
+
+
+> @open-instinct/network@0.1.0 build /private/tmp/open-instinct/packages/network
+> tsc -p tsconfig.json
+
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+> @open-instinct/cli@0.1.0 build /private/tmp/open-instinct/packages/cli
+> tsc -p tsconfig.json
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Scope: 12 of 13 workspace projects
+packages/core typecheck$ tsc -p tsconfig.json --noEmit
+packages/core typecheck: Done
+packages/ample typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck: Done
+packages/context typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck: Done
+packages/inkbox typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck: Done
+packages/payments typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck: Done
+packages/context typecheck: Done
+packages/payments typecheck: Done
+packages/inkbox typecheck: Done
+packages/network typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck: Done
+packages/network typecheck: Done
+packages/server typecheck$ tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+packages/server typecheck: Done
+packages/cli typecheck$ tsc -p tsconfig.json --noEmit
+packages/cli typecheck: Done

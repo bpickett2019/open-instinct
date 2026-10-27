@@ -1,0 +1,476 @@
+
+> open-instinct@0.1.0 typecheck /private/tmp/open-instinct
+> pnpm run build && pnpm -r --filter "./packages/*" run typecheck
+
+
+> open-instinct@0.1.0 build /private/tmp/open-instinct
+> pnpm -r --workspace-concurrency=1 --filter "./packages/*" run build
+
+Scope: 12 of 13 workspace projects
+
+> @open-instinct/core@0.1.0 build /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json
+
+
+> @open-instinct/ample@0.1.0 build /private/tmp/open-instinct/packages/ample
+> tsc -p tsconfig.json
+
+
+> @open-instinct/apps@0.1.0 build /private/tmp/open-instinct/packages/apps
+> tsc -p tsconfig.json
+
+
+> @open-instinct/atomicmail@0.1.0 build /private/tmp/open-instinct/packages/atomicmail
+> tsc -p tsconfig.json
+
+
+> @open-instinct/computer@0.1.0 build /private/tmp/open-instinct/packages/computer
+> tsc -p tsconfig.json
+
+
+> @open-instinct/context@0.1.0 build /private/tmp/open-instinct/packages/context
+> tsc -p tsconfig.json
+
+
+> @open-instinct/inkbox@0.1.0 build /private/tmp/open-instinct/packages/inkbox
+> tsc -p tsconfig.json
+
+
+> @open-instinct/payments@0.1.0 build /private/tmp/open-instinct/packages/payments
+> tsc -p tsconfig.json
+
+
+> @open-instinct/gateway@0.1.0 build /private/tmp/open-instinct/packages/gateway
+> tsc -p tsconfig.json
+
+
+> @open-instinct/network@0.1.0 build /private/tmp/open-instinct/packages/network
+> tsc -p tsconfig.json
+
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+> @open-instinct/cli@0.1.0 build /private/tmp/open-instinct/packages/cli
+> tsc -p tsconfig.json
+
+Scope: 12 of 13 workspace projects
+packages/core typecheck$ tsc -p tsconfig.json --noEmit
+packages/core typecheck: Done
+packages/ample typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck: Done
+packages/ample typecheck: Done
+packages/context typecheck$ tsc -p tsconfig.json --noEmit
+packages/inkbox typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck: Done
+packages/payments typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck: Done
+packages/context typecheck: Done
+packages/payments typecheck: Done
+packages/inkbox typecheck: Done
+packages/network typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck: Done
+packages/network typecheck: Done
+packages/server typecheck$ tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+packages/server typecheck: Done
+packages/cli typecheck$ tsc -p tsconfig.json --noEmit
+packages/cli typecheck: Done
+
+> @open-instinct/core@0.1.0 test /private/tmp/open-instinct/packages/core
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+
+
+ Test Files  24 passed (24)
+      Tests  332 passed (332)
+   Start at  03:01:00
+   Duration  3.14s (transform 644ms, setup 0ms, collect 3.13s, tests 4.72s, environment 2ms, prepare 1.12s)
+
+ ❯ test/scenarios/onboarding.test.ts (9 tests | 4 failed) 742ms
+   × assistant-led onboarding (emulated) > opens once across concurrent calls and refresh, restores owner tools for natural replies, and retains shared history and facts across restart 126ms
+     → expected [] to deeply equal ArrayContaining{…}
+   × assistant-led onboarding (emulated) > rejects model-invented owner tools during the read-only welcome without changing business state 93ms
+     → expected { id: 'settings', version: 4, …(2) } to deeply equal { id: 'settings', version: 2, …(2) }
+   × assistant-led onboarding (emulated) > keeps workspace pause intact when setup opens and after a real restart 44ms
+     → expected { id: 'settings', version: 3, …(2) } to deeply equal { id: 'settings', version: 2, …(2) }
+   × assistant-led onboarding (emulated) > keeps workspace stop intact when setup opens and after a real restart 36ms
+     → expected { id: 'settings', version: 3, …(2) } to deeply equal { id: 'settings', version: 2, …(2) }
+ ❯ test/scenarios/security.test.ts (10 tests | 1 failed) 5677ms
+   × Application and development-tool security boundaries > G7: real registered file tools reject traversal and symlinks into private controller state 5017ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/operational-limits.test.ts (13 tests | 1 failed) 8962ms
+   × Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart 5009ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/general-delegation.test.ts (1 test | 1 failed) 20323ms
+   × General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime 20323ms
+     → Timed out general delegation artifact completion; tasks=[]
+ ❯ test/scenarios/document-lifecycle.test.ts (4 tests | 4 failed) 25477ms
+   × Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart 10469ms
+     → Timed out source-grounded quote completion; tasks=[]
+   × Document-grounded customer lifecycle (emulated) > G5: registered Calendar insert/update/cancel retain one provider event and stale etags cannot overwrite a human change 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts (23 tests | 8 failed) 40715ms
+   × Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision 5016ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history 5017ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G2: Gmail accepts before response loss; restart and delayed readback never resend 5017ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G2: uncertain hosted shell receipt is retained, not replayed after restart 5014ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G5: changed Calendar etag refuses overwrite and wrong readback cannot verify 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G6: direct owner stop bypasses a blocked model turn and survives restart 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Integrated durable workflows (emulated) > G3: ordinary autonomous Gmail send reaches independently stored SENT content without approval 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts (11 tests | 11 failed) 55091ms
+   × Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request 5031ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request 5007ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'empty subject and final body newline' sends once per task but permits an intentional distinct owner request 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G1/G2: genuinely changed authorized Gmail content remains a distinct effect within one task 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G6: stop during Calendar freebusy prevents the subsequent remote insert 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G2: unknown gmail effect fences an altered same-run second submission 5011ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G2: unknown shell effect fences an altered same-run second submission 5010ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G3/G10: an actual connected payment operation without trusted amount metadata cannot bypass a zero purchase cap 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 30 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'empty subject and final body newline' sends once per task but permits an intentional distinct owner request
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:26:4
+     24|       { subject: " \t " }, { text: "Same normalized communication.\r\n…
+     25|     ] },
+     26|   ])("G1/G2: normalized Gmail $name sends once per task but permits an…
+       |    ^
+     27|     const s=await scenario();const store=s.app.business!.coordinator.s…
+     28|     const input={to:["Customer@fixture.test"],subject:"One intentional…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G2: genuinely changed authorized Gmail content remains a distinct effect within one task
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:41:3
+     39|     expect(s.providers.google.accepted).toHaveLength(2);expect(new Set…
+     40|   });
+     41|   it("G1/G2: genuinely changed authorized Gmail content remains a dist…
+       |   ^
+     42|     const s=await scenario();const store=s.app.business!.coordinator.s…
+     43|     const input={to:["customer@fixture.test"],subject:"Authorized two-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:55:3
+     53|     expect(store.actions().filter(action=>action.tool==="business_goog…
+     54|   });
+     55|   it("G1/G8: immediate foreground answers survive reload without admit…
+       |   ^
+     56|     const answer="Two hours at USD 125 per hour is USD 250 before any …
+     57|     const s=await scenario({foregroundResponses:[fauxAssistantMessage(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G6: stop during Calendar freebusy prevents the subsequent remote insert
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:69:3
+     67|     const detail=record(await (await s.owner(`/tasks/${tasks[0]!.id}`)…
+     68|   });
+     69|   it("G6: stop during Calendar freebusy prevents the subsequent remote…
+       |   ^
+     70|     const s=await scenario();const gate=s.gate();s.providers.calendar.…
+     71|     s.model.setResponses([call("business_google",{operation:"insert",i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G2: unknown gmail effect fences an altered same-run second submission
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G2: unknown shell effect fences an altered same-run second submission
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:80:37
+     78|     expect(s.app.business!.coordinator.store.settings().value.stopped)…
+     79|   });
+     80|   it.each(["gmail","shell"] as const)("G2: unknown %s effect fences an…
+       |                                     ^
+     81|     const s=await scenario();let retryReached=false;
+     82|     if(kind==="gmail"){s.providers.google.acceptThenDrop();s.providers…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G3/G10: an actual connected payment operation without trusted amount metadata cannot bypass a zero purchase cap
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:92:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯
+
+ FAIL  test/scenarios/dispatch-boundaries.test.ts > Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/dispatch-boundaries.test.ts:114:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/30]⎯
+
+ FAIL  test/scenarios/document-lifecycle.test.ts > Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart
+Error: Timed out source-grounded quote completion; tasks=[]
+ ❯ Object.waitFor testing/scenario-app.ts:91:192
+
+ ❯ test/scenarios/document-lifecycle.test.ts:24:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/30]⎯
+
+ FAIL  test/scenarios/document-lifecycle.test.ts > Document-grounded customer lifecycle (emulated) > G5: registered Calendar insert/update/cancel retain one provider event and stale etags cannot overwrite a human change
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/document-lifecycle.test.ts:38:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/30]⎯
+
+ FAIL  test/scenarios/document-lifecycle.test.ts > Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send
+ FAIL  test/scenarios/document-lifecycle.test.ts > Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/document-lifecycle.test.ts:53:50
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/30]⎯
+
+ FAIL  test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+Error: Timed out general delegation artifact completion; tasks=[]
+ ❯ Object.waitFor testing/scenario-app.ts:91:192
+
+ ❯ test/scenarios/general-delegation.test.ts:155:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/30]⎯
+
+ FAIL  test/scenarios/onboarding.test.ts > assistant-led onboarding (emulated) > opens once across concurrent calls and refresh, restores owner tools for natural replies, and retains shared history and facts across restart
+AssertionError: expected [] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   "business_profile_save",
+-   "business_delegate",
+-   "apps_connect",
+- ]
++ []
+
+ ❯ test/scenarios/onboarding.test.ts:91:24
+     89|     await s.waitFor(() => s.app.business!.coordinator.store.get<{ stat…
+     90|     expect(sameConversation).toBe(true);
+     91|     expect(ownerTools).toEqual(expect.arrayContaining(["business_profi…
+       |                        ^
+     92|     const before = await snapshot(s);
+     93|     expect(before.profile).toMatchObject({ version: 1, facts: expect.a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/30]⎯
+
+ FAIL  test/scenarios/onboarding.test.ts > assistant-led onboarding (emulated) > rejects model-invented owner tools during the read-only welcome without changing business state
+AssertionError: expected { id: 'settings', version: 4, …(2) } to deeply equal { id: 'settings', version: 2, …(2) }
+
+- Expected
++ Received
+
+@@ -19,15 +19,15 @@
+      },
+      "profileVersion": 0,
+      "stopped": false,
+      "timezone": "UTC",
+      "usage": {
+-       "inputTokens": 8062,
++       "inputTokens": 18469,
+        "modelMinor": 0,
+ ❯ test/scenarios/onboarding.test.ts:149:30
+    147|     expect(denied).toEqual(attempts.map(attempt => attempt.name));
+    148|     expect((await snapshot(s)).profile).toMatchObject({ version: 0, fa…
+    149|     expect(store.settings()).toEqual(settings);
+       |                              ^
+    150|     expect([...s.providers.composio.accounts.values()]).toEqual(accoun…
+    151|     expect(store.list("cursor").filter(row => row.id.startsWith("onboa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/30]⎯
+
+ FAIL  test/scenarios/onboarding.test.ts > assistant-led onboarding (emulated) > keeps workspace pause intact when setup opens and after a real restart
+ FAIL  test/scenarios/onboarding.test.ts > assistant-led onboarding (emulated) > keeps workspace stop intact when setup opens and after a real restart
+AssertionError: expected { id: 'settings', version: 3, …(2) } to deeply equal { id: 'settings', version: 2, …(2) }
+
+- Expected
++ Received
+
+@@ -19,15 +19,15 @@
+      },
+      "profileVersion": 0,
+      "stopped": true,
+      "timezone": "UTC",
+      "usage": {
+-       "inputTokens": 0,
++       "inputTokens": 5089,
+        "modelMinor": 0,
+ ❯ test/scenarios/onboarding.test.ts:221:58
+    219|     expect((await s.owner("/onboarding/conversation", { method: "POST"…
+    220|     await s.waitFor(() => s.app.business!.coordinator.store.get<{ stat…
+    221|     expect(s.app.business!.coordinator.store.settings()).toEqual(setti…
+       |                                                          ^
+    222|     expectNoAutomaticWork(s);
+    223|     await s.restart();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/30]⎯
+
+ FAIL  test/scenarios/operational-limits.test.ts > Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/operational-limits.test.ts:34:3
+     32| 
+     33| describe.sequential("Operational bounds and ingress authority (real bo…
+     34|   it("BO095: signed stop bypasses an already blocked durable inbox and…
+       |   ^
+     35|     const s=await scenario({responses:[]}),worker=s.gate(),inbox=s.gat…
+     36|     s.model.setResponses([async()=>{workerEntered=true;await worker.pr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/30]⎯
+
+ FAIL  test/scenarios/security.test.ts > Application and development-tool security boundaries > G7: real registered file tools reject traversal and symlinks into private controller state
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/security.test.ts:47:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:22:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:44:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G2: Gmail accepts before response loss; restart and delayed readback never resend
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:55:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G2: uncertain hosted shell receipt is retained, not replayed after restart
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:61:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G5: changed Calendar etag refuses overwrite and wrong readback cannot verify
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:69:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G6: direct owner stop bypasses a blocked model turn and survives restart
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:73:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:121:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/30]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G3: ordinary autonomous Gmail send reaches independently stored SENT content without approval
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/scenarios/workflows.test.ts:129:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/30]⎯
+
+
+ Test Files  7 failed | 30 passed (37)
+   Start at  03:01:04
+   Duration  56.62s (transform 917ms, setup 0ms, collect 18.85s, tests 179.93s, environment 4ms, prepare 1.30s)
+[raw output: artifact://426]
+
+
+Wall time: 90.19 seconds
+
+Command exited with code 1

@@ -1,0 +1,23 @@
+{
+  "verificationMode": "live-model-local-workspace",
+  "status": "running_local_connected_providers_unconfigured",
+  "service": "instinct-local-business",
+  "serviceMode": "persist",
+  "workspaceUrl": "http://127.0.0.1:8787/workspace",
+  "privateState": "~/.local/share/open-instinct/business-evaluation",
+  "launchScript": "~/.local/share/open-instinct/business-evaluation/start-local.mjs",
+  "model": "openai-codex/gpt-6-astra",
+  "init": "Actual compiled CLI init --business --name Owner --model openai-codex/gpt-6-astra --skip-inkbox against the private evaluation directory; clean environment",
+  "runtime": "Actual compiled CLI dev, loopback only, no tunnel, real subscription authentication; no emulators or fixture model",
+  "checks": {
+    "health": "HTTP 200, ok true",
+    "browserLogin": "Real token exchange succeeded; token never printed or embedded in URL",
+    "chat": "Browser startup-check message received actual assistant reply: Ready for local chat.",
+    "tasks": "Authenticated task endpoint HTTP 200, zero tasks",
+    "visual": "Inspected actual dark-mode chat rendering, response and visible Stop control",
+    "handoff": "Authenticated browser page retained for user; service remains running"
+  },
+  "privateScreenshot": "~/.local/share/open-instinct/business-evaluation/operator-evidence/local-chat.png",
+  "missingConnections": ["Composio Gmail/Calendar", "Inkbox texting", "Maritime hosted computer"],
+  "qualification": "Partial BO-296 startup evidence only. No text onboarding, Google OAuth, real customer/provider effects, deployment-image execution, or full mandatory live scenario completion. Local service depends on this machine remaining awake."
+}

@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Contact } from "@open-instinct/core";
 import { A2AStore, StateDir } from "@open-instinct/core";
+import { InkboxA2A } from "@open-instinct/inkbox";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { networkTools } from "../src/tools.js";
 import { agentPrincipal, config, contactPrincipal, ctx, fakeA2a, fakeAudit, fakeContacts, fakeOutbox, fakePolicy, fakeProvisioner, owner, run, stranger } from "./fakes.js";
+import { networkGuidance } from "../src/guidance.js";
 
 function setup(opts: { a2a?: boolean; provisioner?: boolean; handle?: boolean; a2aStore?: A2AStore } = {}) {
   const contacts = fakeContacts([
@@ -53,6 +55,81 @@ describe("networkTools registry", () => {
       invite_to_network: ["network.invite"],
     });
     for (const t of tools) expect(t.spec.name).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
+  });
+});
+
+describe("business network boundary", () => {
+  it("refuses A2A and carrier fallback outside the task dispatcher", async () => {
+    const { tools, a2a, outbox } = setup();
+    const worker = { ...ctx(owner), taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" } };
+    for (const contact of ["sam", "alex", "priya"]) {
+      await expect(run(tools, "ask_instinct", { contact, intent: "ask", text: "Confirm the meeting" }, worker)).rejects.toThrow("task dispatch");
+    }
+    expect(a2a.calls).toHaveLength(0);
+    expect(outbox.sent).toHaveLength(0);
+    await run(tools, "ask_instinct", { contact: "alex", intent: "ask", text: "Confirm the meeting" }, { ...worker, businessInvocation: true });
+    expect(outbox.sent).toHaveLength(1);
+    expect((await run(tools, "trust_set_tier", { contact: "alex", tier: "partner" }, { ...worker, businessInvocation: true })).isError).toBe(true);
+  });
+
+  it.each([["alex", "fence"], ["jo", "fence"], ["alex", "signal"], ["jo", "signal"]])("stops before a second recipient (%s, %s) while retaining the first A2A acceptance", async (second, mode) => {
+    const { contacts, policy, audit, outbox } = setup();
+    contacts.upsert({ name: "Jo", tier: "friend", agentHandle: "jo-instinct" });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const submissions: string[] = [];
+    const a2a = new InkboxA2A({
+      apiKey: "test", handle: "maria-instinct", baseUrl: "https://inkbox.test",
+      fetchImpl: async input => {
+        submissions.push(String(input));
+        entered.resolve();
+        await release.promise;
+        return new Response(JSON.stringify({ result: { task: { id: "accepted-task", contextId: "accepted-context", status: { state: "submitted" } } } }), { status: 200 });
+      },
+    });
+    const tools = networkTools({ contacts, policy, audit, outbox, a2a, config: config() });
+    let active = true;
+    const controller = new AbortController();
+    const receipts: unknown[] = [];
+    const pending = tools.find(tool => tool.spec.name === "ask_instinct")!.spec.execute({ contacts: ["sam", second], intent: "ask", text: "Confirm" }, ctx(owner, {
+      assertBusinessDispatch: () => { if (!active) throw new Error("Task stopped"); },
+      recordBusinessReceipt: receipt => receipts.push(receipt),
+    }), controller.signal);
+    const rejected = expect(pending).rejects.toThrow("Task stopped");
+    await entered.promise;
+    if (mode === "signal") controller.abort(new Error("Task stopped"));
+    else active = false;
+    release.resolve();
+    await rejected;
+    expect(submissions).toEqual(["https://inkbox.test/a2a/sam-instinct"]);
+    expect(outbox.sent).toHaveLength(0);
+    expect(receipts).toEqual([expect.objectContaining({ recipients: [expect.objectContaining({ contactId: "sam-lee", taskId: "accepted-task" })] })]);
+    expect(audit.entries.filter(entry => entry.kind === "outbound")).toHaveLength(1);
+  });
+
+  it("rechecks the fence after inbound A2A prerequisite validation", async () => {
+    const { tools, a2a } = setup();
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    let active = true;
+    const pending = run(tools, "reply_instinct", { intent: "complete", text: "Answer" }, ctx(owner, {
+      channel: "a2a", replyRef: { taskId: "task-a" },
+      assertA2AActive: async () => { entered.resolve(); await release.promise; },
+      assertBusinessDispatch: () => { if (!active) throw new Error("Source changed"); },
+    }));
+    const rejected = expect(pending).rejects.toThrow("Source changed");
+    await entered.promise;
+    active = false;
+    release.resolve();
+    await rejected;
+    expect(a2a.calls).toHaveLength(0);
+  });
+
+  it("changes only unrestricted owner guidance, not personal or external authority", () => {
+    expect(networkGuidance(owner)).toContain("confirm with the owner");
+    expect(networkGuidance(owner, true)).toContain("without routine confirmation");
+    expect(networkGuidance({ ...owner, tier: "friend" }, true)).toContain("confirm with the owner");
+    expect(networkGuidance(stranger, true)).toBe(networkGuidance(stranger));
   });
 });
 
@@ -410,11 +487,11 @@ describe("reply_instinct", () => {
     const { tools, a2a, sam } = setup();
     const a2aCtx = ctx(agentPrincipal(sam), { channel: "a2a", conversationKey: "a2a:ctx-1", replyRef: { taskId: "t1" }, assertA2AActive: async () => {} });
     await run(tools, "reply_instinct", { taskId: "t1", intent: "complete", text: "Thu works", oipIntent: "accept", payload: { slot: { start: "2026-10-09T19:00:00-04:00" } } }, a2aCtx);
-    expect(a2a.calls[0]!.args).toEqual(["t1", "complete", "Thu works", { oip: "1", intent: "accept", on_behalf_of: { handle: "maria-instinct", display: "Maria" }, payload: { slot: { start: "2026-10-09T19:00:00-04:00" } } }]);
+    expect(a2a.calls[0]!.args).toEqual(["t1", "complete", "Thu works", { oip: "1", intent: "accept", on_behalf_of: { handle: "maria-instinct", display: "Maria" }, payload: { slot: { start: "2026-10-09T19:00:00-04:00" } } }, {}]);
     await run(tools, "reply_instinct", { taskId: "t1", intent: "progress", text: "checking", payload: { eta: "10m" } }, a2aCtx);
-    expect(a2a.calls[1]!.args).toEqual(["t1", "progress", "checking", { eta: "10m" }]);
+    expect(a2a.calls[1]!.args).toEqual(["t1", "progress", "checking", { eta: "10m" }, {}]);
     await run(tools, "reply_instinct", { taskId: "t1", intent: "fail", text: "cannot" }, a2aCtx);
-    expect(a2a.calls[2]!.args).toEqual(["t1", "fail", "cannot", undefined]);
+    expect(a2a.calls[2]!.args).toEqual(["t1", "fail", "cannot", undefined, {}]);
   });
 
   it("errors without an A2A client", async () => {
@@ -548,4 +625,12 @@ describe("staff is only for agents", () => {
     expect(ok.isError).toBe(false);
     expect(contacts.get("sam-lee")?.tier).toBe("staff");
   });
+});
+
+it("keeps group-capped owner fallback sends and trust changes restricted", async () => {
+  const { tools, outbox } = setup();
+  const capped = ctx({ ...owner, tier: "friend" });
+  expect((await run(tools, "ask_instinct", { contact: "alex", intent: "ask", text: "Not authorized" }, capped)).isError).toBe(true);
+  expect((await run(tools, "trust_set_tier", { contact: "alex", tier: "partner" }, capped)).isError).toBe(true);
+  expect(outbox.sent).toHaveLength(0);
 });

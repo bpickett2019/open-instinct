@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Quote",
+    "rows": [
+      {
+        "row": 1,
+        "values": [
+          "Synthetic quote comparison",
+          "Synthetic quote comparison",
+          "Synthetic quote comparison",
+          "Synthetic quote comparison"
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+          "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+          "LOCAL ENGINE / SYNTHETIC MCP — not a live provider",
+          "LOCAL ENGINE / SYNTHETIC MCP — not a live provider"
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "Scenario",
+          "Quantity",
+          "Unit price",
+          "Total"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "Original",
+          2,
+          125,
+          {
+            "formula": "B4*C4",
+            "result": 250
+          }
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "Revised",
+          2,
+          140,
+          {
+            "formula": "B5*C5",
+            "result": 280
+          }
+        ]
+      },
+      {
+        "row": 6,
+        "values": [
+          "Difference",
+          null,
+          null,
+          {
+            "formula": "D5-D4",
+            "result": 30
+          }
+        ]
+      },
+      {
+        "row": 7,
+        "values": []
+      },
+      {
+        "row": 8,
+        "values": [
+          "Expected after calculation: 250.00 / 280.00 / 30.00",
+          "Expected after calculation: 250.00 / 280.00 / 30.00",
+          "Expected after calculation: 250.00 / 280.00 / 30.00",
+          "Expected after calculation: 250.00 / 280.00 / 30.00"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+          "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+          "Input caches intentionally wrong: 999.00 / 888.00 / -111.00",
+          "Input caches intentionally wrong: 999.00 / 888.00 / -111.00"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,363 @@
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+> @open-instinct/server@0.1.0 typecheck /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+
+
+> @open-instinct/server@0.1.0 test /private/tmp/open-instinct/packages/server
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: Indexing all PDF objects
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+ Test Files  37 passed (37)
+      Tests  321 passed (321)
+   Start at  03:04:56
+   Duration  13.39s (transform 1.08s, setup 0ms, collect 25.49s, tests 48.59s, environment 4ms, prepare 1.76s)
+
+
+> open-instinct@0.1.0 smoke /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run smoke
+
+
+> @open-instinct/server@0.1.0 smoke /private/tmp/open-instinct/packages/server
+> node dist/smoke.js
+
+health
+  ok   GET /health is 200 {ok:true}
+1. owner remembers a preference
+  ok   POST /chat is 200
+  ok   reply is the model's final text (got "Noted: window seats from now on.")
+  ok   MEMORY.md contains the preference
+2. stranger asks for the calendar
+  ok   envelope /chat returns an empty response (reply goes through the outbox)
+  ok   outbox got exactly one iMessage for imessage:conv_stranger (got 1)
+  ok   stranger's memory_write did not land
+  note policy deny not in audit: tool was hidden from the stranger (Pi answers 'tool not found' before beforeToolCall)
+3. schedules
+  ok   GET /schedules starts empty
+  ok   schedule chat answered
+  ok   GET /schedules has one entry (got 1)
+  ok   schedule carries cron and enabled
+4. a stranger's agent asks for the calendar over A2A
+  ok   A2A envelope /chat returns an empty response
+  ok   conversation key is a2a:ctx_smoke_1 (got "a2a:ctx_smoke_1")
+  ok   owner got exactly one notification through the outbox (got 1)
+  ok   the notification names the calendar ask and the refusal
+  ok   the notification was sent on behalf of the stranger agent (got stranger:a2a:unknown-agent)
+  ok   the notification is prefixed with who asked
+  ok   exactly one A2A reply went back on the task (got 1)
+  ok   the reply completes task task_smoke_1 (got {"taskId":"task_smoke_1","intent":"complete"})
+  ok   the reply carries the inbound replyRef
+  ok   the reply declines in words
+  ok   nothing else left the process for this task (got 2 sends)
+  ok   the owner's memory did not leak to the stranger or the notice
+  ok   the caller resolved to a stranger (got stranger:a2a:unknown-agent)
+  ok   policy allowed only notify_owner for the stranger (got ["notify_owner"])
+  ok   memory_read never executed for the stranger
+5. owner asks for a PDF
+  ok   PDF chat is 200
+  ok   a real PDF exists at workspace/briefs/smoke.pdf
+  ok   create_pdf wrote the file and reported one page (got "Wrote /private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-yQott9/workspace/briefs/smoke.pdf (1.9 KB, 1 page).")
+  ok   send_file answered with the file's path (got "/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-yQott9/workspace/briefs/smoke.pdf (1929 bytes) is ready. Paste this block verbatim in your reply so the dashboard attaches it:\n```maritime-file\n{\"path\":\"/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-yQ…")
+  ok   the reply carries the maritime-file block or the path
+status
+  ok   status page names the agent and model
+
+smoke passed
+
+> open-instinct@0.1.0 test:e2e /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run test:e2e
+
+
+> @open-instinct/server@0.1.0 test:e2e /private/tmp/open-instinct/packages/server
+> playwright test --config playwright.config.ts
+
+
+Running 34 tests using 1 worker
+
+(node:742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (1.8s)
+(node:748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (3.7s)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (721ms)
+  ✘   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (703ms)
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (3.6s)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (729ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:275:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (413ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:363:1 › owner changes and closes queued work without losing prior versions (711ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:417:1 › hostile source content stays inert and selective deletion removes retrieval (881ms)
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.3s)
+  ✓  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.3s)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (911ms)
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.1s)
+  ✓  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.2s)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (918ms)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.4s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.4s)
+(node:780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (1.1s)
+(node:785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (3.5s)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (700ms)
+  ✘  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (660ms)
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (3.6s)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (666ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:275:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (409ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:363:1 › owner changes and closes queued work without losing prior versions (747ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:417:1 › hostile source content stays inert and selective deletion removes retrieval (798ms)
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✓  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.1s)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (887ms)
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:793) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.0s)
+  ✓  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.1s)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (854ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.6s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.0s)
+
+
+  1) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,12 +1,12 @@[39m
+    [2m  Object {[22m
+    [2m    "model": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+    [2m      "limitMinor": 500,[22m
+    [32m-     "remainingMinor": 500,[39m
+    [32m-     "unknown": false,[39m
+    [31m+     "remainingMinor": null,[39m
+    [31m+     "unknown": true,[39m
+    [2m      "usedMinor": 0,[22m
+    [2m    },[22m
+    [2m    "purchase": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toMatchObject({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/validation-error-light-ea8dee4cb1035ef19e622285af61b128a98afdc9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/failure-screenshot-01e78754746d43149771d65dfb7fbad70e940966.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/error-context.md
+
+  2) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,12 +1,12 @@[39m
+    [2m  Object {[22m
+    [2m    "model": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+    [2m      "limitMinor": 500,[22m
+    [32m-     "remainingMinor": 500,[39m
+    [32m-     "unknown": false,[39m
+    [31m+     "remainingMinor": null,[39m
+    [31m+     "unknown": true,[39m
+    [2m      "usedMinor": 0,[22m
+    [2m    },[22m
+    [2m    "purchase": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toMatchObject({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/validation-error-dark-c79aee664bf09844a036178fd6673b34edf18b58.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/failure-screenshot-79e74bad45b47f40d9a0c8f61f6c871560b08261.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/error-context.md
+
+  3) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,12 +1,12 @@[39m
+    [2m  Object {[22m
+    [2m    "model": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+    [2m      "limitMinor": 500,[22m
+    [32m-     "remainingMinor": 500,[39m
+    [32m-     "unknown": false,[39m
+    [31m+     "remainingMinor": null,[39m
+    [31m+     "unknown": true,[39m
+    [2m      "usedMinor": 0,[22m
+    [2m    },[22m
+    [2m    "purchase": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toMatchObject({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/validation-error-light-bb1ed6a42d36c842619d1b02494348742d85b5a9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/failure-screenshot-a7106f3cf591dc3e67ba3feb840348368f8d3f7a.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/error-context.md
+
+  4) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,12 +1,12 @@[39m
+    [2m  Object {[22m
+    [2m    "model": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+    [2m      "limitMinor": 500,[22m
+    [32m-     "remainingMinor": 500,[39m
+    [32m-     "unknown": false,[39m
+    [31m+     "remainingMinor": null,[39m
+    [31m+     "unknown": true,[39m
+    [2m      "usedMinor": 0,[22m
+    [2m    },[22m
+    [2m    "purchase": Object {[22m
+    [2m      "currency": "USD",[22m
+    [2m      "heldMinor": 0,[22m
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toMatchObject({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/validation-error-dark-df25b0e1849d714810e31733db825a10d611843f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/failure-screenshot-6284bc5d4513f962e43bcf3a627e0b1620108548.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/error-context.md
+
+  4 failed
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+  30 passed (1.8m)
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test:e2e: `playwright test --config playwright.config.ts`
+Exit status 1
+ ELIFECYCLE  Command failed with exit code 1.
+[raw output: artifact://433]
+
+
+Wall time: 131.89 seconds
+
+Command exited with code 1

@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { RegisteredTool } from "@open-instinct/core";
+import { CredentialVault, credentialScope } from "@open-instinct/core";
 import type { CreateSpendRequestParams, LinkClientLike, PaymentMethod, SpendRequest } from "../src/link-types.js";
 import { MIN_CONTEXT_CHARS, PAYMENTS_FILE, buildContext, paymentsTools, pickPaymentMethod, readPayments, toCents } from "../src/tools.js";
 import { LinkWallet, TOKENS_FILE, writeSecret } from "../src/wallet.js";
 import { NOW, ctxFor, fakeAudit, fakeOutbox, friend, isError, owner, tempState, testConfig, textOf, walletOpts, type TestState } from "./helpers.js";
+import { paymentsGuidance } from "../src/guidance.js";
 
 const CARD_NUMBER = "4000009990001984";
 const APPROVAL_URL = "https://link.com/approve/abc123";
@@ -84,7 +86,8 @@ function setup(opts: { connected?: boolean; phone?: boolean; methods?: PaymentMe
   const { outbox, sent } = fakeOutbox();
   const { audit, entries } = fakeAudit();
   const config = testConfig(opts.phone === false ? { phones: [] } : {});
-  const tools = paymentsTools({ wallet, outbox, config, audit, state });
+  const vault = new CredentialVault(() => NOW.getTime());
+  const tools = paymentsTools({ wallet, outbox, config, audit, state, credentialVault: vault, workspaceId: "workspace-test" });
   const byName = new Map(tools.map((t) => [t.spec.name, t]));
   const run = async (name: string, args: unknown, principal = owner) => {
     const tool = byName.get(name);
@@ -93,10 +96,16 @@ function setup(opts: { connected?: boolean; phone?: boolean; methods?: PaymentMe
   };
   const records = () => readPayments(state).requests;
   const paymentsText = () => (state.exists(PAYMENTS_FILE) ? fs.readFileSync(state.path(PAYMENTS_FILE), "utf8") : "");
-  return { state, link, wallet, tools, byName, run, sent, entries, records, paymentsText, config };
+  return { state, link, wallet, tools, byName, run, outbox, sent, entries, records, paymentsText, config, vault };
 }
 
 const GOOD_REQUEST = { amountUsd: 25.99, merchantName: "Acme", merchantUrl: "https://acme.example/checkout", context: "Two pairs of wool socks Maria asked for this morning" };
+
+function gate() {
+  const entered = Promise.withResolvers<void>();
+  const released = Promise.withResolvers<void>();
+  return { entered: entered.promise, release: released.resolve, wait: async () => { entered.resolve(); await released.promise; } };
+}
 
 describe("paymentsTools registry", () => {
   it("exposes the four tools in group apps with the purchase capability", () => {
@@ -323,6 +332,15 @@ describe("payment_status", () => {
     expect(link.calls.retrieve).toHaveLength(0);
   });
 
+  it("refuses another principal or conversation before retrieving credentials", async () => {
+    const { run, link, byName } = await requested();
+    link.retrieveAnswer = approvedWithCard;
+    expect(isError(await run("payment_status", { spendRequestId: "lsrq_1" }, friend))).toBe(true);
+    const wrongThread = { ...ctxFor(owner), conversationKey: "chat:another" };
+    expect(isError(await byName.get("payment_status")!.spec.execute({ spendRequestId: "lsrq_1" }, wrongThread))).toBe(true);
+    expect(link.calls.retrieve).toHaveLength(0);
+  });
+
   it("reports pending approval without any card data and updates the record", async () => {
     const { run, link, records } = await requested();
     link.retrieveAnswer = () => spendRequest({ status: "pending_approval" });
@@ -334,18 +352,19 @@ describe("payment_status", () => {
     expect(records()[0]!.cardDelivered).toBe(false);
   });
 
-  it("delivers the card once, records the spend, and never again", async () => {
-    const { run, link, records, entries, paymentsText } = await requested();
+  it("returns a scoped reference once without persisting card details", async () => {
+    const { run, link, records, entries, paymentsText, vault, state } = await requested();
     link.retrieveAnswer = approvedWithCard;
 
     const first = textOf(await run("payment_status", { spendRequestId: "lsrq_1" }));
-    expect(first).toContain(`Card number: ${CARD_NUMBER}`);
-    expect(first).toContain("Expiry: 03/2029");
-    expect(first).toContain("CVC: 123");
-    expect(first).toContain("Name on card: Maria G");
-    expect(first).toContain("Billing address: 1 Main St, Boston, MA, 02110, US");
-    expect(first).toContain("Valid until: 2026-10-03T16:00:00Z");
-    expect(first).toMatch(/Do not repeat the number/);
+    expect(first).not.toContain(CARD_NUMBER);
+    expect(first).not.toContain("03/2029");
+    expect(first).not.toContain("CVC: 123");
+    const reference = first.match(/cred_[A-Za-z0-9_-]{43}/)?.[0];
+    expect(reference).toBeDefined();
+    expect(vault.createResolver("hosted-computer").resolve(reference!, "number", credentialScope(ctxFor(owner), "workspace-test"))).toBe(CARD_NUMBER);
+    state.writeJson("transcript.json", { toolResult: first });
+    expect(fs.readFileSync(state.path("transcript.json"), "utf8")).not.toContain(CARD_NUMBER);
     expect(link.calls.retrieve[0]).toEqual({ id: "lsrq_1", opts: { include: ["card"] } });
 
     const record = records()[0]!;
@@ -384,7 +403,7 @@ describe("payment_status", () => {
     expect(entries).toHaveLength(0);
     // A later call still asks for the card.
     link.retrieveAnswer = approvedWithCard;
-    expect(textOf(await run("payment_status", { spendRequestId: "lsrq_1" }))).toContain(CARD_NUMBER);
+    expect(textOf(await run("payment_status", { spendRequestId: "lsrq_1" }))).toContain("credentialRef cred_");
     expect(link.calls.retrieve[1]).toEqual({ id: "lsrq_1", opts: { include: ["card"] } });
   });
 
@@ -496,5 +515,179 @@ describe("helpers", () => {
     expect(text.length).toBeGreaterThanOrEqual(MIN_CONTEXT_CHARS);
     expect(text).toContain("Reason: x y.");
     expect(text).toContain(NOW.toISOString());
+  });
+});
+
+describe("business provider consent", () => {
+  it("still requests Link consent for dispatched business purchases and keeps secrets out of failures", async () => {
+    const { byName, link, sent, config } = setup();
+    config.business = { autonomy: "full" };
+    const worker = { ...ctxFor(owner), businessInvocation: true, taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" } };
+    const request = byName.get("payment_request")!.spec;
+    await expect(request.execute(GOOD_REQUEST, { ...worker, businessInvocation: false })).rejects.toThrow("task dispatch");
+    expect(link.calls.create).toHaveLength(0);
+    await request.execute(GOOD_REQUEST, worker);
+    expect(link.calls.approval).toEqual(["lsrq_1"]);
+    expect(sent[0]!.msg.text).toContain("provider payment consent");
+    link.retrieveAnswer = () => { throw new Error(`provider echo ${CARD_NUMBER} password=synthetic-sensitive`); };
+    const error = await byName.get("payment_status")!.spec.execute({ spendRequestId: "lsrq_1" }, worker).catch((caught: unknown) => caught);
+    expect(String(error)).toContain("provider outcome may be unknown");
+    expect(String(error)).not.toContain(CARD_NUMBER);
+    expect(String(error)).not.toContain("synthetic-sensitive");
+    expect(paymentsGuidance(true, true)).toContain("provider consent");
+    expect(paymentsGuidance(true)).toContain("Personal spend policy");
+  });
+
+  it.each(["signal", "dispatch"] as const)("blocks creation after a payment-method prerequisite is revoked through %s", async (fence) => {
+    const s = setup();
+    const pending = gate();
+    const controller = new AbortController();
+    let active = true;
+    const ctx = { ...ctxFor(owner), assertBusinessDispatch: () => { if (!active) throw new Error("source or authority revoked"); } };
+    s.link.client.paymentMethods.list = async () => {
+      s.link.calls.list += 1;
+      await pending.wait();
+      return methods;
+    };
+    const result = s.byName.get("payment_request")!.spec.execute(GOOD_REQUEST, ctx, controller.signal).catch((error: unknown) => error);
+    await pending.entered;
+    if (fence === "signal") controller.abort();
+    else active = false;
+    pending.release();
+    expect(await result).toBeInstanceOf(Error);
+    expect(s.link.calls.create).toHaveLength(0);
+    expect(s.link.calls.approval).toHaveLength(0);
+    expect(s.sent).toHaveLength(0);
+    expect(s.records()).toHaveLength(0);
+  });
+
+  it.each(["signal", "dispatch"] as const)("preserves accepted creation but blocks consent after %s revocation", async (fence) => {
+    const s = setup();
+    const pending = gate();
+    const controller = new AbortController();
+    let active = true;
+    const receipts: unknown[] = [];
+    const ctx = {
+      ...ctxFor(owner),
+      assertBusinessDispatch: () => { if (!active) throw new Error("source or authority revoked"); },
+      recordBusinessReceipt: (receipt: unknown) => { receipts.push(receipt); },
+    };
+    s.link.client.spendRequests.create = async (params) => {
+      s.link.calls.create.push(params);
+      await pending.wait();
+      return spendRequest();
+    };
+    const result = s.byName.get("payment_request")!.spec.execute(GOOD_REQUEST, ctx, controller.signal).catch((error: unknown) => error);
+    await pending.entered;
+    if (fence === "signal") controller.abort();
+    else active = false;
+    pending.release();
+    expect(await result).toBeInstanceOf(Error);
+    expect(s.link.calls.create).toHaveLength(1);
+    expect(s.link.calls.approval).toHaveLength(0);
+    expect(s.sent).toHaveLength(0);
+    expect(s.records()).toMatchObject([{ spendRequestId: "lsrq_1", status: "created", cardDelivered: false }]);
+    expect(receipts).toEqual([{ spendRequestId: "lsrq_1", status: "created", amountUsd: 25.99, merchantName: "Acme" }]);
+    expect(s.paymentsText()).not.toContain(APPROVAL_URL);
+  });
+
+  it("persists creation before awaiting consent and blocks notification after stop", async () => {
+    const s = setup();
+    const pending = gate();
+    const controller = new AbortController();
+    s.link.client.spendRequests.requestApproval = async (id) => {
+      s.link.calls.approval.push(id);
+      await pending.wait();
+      return { id, approval_url: APPROVAL_URL };
+    };
+    const result = s.byName.get("payment_request")!.spec.execute(GOOD_REQUEST, ctxFor(owner), controller.signal).catch((error: unknown) => error);
+    await pending.entered;
+    expect(s.records()).toMatchObject([{ spendRequestId: "lsrq_1", status: "created" }]);
+    controller.abort();
+    pending.release();
+    expect(await result).toBeInstanceOf(Error);
+    expect(s.link.calls.approval).toEqual(["lsrq_1"]);
+    expect(s.records()).toMatchObject([{ spendRequestId: "lsrq_1", status: "pending_approval" }]);
+    expect(s.sent).toHaveLength(0);
+  });
+
+  it.each(["signal", "dispatch"] as const)("forwards notification fences through outbox prerequisites for %s revocation", async (fence) => {
+    const s = setup();
+    const pending = gate();
+    const controller = new AbortController();
+    let active = true;
+    let submitted = 0;
+    const receipts: unknown[] = [];
+    const ctx = {
+      ...ctxFor(owner),
+      assertBusinessDispatch: () => { if (!active) throw new Error("authority revoked"); },
+      recordBusinessReceipt: (receipt: unknown) => { receipts.push(receipt); },
+    };
+    s.outbox.send = async (_message, dispatch) => {
+      expect(dispatch.signal).toBe(controller.signal);
+      expect(dispatch.recordBusinessReceipt).toBe(ctx.recordBusinessReceipt);
+      expect(dispatch.assertBusinessDispatch).toBeTypeOf("function");
+      await pending.wait();
+      dispatch.assertBusinessDispatch!();
+      submitted += 1;
+    };
+    const result = s.byName.get("payment_request")!.spec.execute(GOOD_REQUEST, ctx, controller.signal).catch((error: unknown) => error);
+    await pending.entered;
+    if (fence === "signal") controller.abort();
+    else active = false;
+    pending.release();
+    expect(await result).toBeInstanceOf(Error);
+    expect(submitted).toBe(0);
+    expect(s.records()).toMatchObject([{ spendRequestId: "lsrq_1", status: "pending_approval" }]);
+    expect(receipts).toMatchObject([{ status: "created" }, { status: "pending_approval" }]);
+    expect(s.entries.filter((entry) => entry.kind === "outbound")).toHaveLength(0);
+  });
+
+  it("keeps creation evidence when consent has an unknown provider outcome", async () => {
+    const s = setup();
+    s.link.client.spendRequests.requestApproval = async () => {
+      throw new Error(`uncertain consent response ${CARD_NUMBER}`);
+    };
+    await expect(s.run("payment_request", GOOD_REQUEST)).rejects.toThrow("provider outcome may be unknown");
+    expect(s.records()).toMatchObject([{ spendRequestId: "lsrq_1", status: "created", cardDelivered: false }]);
+    expect(s.sent).toHaveLength(0);
+    expect(s.paymentsText()).not.toContain(CARD_NUMBER);
+    s.link.retrieveAnswer = () => spendRequest();
+    const status = textOf(await s.run("payment_status", { spendRequestId: "lsrq_1" }));
+    expect(status).toContain("provider approval status has not been verified");
+  });
+
+  it("does not create a connect flow for an already canceled owner invocation", async () => {
+    const s = setup({ connected: false });
+    const controller = new AbortController();
+    controller.abort();
+    await expect(s.byName.get("payment_connect")!.spec.execute({}, ctxFor(owner), controller.signal)).rejects.toThrow();
+    expect(fs.existsSync(s.wallet.pendingPath())).toBe(false);
+    expect(s.sent).toHaveLength(0);
+  });
+
+  it("does not issue credentials after authority changes during card retrieval", async () => {
+    const s = setup();
+    await s.run("payment_request", GOOD_REQUEST);
+    const pending = gate();
+    let active = true;
+    const ctx = { ...ctxFor(owner), assertBusinessDispatch: () => { if (!active) throw new Error("source revoked"); } };
+    s.link.client.spendRequests.retrieve = async () => {
+      await pending.wait();
+      return approvedWithCard();
+    };
+    const result = s.byName.get("payment_status")!.spec.execute({ spendRequestId: "lsrq_1" }, ctx).catch((error: unknown) => error);
+    await pending.entered;
+    active = false;
+    pending.release();
+    expect(await result).toBeInstanceOf(Error);
+    expect(s.records()[0]!.cardDelivered).toBe(false);
+    expect(s.entries.filter((entry) => entry.kind === "spend")).toHaveLength(0);
+    expect(s.paymentsText()).not.toContain(CARD_NUMBER);
+    // A later authorized read can still deliver exactly one opaque reference.
+    s.link.client.spendRequests.retrieve = async () => approvedWithCard();
+    const later = await s.run("payment_status", { spendRequestId: "lsrq_1" });
+    expect(textOf(later)).toContain("credentialRef");
+    expect(textOf(later)).not.toContain(CARD_NUMBER);
   });
 });

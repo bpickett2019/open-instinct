@@ -15,22 +15,29 @@ export interface LocalChatBody {
   conversation_id?: string;
 }
 
+export interface ChatResponse {
+  response: string | null;
+  error?: string;
+  /** Deferred responses from earlier requests, in server order. */
+  pending?: string[];
+}
+
 export async function localChat(
   f: typeof fetch,
   baseUrl: string,
   body: LocalChatBody,
   token?: string,
-): Promise<{ response: string | null; error?: string }> {
+): Promise<ChatResponse> {
   const url = `${baseUrl.replace(/\/+$/, "")}/chat`;
   let res: Response;
   try {
-    res = await f(url, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders(token) }, body: JSON.stringify(body) });
+    res = await f(url, { method: "POST", redirect: "error", headers: { "Content-Type": "application/json", ...authHeaders(token) }, body: JSON.stringify(body) });
   } catch (err) {
     throw new CliError(`Could not reach ${url}. Is \`instinct dev\` running? (${err instanceof Error ? err.message : String(err)})`);
   }
   if (res.status === 401) throw new CliError(`${url} wants a chat token. Set INSTINCT_CHAT_TOKEN to the server's value.`);
   if (!res.ok) throw new CliError(`${url} returned ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  return (await res.json()) as { response: string | null; error?: string };
+  return (await res.json()) as ChatResponse;
 }
 
 export async function localStatus(f: typeof fetch, baseUrl: string, token?: string): Promise<Record<string, unknown>> {

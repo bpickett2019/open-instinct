@@ -14,3 +14,9 @@ One paragraph. What changes for a person using the agent, and why.
 ## How it was tested
 
 What you ran and what you saw. Say plainly what is not verified live.
+
+- Affected scenario IDs:
+- Evidence artifact / changed-case index:
+- Verification mode for each scenario: emulated / real browser with emulated providers / live / not run.
+- Exact live-provider blockers and required account/authentication/consenting-recipient input:
+- Independent security review findings and negative-case evidence:

@@ -1,0 +1,165 @@
+{
+  "method": "Successful historical write payloads and edit result snapshots/diffs, replayed chronologically; only absent source files restored; obsolete deleted probes not resurrected",
+  "files": [
+    {
+      "path": "packages/apps/src/google-transport.ts",
+      "sha256": "929e70607b33f94ce5f61e60676e801338f06f684a6e25cae464b3260b3ec57e",
+      "lastHistoricalChange": "2026-10-23T06:05:04.679Z"
+    },
+    {
+      "path": "packages/server/testing/isolation.ts",
+      "sha256": "61de9156c4cab82faefd64ad2a76e03ac3ce423905b122dda10033b8c4678bea",
+      "lastHistoricalChange": "2026-10-23T05:54:17.706Z"
+    },
+    {
+      "path": "packages/server/src/workspace-session.ts",
+      "sha256": "41fedd083644bdf17449874f7a792e4b8e2757671671de0c3ab47a248041b2ef",
+      "lastHistoricalChange": "2026-10-23T05:54:32.760Z"
+    },
+    {
+      "path": "packages/server/testing/emulators/http.ts",
+      "sha256": "5a4973c91ade81c0ea81dbd9d7dd090d038eed9e2c4981b7a56a84daef700333",
+      "lastHistoricalChange": "2026-10-23T06:08:19.804Z"
+    },
+    {
+      "path": "packages/server/src/workspace-page.ts",
+      "sha256": "975edf93418c6606f44d81de5fa7eaf663c4a955f85364d4e6d92d1308a87822",
+      "lastHistoricalChange": "2026-10-23T05:54:43.580Z"
+    },
+    {
+      "path": "packages/server/src/business-pricing.ts",
+      "sha256": "f0ac06f47a5f059877ce5ac5924bbe5cd0fb57d0241ba3a54915ab00815f1ac8",
+      "lastHistoricalChange": "2026-10-23T05:55:58.611Z"
+    },
+    {
+      "path": "packages/server/tsconfig.web.json",
+      "sha256": "7de69d79ae35b469bb8c61bbed6c0d12dbcc6aadf4daf2521127a942a6e9b9d6",
+      "lastHistoricalChange": "2026-10-23T06:00:48.523Z"
+    },
+    {
+      "path": "packages/server/src/business-extraction.ts",
+      "sha256": "4b7d8b4e01dc95d1a428932544ded77669891faf4bed6703f6000f8e621c83d6",
+      "lastHistoricalChange": "2026-10-23T06:12:09.794Z"
+    },
+    {
+      "path": "packages/core/src/credential-vault.ts",
+      "sha256": "efb540e5fda2d7f4854d58516e16a4f708715d71de47c5f7dbec4186be520d18",
+      "lastHistoricalChange": "2026-10-23T06:09:44.343Z"
+    },
+    {
+      "path": "packages/core/src/business-lock.ts",
+      "sha256": "aa3548f223f76b7205207b6a485c92640ba9e796aa37444d1c42d57352af3f09",
+      "lastHistoricalChange": "2026-10-23T05:57:36.331Z"
+    },
+    {
+      "path": "packages/server/src/business-document-parser.ts",
+      "sha256": "816d378e88c9cc54520c0c224ab4c9f744eb797a45ec361509275505e00c626c",
+      "lastHistoricalChange": "2026-10-23T06:52:47.514Z"
+    },
+    {
+      "path": "packages/server/src/business-extraction-worker.ts",
+      "sha256": "9e81280b216751bfa3460a95d030eca4bf918b8189ada130b39f05cabb5e37e1",
+      "lastHistoricalChange": "2026-10-23T05:58:44.190Z"
+    },
+    {
+      "path": "packages/core/src/business-recovery.ts",
+      "sha256": "b163e9c897d6b798e42553a2e51d9544ba722bf9a7e42ef34ef4e036819c9729",
+      "lastHistoricalChange": "2026-10-23T06:56:32.785Z"
+    },
+    {
+      "path": "packages/server/src/business-knowledge-types.ts",
+      "sha256": "167ce36a7ceeea1c23f7163b7e64b4bfa0a4b3bb8224c1255124dc79991f1a95",
+      "lastHistoricalChange": "2026-10-23T06:45:37.215Z"
+    },
+    {
+      "path": "packages/server/src/business-profile.ts",
+      "sha256": "7c17f07843f28203c2e0ce15a09cb3997be0c01a1fde5acb575eb1775146d535",
+      "lastHistoricalChange": "2026-10-23T06:45:37.215Z"
+    },
+    {
+      "path": "packages/server/src/business-commitments.ts",
+      "sha256": "de79173b209532b890070cb01387dc7a444052fbddba088bd8b080325102e984",
+      "lastHistoricalChange": "2026-10-23T06:11:33.244Z"
+    },
+    {
+      "path": "packages/server/src/business-knowledge.ts",
+      "sha256": "ca3b2d782afefa2c1495fa0ccb3d06e8473725fb86b6485e1cff90c61774e0b9",
+      "lastHistoricalChange": "2026-10-23T06:49:17.690Z"
+    },
+    {
+      "path": "packages/cli/src/commands/business.ts",
+      "sha256": "f977183f6c65ec2011ff53ad3952d22e27f7d3905f348ebbaf115915ae261ec1",
+      "lastHistoricalChange": "2026-10-23T06:10:20.785Z"
+    },
+    {
+      "path": "packages/server/vitest.config.ts",
+      "sha256": "0be6a110349188c59f6651c3e6cc19543b37c18cb1d8b9c4d40666709122798e",
+      "lastHistoricalChange": "2026-10-23T06:00:59.245Z"
+    },
+    {
+      "path": "packages/server/src/business-commitment-tools.ts",
+      "sha256": "928e5f321642f4381ebc0a5099728489f8e85962f9d0128a7544472e6eeb5fc6",
+      "lastHistoricalChange": "2026-10-23T06:08:19.417Z"
+    },
+    {
+      "path": "packages/core/test/credential-vault.test.ts",
+      "sha256": "85b1adb6e70296706af1a0e641f774c4de8264712b55059f63a7248b3e768efd",
+      "lastHistoricalChange": "2026-10-23T06:02:31.054Z"
+    },
+    {
+      "path": "skills/business-follow-through/SKILL.md",
+      "sha256": "01321f7eab529646e257073fed7c32dd5987906170f78ca4edb8f24e81cc2e0a",
+      "lastHistoricalChange": "2026-10-23T06:04:47.384Z"
+    },
+    {
+      "path": "packages/server/test/business-commitments.test.ts",
+      "sha256": "f8b06f42dafb6902b40395a881d14ac9954cae97bb7203969dcfebbdd129b833",
+      "lastHistoricalChange": "2026-10-23T06:11:11.387Z"
+    },
+    {
+      "path": "packages/core/test/business-lock.test.ts",
+      "sha256": "46bf4a033864409991a37c57d3543d2e5656fa3ed343aa8a89885cd78c19703f",
+      "lastHistoricalChange": "2026-10-23T06:10:20.785Z"
+    },
+    {
+      "path": "packages/cli/test/business.test.ts",
+      "sha256": "572ae8de8b55053a766e282eda7785f0d679958b19a4b48fc9838925ca553680",
+      "lastHistoricalChange": "2026-10-23T06:10:20.785Z"
+    },
+    {
+      "path": "packages/server/test/scenarios/security.test.ts",
+      "sha256": "09984024f565b916639eef8680f18cf113a2aaef389153992d8891f388d14ff2",
+      "lastHistoricalChange": "2026-10-23T06:37:37.695Z"
+    },
+    {
+      "path": "packages/apps/test/business-providers.test.ts",
+      "sha256": "c860bbc93cc0080daeadf9d18c56587a3120a8397af68b9d288c4101c42ff0fb",
+      "lastHistoricalChange": "2026-10-23T06:06:45.028Z"
+    },
+    {
+      "path": "packages/server/scripts/copy-web-assets.mjs",
+      "sha256": "37e86a1b232f1d663a1c87a2fb73a7f2d74a2433fe78fcb79a285de0223e4e0a",
+      "lastHistoricalChange": "2026-10-23T06:07:17.033Z"
+    },
+    {
+      "path": "packages/server/test/business-pricing.test.ts",
+      "sha256": "e20638d866a5a8ca2b85016ee3b398a01c7daeba1562402713fd97bcc0578fdc",
+      "lastHistoricalChange": "2026-10-23T06:09:59.629Z"
+    },
+    {
+      "path": "packages/server/test/business-knowledge.test.ts",
+      "sha256": "9720e42e6f4af08a999c0a894cca39108a1155a9895b034478039003120c126f",
+      "lastHistoricalChange": "2026-10-23T06:47:50.477Z"
+    },
+    {
+      "path": "packages/server/test/workspace-session.test.ts",
+      "sha256": "570c845f80b55ea9f78855845bff4582497a486f4a910b20736a94b5b017dceb",
+      "lastHistoricalChange": "2026-10-23T06:12:30.132Z"
+    },
+    {
+      "path": "packages/server/test/business-extraction.test.ts",
+      "sha256": "30366c4cbb51789bc67ae72586baf2306b00bb8a95d3096c8c189d81fb5f42e4",
+      "lastHistoricalChange": "2026-10-23T06:12:56.756Z"
+    }
+  ]
+}

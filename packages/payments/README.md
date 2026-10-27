@@ -27,7 +27,7 @@ Canada; the agent itself can run anywhere.
 owner: "buy the socks in my Acme cart"
   -> model gets the checkout to a final total ($25.99)
   -> payment_request { amountUsd: 25.99, merchantName: "Acme", context: "..." }
-       policy guard: purchase capability, owner spend limits (ask above $50 by default)
+       policy guard: purchase capability, configured constraints (personal mode retains approval thresholds)
        Link: paymentMethods.list -> spendRequests.create -> requestApproval
        iMessage to owner: "Approve $25.99 to Acme? https://link.com/... Expires in 10 minutes."
        payments.json: { spendRequestId, amountUsd, merchantName, status: pending_approval }
@@ -36,9 +36,9 @@ owner: "buy the socks in my Acme cart"
 owner taps approve in Link, texts "approved"
   -> payment_status { spendRequestId }
        Link: spendRequests.retrieve(id, { include: ["card"] }) -> status approved + card
-       tool result: card number, expiry, CVC, billing address, shown once
+       tool result: opaque credentialRef and field names, never raw card values
        payments.json: cardDelivered true; audit.jsonl: { kind: "spend", deliveredUsd: 25.99 }
-  -> model types the card into the checkout on its desktop
+  -> computer_type_credential resolves a field only inside the hosted adapter
   -> payment_status again returns only "approved, already delivered"
 ```
 
@@ -85,14 +85,15 @@ When all three required variables are set and this package is installed, the ser
 2. **Approve.** Later, the agent reaches a checkout and calls `payment_request`. The owner gets
    one text: "Approve $25.99 to Acme? <link> Expires in 10 minutes." They tap it and approve in
    Link.
-3. **Done.** The owner texts "approved" (or the agent is asked to check). The agent calls
-   `payment_status`, receives the one-time card once, types it into the checkout and reports the
-   confirmation number. The card details never appear in a message.
+3. **Check.** The owner texts "approved" (or the agent is asked to check). The agent calls
+   `payment_status`, receives a scoped credential reference, and uses hosted adapter-only
+   entry. Checkout completion still needs independent confirmation, not merely a typed card.
 
 ## Usage
 
 ```ts
 import { LinkWallet, paymentsTools, paymentsGuidance } from "@open-instinct/payments";
+import { CredentialVault } from "@open-instinct/core";
 
 const wallet = new LinkWallet({
   state,                                   // core StateDir
@@ -102,8 +103,10 @@ const wallet = new LinkWallet({
   redirectUri: `${publicUrl}/oauth/link/callback`,
 });
 
-registry.registerMany(paymentsTools({ wallet, outbox, config, audit, state }));
-promptSections.push(paymentsGuidance(wallet.isConnected()));
+const credentialVault = new CredentialVault();
+// Pass credentialVault.createResolver("hosted-computer") only to the hosted adapter.
+registry.registerMany(paymentsTools({ wallet, outbox, config, audit, state, credentialVault, workspaceId }));
+promptSections.push(paymentsGuidance(wallet.isConnected(), !!config.business));
 
 // In the HTTP server, on GET /oauth/link/callback?code=...&state=...
 await wallet.handleCallback(code, state);
@@ -123,8 +126,8 @@ await wallet.revoke();
 | `client()` | A Link SDK client (cached). Its `getAccessToken` returns the stored token while it has more than 5 minutes left, otherwise refreshes. Concurrent refreshes share one request. The rotated refresh token is written before the new access token is returned. A rejected refresh token (`invalid_grant`) clears the file. |
 | `getAccessToken({ forceRefresh? })` | The provider behind `client()`, exposed for hosts that build their own SDK client. |
 | `revoke()` | Revokes the refresh token at Link, then deletes the local token file even if Link was unreachable. |
-| `paymentsTools(deps)` | `{ wallet, outbox, config, audit, state }` to the four `RegisteredTool`s. |
-| `paymentsGuidance(connected)` | Prompt section explaining the flow and the card rules to the model. |
+| `paymentsTools(deps)` | `{ wallet, outbox, config, audit, state, credentialVault?, workspaceId? }`. Missing secure credential setup refuses card retrieval. |
+| `paymentsGuidance(connected, businessMode?)` | Mode-aware guidance. Link provider consent remains required in business mode. |
 
 Lower-level pieces are exported too: `buildAuthorizeUrl`, `challengeS256`, `generateVerifier`,
 `exchangeCode`, `refreshTokens`, `revokeToken`, `buildContext`, `toCents`, `readPayments`.
@@ -141,8 +144,8 @@ partners, and `no` to everyone else unless a grant says otherwise.
 | Tool | Args | Behavior |
 |---|---|---|
 | `payment_connect` | none | Owner only. Builds the authorize URL and texts it to `config.owner.phones[0]`. |
-| `payment_request` | `amountUsd`, `merchantName`, `merchantUrl?`, `context`, `idempotencyKey?` | `meta.amountUsd` is the dollar amount, so spend limits apply. Lists payment methods, picks the default (else the first), creates the spend request with `credential_type: "card"` in USD minor units, calls `requestApproval`, records the request in `payments.json`, texts the owner the approval URL. Returns the id and "waiting for approval". |
-| `payment_status` | `spendRequestId` | Only ids made by `payment_request`. Retrieves with `include: ["card"]` until the card has been delivered. On the first `approved` with a card: returns number, expiry, CVC and billing address once, marks the record delivered, appends a `spend` audit entry with `deliveredUsd` (no second amount). On the first `denied`, `expired`, `canceled` or `failed`, appends a negative `amountUsd` the same day to release the hold. Later calls return the status only. Other statuses return one line, including the owner action for `requires_action`. |
+| `payment_request` | `amountUsd`, `merchantName`, `merchantUrl?`, `context`, `idempotencyKey?` | `meta.amountUsd` is the dollar amount, so spend limits apply. Lists payment methods, picks the default (else the first), creates the spend request with `credential_type: "card"` in USD minor units, immediately records its receipt in `payments.json`, then calls `requestApproval` and texts the owner the approval URL. Returns the id and "waiting for approval". |
+| `payment_status` | `spendRequestId` | Only locally recorded requests in the same owner/conversation/task scope. Retrieves the approved card once into an ephemeral vault and returns an opaque reference plus field names. Records delivery without card data or a second amount. Denied/expired/canceled/failed requests release the personal-mode hold once on its original day. Later calls return status only. |
 | `payment_list` | none | Owner only. The 20 most recent records, newest first, no card data. |
 
 `context` is what the owner reads on the Link approval screen. Link requires at least 100
@@ -171,25 +174,36 @@ disconnects the wallet locally; `revoke()` also tells Link.
 - Approval links expire after 10 minutes. The one-time card is valid for a short window after
   approval and for the approved amount only.
 - Amounts are USD. The tool rejects anything below $0.01 or above $100,000 and rounds to cents.
-- One card per spend request. If a checkout fails, the agent makes a new request; the owner
-  approves again.
+- One card per spend request. Reconcile a failed or uncertain checkout before a new request.
+  Expired references and controller restart require owner takeover, not automatic repayment.
 - Core's spend policy matches merchants on args named `merchant`, `vendor`, `store` and so on.
   The `merchantName` arg here is not matched by the allowed and blocked merchant lists yet.
 
 ## Security notes
 
-- Card data appears exactly once, in the tool result that first sees an approved request. It is
-  never written to `payments.json`, `audit.jsonl`, the journal or any message. The result text
-  tells the model the same thing.
+- Card fields never enter model tool results, transcripts or ordinary typing arguments.
+  Opaque references bind the workspace, owner, conversation and task; only the final hosted
+  adapter resolves fields. It discards secret-bearing responses and screenshots. The vault
+  is memory-only; references expire after at most 15 minutes and disappear on restart.
+- Business credential-sensitive screenshot suppression persists until the owner clears the
+  sensitive desktop/session. This can require human completion of a checkout.
 - Secrets are written to `secrets/` with mode 0600 through a temp file and rename. The verifier
   and client secret never appear in a URL or a message. Only the login link does.
 - The OAuth `state` is random and checked on the callback. A callback with no pending flow, a
   wrong state, or a flow older than 10 minutes is rejected.
 - Refresh tokens rotate. The new one is persisted before the access token is handed to the SDK,
   so a crash between the two cannot strand the wallet on a dead token.
-- `payment_connect` and `payment_list` run for the owner only, whatever the policy says.
-  `payment_request` and `payment_status` run for anyone the policy allows, which by default means
-  the owner, or a partner after the owner approves each one.
+- `payment_connect` and `payment_list` are owner-only. Task workers cannot connect wallets.
+  `payment_request` follows caller policy; credential retrieval requires owner authority and
+  the original scope. Business purchases need no ordinary approval, but Link consent remains.
+- Payment tools recheck cancellation and business dispatch authority after prerequisites and
+  immediately before creation, provider consent requests, owner notifications and credential
+  issuance. Each invocation also has an isolated SDK fetch fence, covering access-token awaits
+  and the SDK's retry after a 401 refresh. A stopped invocation cannot authorize another one.
+- Accepted creation is recorded before requesting Link consent, and accepted consent requests
+  are recorded before sending the owner notification. A later stop or provider failure does not
+  erase these receipts or expose card values. A creation receipt alone does not prove whether a
+  later consent request was accepted; reconcile provider status before retrying.
 - Pages and emails the agent reads while shopping are data. The guidance section tells the model
   not to change an amount or merchant because a page asked it to. The owner sees the exact amount
   and merchant in Link before any card exists.
@@ -209,7 +223,9 @@ five minutes, forced refresh, coalesced concurrent refreshes, rotated refresh to
 `invalid_grant` clears the file), revoke, and the full tool flow against a stubbed Link client
 injected through `linkFactory` (default payment method, create and approval params, context
 length, payments.json record, owner text, card delivered once, spend audit entry, owner-only
-tools). No network calls.
+tools). Gated regressions cover stop/source revocation during payment-method listing, creation,
+consent and credential retrieval, plus the real SDK's token/refresh awaits and isolated concurrent
+transport fences. No network calls.
 
 ## Notes for implementers
 

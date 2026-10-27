@@ -1,0 +1,12 @@
+Observed execution summary, not a reconstructed raw shell transcript.
+Job: bg_203. Exit: 0. Duration: 111.67 seconds.
+Command (cwd /tmp/open-instinct):
+pnpm test:e2e && pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs
+
+Actual Playwright result: 34 passed (1.8m).
+Persisted machine-readable run: packages/server/playwright-report/results.json
+Persisted evidence matrix: packages/server/evidence/manifest.json
+Observed publication-scan output:
+{"status":"passed","files":260,"archiveEntries":4,"expandedBytes":2605284,"verificationMode":"emulated","limitations":"Pattern/canary scan of exact publication bytes and expanded traces/report data; not OCR or a complete vulnerability review."}
+
+This full run precedes the subsequently observed initial-history-scroll fix. The four affected desktop/mobile workspace scenarios are rerun separately; their evidence is not silently merged into this single-run manifest.

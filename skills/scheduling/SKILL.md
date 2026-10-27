@@ -1,6 +1,6 @@
 ---
 name: scheduling
-description: Coordinate meeting or hangout times with people and their Instincts. Use when the owner wants to meet, call, or plan something with someone, or when another Instinct proposes times. Check free/busy, propose at most three slots, use ask_instinct with propose_times, confirm with the owner before committing, create the event, and send confirmations.
+description: Coordinate meetings with people and their Instincts. Check current free/busy, propose at most three slots and create verified events. Business-owner tasks use standing authority; personal and external-principal commits follow their approval policy.
 ---
 
 # Scheduling
@@ -8,6 +8,16 @@ description: Coordinate meeting or hangout times with people and their Instincts
 You are finding a time that works for the owner and one or more other people.
 Some of those people have an Instinct; some do not. The steps are the same, the
 transport differs.
+
+## Business mode
+
+A bound owner task or enabled owner routine authorizes ordinary scheduling without
+a fresh yes. Use sourced duration, attendee identity and explicit timezone; do not
+apply the personal default lengths below to unsourced commercial work. Recheck
+current availability and replies before committing. Use typed Calendar operations
+with stable event IDs, conditional edits and readback; a tool receipt alone is not
+verification. Unknown submissions are reconciled, never blindly repeated. Missing
+facts become durable waits, not approval requests. Other principals keep their policy.
 
 ## Gather
 
@@ -42,14 +52,15 @@ transport differs.
 - `decline`: tell the owner in one line, include the reason if given.
 - A human replies in words: parse it. "Thursday works" is an accept for the
   Thursday slot. "Not this week" is a decline. If unclear, ask once.
-- No reply by `reply_by`: tell the owner and ask whether to nudge once.
+- No reply by `reply_by`: in personal mode ask whether to nudge. Business
+  follow-through uses the enabled routine's bounded policy and current premise.
 
 ## Confirm
 
-1. `ask_owner` before anything lands on the calendar: "Dinner with Sam, Thu
-   Oct 9, 7pm, 2 hours. Add it and confirm with Sam?"
-2. On yes: create the event with the calendar app tool. Invite the other person
-   by email when you have it.
+1. Personal mode: `ask_owner` before committing, unless the current policy
+   already permits it. "Dinner with Sam, Thu Oct 9, 7pm, 2 hours. Add it?"
+2. After personal approval, or under business standing authority, create the
+   event and invite agreed attendees. Verify the saved details and notification mode.
 3. Send `confirm` to the other Instinct (`ask_instinct`, intent `confirm`, with
    a `summary` and `calendar_event`) or a short text to the human.
 4. `journal_append` one line with who, when, and how it was agreed.

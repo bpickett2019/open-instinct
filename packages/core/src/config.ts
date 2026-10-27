@@ -74,6 +74,7 @@ export function configFromEnv(env: NodeJS.ProcessEnv): InstinctConfig {
 /** Fill gaps in an older or hand-edited file so every consumer can rely on the shape. */
 function withDefaults(raw: Partial<InstinctConfig>): InstinctConfig {
   const d = defaultConfig();
+  if (raw.business && raw.business.autonomy !== "full") throw new Error("Business autonomy must be full");
   return {
     version: 1,
     owner: {
@@ -87,6 +88,7 @@ function withDefaults(raw: Partial<InstinctConfig>): InstinctConfig {
     computer: { ...d.computer, ...(raw.computer ?? {}) },
     apps: { ...d.apps, ...(raw.apps ?? {}), toolkits: raw.apps?.toolkits ?? d.apps.toolkits },
     features: { ...d.features, ...(raw.features ?? {}) },
+    ...(raw.business ? { business: raw.business } : {}),
   };
 }
 

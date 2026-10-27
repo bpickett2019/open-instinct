@@ -1,0 +1,39 @@
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+ ❯ test/scenarios/calendar-read.test.ts (3 tests | 1 failed | 2 skipped) 131ms
+   ↓ Calendar day reads through the real business dispatcher (emulated) > reads today's Pacific overlaps and explicit recurring instances in chronological pages, not historical masters
+   × Calendar day reads through the real business dispatcher (emulated) > rejects misplaced camelCase/snake_case filters and non-string query values before provider dispatch, then reads the corrected window 131ms
+     → expected false to be true // Object.is equality
+   ↓ Calendar day reads through the real business dispatcher (emulated) > refuses unsupported recurrence expansion instead of inventing instances or returning a false empty day
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/scenarios/calendar-read.test.ts > Calendar day reads through the real business dispatcher (emulated) > rejects misplaced camelCase/snake_case filters and non-string query values before provider dispatch, then reads the corrected window
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/scenarios/calendar-read.test.ts:127:28
+    125|     expect(rejected).toHaveLength(3);
+    126|     for (const result of rejected) {
+    127|       expect(result.error).toBe(true);
+       |                            ^
+    128|       expect(result.text).toMatch(/input|query|timeMin|time_min|single…
+    129|       expect(result.proxies).toBe(baseline.proxies);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  12:16:22
+   Duration  1.32s (transform 285ms, setup 0ms, collect 1.05s, tests 131ms, environment 0ms, prepare 34ms)
+
+undefined
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/scenarios/calendar-read.test.ts -t rejects misplaced --maxWorkers=1 --no-file-parallelism

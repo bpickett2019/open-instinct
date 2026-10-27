@@ -256,7 +256,7 @@ yours alone.
 | No tokens in chat | The model is told never to paste tokens, API keys or OAuth codes into a message. Links are fine. |
 | Composio pricing | Composio-managed OAuth apps have a free call quota, then a per-call fee. Check <https://composio.dev/pricing>. |
 | Google verification | `gmail.send` with your own OAuth client needs Google verification. Composio-managed auth avoids this for development. |
-| Node version | `@composio/core` 0.22.0 declares Node `>=22.22.3`. It runs on 22.20.0; pnpm may print a warning. |
+| Node version | `@composio/core` 0.22.0 requires Node `>=22.22.3`. Use the repository runtime pin; older runtimes are unsupported. |
 
 ## Checking that it works
 

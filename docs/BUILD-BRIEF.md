@@ -5,11 +5,11 @@ This file holds the exact library facts you need so you do not have to rediscove
 
 ## Toolchain
 
-- Node 22.20.0 is installed via nvm. Before any command: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 22.20.0`.
-- pnpm 10.6.1 (`corepack enable` already done). Root: `pnpm install`, `pnpm -r build`, `pnpm -r test`, `pnpm -r typecheck`.
+- Node >=22.22.3 is required, including deployment images. Use the repository pin: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use`.
+- pnpm 10.6.1 (`corepack enable`). Root: `pnpm install`, `pnpm -r build`, `pnpm -r test`, `pnpm -r typecheck`.
 - TypeScript strict ESM (`"type": "module"`, NodeNext). Import local files with `.js` extensions.
 - Tests: vitest in `packages/<name>/test/*.test.ts`.
-- Node 22 has global `fetch`, `crypto.subtle`, `node:sqlite` is experimental; use JSON files for state.
+- Node has global `fetch`, `crypto.subtle` and native `node:sqlite`. Business state uses SQLite on a supported local persistent filesystem; personal state retains existing JSON stores.
 
 ## Pi (the agent runtime) : versions 1.0.1, scope `@earendil-works`
 

@@ -53,19 +53,23 @@ export function ampleTools(deps: AmpleToolDeps): RegisteredTool[] {
   const run = deps.run ?? spawnCli(deps.bin ?? "ample");
   const baseEnv = deps.env ?? process.env;
 
-  const once = async (args: string[], timeoutMs: number, signal?: AbortSignal): Promise<AmpleResult> => {
+  const once: Runner["ample"] = async (args, timeoutMs, signal, assertBusinessDispatch) => {
     const { token, notice } = await auth.token(signal);
+    // Authentication can await a refresh or signup; authorization must still hold
+    // at the actual CLI boundary, including on a refused-token retry.
+    assertBusinessDispatch?.();
+    signal?.throwIfAborted();
     const result = await run(["--format", "json", ...args], { env: cliEnv(baseEnv, token, apiUrl), timeoutMs, ...(signal ? { signal } : {}) });
     return notice ? { ...result, notice } : result;
   };
-  const ample = async (args: string[], timeoutMs: number, signal?: AbortSignal): Promise<AmpleResult> => {
-    const result = await once(args, timeoutMs, signal);
+  const ample: Runner["ample"] = async (args, timeoutMs, signal, assertBusinessDispatch) => {
+    const result = await once(args, timeoutMs, signal, assertBusinessDispatch);
     if (!refusedToken(result)) return result;
     // A cached token outlives its account by up to 15 minutes. Ample refuses it on
     // the first request, before anything changes, so one retry with a fresh token
     // is safe; signing in again finds out whether the account is gone.
     auth.dropToken();
-    return once(args, timeoutMs, signal);
+    return once(args, timeoutMs, signal, assertBusinessDispatch);
   };
   const runner: Runner = { ample, hasAccount: () => auth.hasAccount(), retired: (id) => auth.retired(id), workspaceDir: deps.workspaceDir, resolvePath: deps.resolvePath };
   return [deployTool(runner), logsTool(runner), appsTool(runner), deleteTool(runner)];
@@ -75,7 +79,7 @@ export function ampleTools(deps: AmpleToolDeps): RegisteredTool[] {
 type AmpleResult = CliResult & { notice?: string };
 
 interface Runner {
-  ample: (args: string[], timeoutMs: number, signal?: AbortSignal) => Promise<AmpleResult>;
+  ample: (args: string[], timeoutMs: number, signal?: AbortSignal, assertBusinessDispatch?: () => void) => Promise<AmpleResult>;
   /** False only for an agent with its own account mode that has not deployed yet. */
   hasAccount: () => boolean;
   /** An account this agent lost (Ample deleted it unclaimed) and replaced. */
@@ -113,12 +117,12 @@ function deployTool({ ample: run, retired, workspaceDir, resolvePath }: Runner):
       group: "files",
       describe: (args) => `deploy ${str(args, "path") ?? "an app"} with Ample`,
     },
-    execute: async ({ path: requested, env, answers, force }, _ctx, signal) => {
+    execute: async ({ path: requested, env, answers, force }, ctx, signal) => {
       // A deploy runs several CLI commands; an account notice from the first (a
       // signup, say) must reach the result the agent reads.
       let notice: string | undefined;
       const ample: Runner["ample"] = async (args, timeoutMs, signal) => {
-        const result = await run(args, timeoutMs, signal);
+        const result = await run(args, timeoutMs, signal, ctx.assertBusinessDispatch);
         notice ??= result.notice;
         return notice ? { ...result, notice } : result;
       };
@@ -162,6 +166,8 @@ function deployTool({ ample: run, retired, workspaceDir, resolvePath }: Runner):
           // deleted it unclaimed, with its apps). They describe nothing that still
           // exists, so drop them and deploy the folder into the current account.
           if (pass === 0 && boundToRetiredAccount(run.result, dir, retired)) {
+            ctx.assertBusinessDispatch?.();
+            signal?.throwIfAborted();
             rmSync(path.join(dir, ".ample"), { recursive: true, force: true });
             continue;
           }
@@ -258,11 +264,11 @@ function logsTool({ ample, hasAccount }: Runner): RegisteredTool {
       tail: Type.Optional(Type.Integer({ minimum: 1, maximum: 500, description: "Last N lines. Default 100." })),
     }),
     meta: { capabilities: ["files.read"], group: "files", describe: (args) => `read Ample logs for ${str(args, "deployment_id") ?? "an app"}` },
-    execute: async ({ deployment_id, kind, tail }, _ctx, signal) => {
+    execute: async ({ deployment_id, kind, tail }, ctx, signal) => {
       if (!DEPLOYMENT_ID.test(deployment_id)) return failed(`"${deployment_id}" is not a deployment ID.`);
       if (!hasAccount()) return failed("Nothing has been deployed with Ample yet, so there are no logs.");
       const args = ["logs", deployment_id, "--kind", kind ?? "all", "--tail", String(tail ?? 100)];
-      return runAndReport(() => ample(args, QUICK_TIMEOUT_MS, signal), "logs", (r) => (r.exitCode === 0 ? "Logs:" : "Could not read the logs."));
+      return runAndReport(() => ample(args, QUICK_TIMEOUT_MS, signal, ctx.assertBusinessDispatch), "logs", (r) => (r.exitCode === 0 ? "Logs:" : "Could not read the logs."));
     },
   });
 }
@@ -274,10 +280,10 @@ function appsTool({ ample, hasAccount }: Runner): RegisteredTool {
     description: "List the apps deployed with Ample: name, deployment ID, status and URL.",
     parameters: Type.Object({}),
     meta: { capabilities: ["files.read"], group: "files", describe: () => "list Ample apps" },
-    execute: async (_args, _ctx, signal) =>
+    execute: async (_args, ctx, signal) =>
       !hasAccount()
         ? textResult("No apps yet: nothing has been deployed with Ample.")
-        : runAndReport(() => ample(["app", "list"], QUICK_TIMEOUT_MS, signal), "apps", (r) => (r.exitCode === 0 ? "Apps:" : "Could not list the apps.")),
+        : runAndReport(() => ample(["app", "list"], QUICK_TIMEOUT_MS, signal, ctx.assertBusinessDispatch), "apps", (r) => (r.exitCode === 0 ? "Apps:" : "Could not list the apps.")),
   });
 }
 
@@ -288,10 +294,10 @@ function deleteTool({ ample, hasAccount }: Runner): RegisteredTool {
     description: "Take an Ample app offline and delete its releases. Its URL stops working. Only when the owner has asked for this app to be removed.",
     parameters: Type.Object({ deployment_id: Type.String({ description: "The deployment ID (dep_...) from ample_apps." }) }),
     meta: { capabilities: ["files.read", "files.write"], group: "files", describe: (args) => `delete Ample app ${str(args, "deployment_id") ?? ""}`.trim() },
-    execute: async ({ deployment_id }, _ctx, signal) => {
+    execute: async ({ deployment_id }, ctx, signal) => {
       if (!DEPLOYMENT_ID.test(deployment_id)) return failed(`"${deployment_id}" is not a deployment ID.`);
       if (!hasAccount()) return failed("Nothing has been deployed with Ample yet, so there is nothing to delete.");
-      return runAndReport(() => ample(["app", "delete", deployment_id, "--yes"], QUICK_TIMEOUT_MS, signal), "delete", (r) =>
+      return runAndReport(() => ample(["app", "delete", deployment_id, "--yes"], QUICK_TIMEOUT_MS, signal, ctx.assertBusinessDispatch), "delete", (r) =>
         r.exitCode === 0 ? "Deleted. The URL no longer serves the app." : "Could not delete the app.",
       );
     },

@@ -6,7 +6,9 @@ import { extractDataDir } from "./args.js";
 import { makeContext, type CliContext } from "./context.js";
 import { renderHelp } from "./help.js";
 import { CliError, UsageError, type CliIo } from "./io.js";
+import { runAuth } from "./commands/auth.js";
 import { runChat } from "./commands/chat.js";
+import { runBusiness } from "./commands/business.js";
 import { runConnect } from "./commands/connect.js";
 import { runDeploy } from "./commands/deploy.js";
 import { runDev } from "./commands/dev.js";
@@ -24,10 +26,12 @@ export const CLI_VERSION = "0.1.0";
 type Command = (ctx: CliContext, argv: string[]) => Promise<number>;
 
 const COMMANDS: Record<string, Command> = {
+  auth: runAuth,
   init: runInit,
   connect: runConnect,
   dev: runDev,
   chat: runChat,
+  business: runBusiness,
   status: runStatus,
   deploy: runDeploy,
   invite: runInvite,

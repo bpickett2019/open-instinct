@@ -1,0 +1,82 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+
+ ✓ test/business-recovery.test.ts (13 tests) 359ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  00:39:34
+   Duration  632ms (transform 68ms, setup 0ms, collect 73ms, tests 359ms, environment 0ms, prepare 41ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ❯ test/scenarios/document-lifecycle.test.ts (4 tests | 1 failed) 1106ms
+   × Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart 569ms
+     → Cannot read properties of undefined (reading 'map')
+   ✓ Document-grounded customer lifecycle (emulated) > G5: registered Calendar insert/update/cancel retain one provider event and stale etags cannot overwrite a human change 74ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send 175ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send 288ms
+ ❯ test/scenarios/workflows.test.ts (21 tests | 1 failed) 1185ms
+   ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history 267ms
+   ✓ Integrated durable workflows (emulated) > G1: competing claims and stale checkpoint/task/control fences never invoke a provider 22ms
+   ✓ Integrated durable workflows (emulated) > G2: Gmail accepts before response loss; restart and delayed readback never resend 68ms
+   ✓ Integrated durable workflows (emulated) > G2: uncertain hosted shell receipt is retained, not replayed after restart 46ms
+   ✓ Integrated durable workflows (emulated) > G4: obsolete source versions cannot dispatch a commercial effect 17ms
+   ✓ Integrated durable workflows (emulated) > G5: changed Calendar etag refuses overwrite and wrong readback cannot verify 35ms
+   ✓ Integrated durable workflows (emulated) > G6: direct owner stop bypasses a blocked model turn and survives restart 38ms
+   ✓ Integrated durable workflows (emulated) > G6: racing in-flight verified success remains visible after stop 18ms
+   ✓ Integrated durable workflows (emulated) > G9: disabled/account-substituted connections cannot reuse old dispatch authority 18ms
+   ✓ Integrated durable workflows (emulated) > G10: event-before-wait, duplicates, late terminal events and provider challenge verification 23ms
+   ✓ Integrated durable workflows (emulated) > G10: typed over-cap purchases never dispatch; concurrent reservations retain unknown spend 17ms
+   ✓ Integrated durable workflows (emulated) > G5: reply before follow-up suppresses the chase across restart and downtime 24ms
+   ✓ Integrated durable workflows (emulated) > G5: owner_intervention before follow-up suppresses the chase across restart and downtime 27ms
+   ✓ Integrated durable workflows (emulated) > G5: opt_out before follow-up suppresses the chase across restart and downtime 23ms
+   ✓ Integrated durable workflows (emulated) > G6: a backup preceding a remote effect restores stopped and never replays lost work 60ms
+   ✓ Integrated durable workflows (emulated) > G10: model usage with unavailable pricing is not recorded as free 26ms
+   × Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task 213ms
+     → expected [ { …(10) }, { …(10) }, { …(10) } ] to have a length of 2 but got 3
+   ✓ Integrated durable workflows (emulated) > G3: ordinary autonomous Gmail send reaches independently stored SENT content without approval 37ms
+   ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer 162ms
+   ✓ Integrated durable workflows (emulated) > G9: production proxy preserves auth/scope/rate/outage failures and rejects account substitution 18ms
+   ✓ Integrated durable workflows (emulated) > G2/G10: Gmail discoveries survive admission failure and expired-history rescan dedupes 28ms
+ ✓ test/scenarios/dispatch-boundaries.test.ts (6 tests) 597ms
+ ✓ test/contracts/providers.test.ts (10 tests) 74ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/scenarios/document-lifecycle.test.ts > Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ test/scenarios/document-lifecycle.test.ts:40:39
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/scenarios/workflows.test.ts > Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task
+AssertionError: expected [ { …(10) }, { …(10) }, { …(10) } ] to have a length of 2 but got 3
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ test/scenarios/workflows.test.ts:104:161
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 39 passed (41)
+   Start at  00:39:35
+   Duration  5.32s (transform 235ms, setup 0ms, collect 1.88s, tests 2.96s, environment 0ms, prepare 89ms)
+
+undefined
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/contracts/providers.test.ts test/scenarios/workflows.test.ts test/scenarios/document-lifecycle.test.ts test/scenarios/dispatch-boundaries.test.ts --maxWorkers=1 --no-file-parallelism

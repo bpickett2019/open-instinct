@@ -1,0 +1,281 @@
+bg_202 [bash] — failed — pnpm --filter @open-instinct/server build && pnpm --filter @open-instinct/server exec vitest run test/scenarios/onboa...
+Error: 
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+ ✓ test/scenarios/onboarding.test.ts (9 tests) 513ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  03:08:46
+   Duration  1.78s (transform 266ms, setup 0ms, collect 1.06s, tests 513ms, environment 0ms, prepare 36ms)
+
+
+> open-instinct@0.1.0 test:e2e /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run test:e2e
+
+
+> @open-instinct/server@0.1.0 test:e2e /private/tmp/open-instinct/packages/server
+> playwright test --config playwright.config.ts
+
+
+Running 34 tests using 1 worker
+
+(node:1003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (11.3s)
+(node:1014) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1014) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.7s)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (826ms)
+  ✘   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (10.9s)
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.6s)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (736ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:267:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (415ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:355:1 › owner changes and closes queued work without losing prior versions (730ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:409:1 › hostile source content stays inert and selective deletion removes retrieval (1.3s)
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.4s)
+  ✓  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.3s)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (917ms)
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:1024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.1s)
+  ✓  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.3s)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (916ms)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.5s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.9s)
+(node:1052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (10.9s)
+(node:1060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.6s)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (712ms)
+  ✘  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (10.8s)
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.6s)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (664ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:267:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (410ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:355:1 › owner changes and closes queued work without losing prior versions (979ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:409:1 › hostile source content stays inert and selective deletion removes retrieval (792ms)
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✓  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.1s)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (898ms)
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:1069) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.1s)
+  ✓  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.1s)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (883ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.6s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.5s)
+
+
+  1) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('[data-allowance=model] dd').last()
+    Expected: "Unconfigured (no owner cap)"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" with timeout 10000ms
+      - waiting for locator('[data-allowance=model] dd').last()
+        12 × locator resolved to <dd>Unknown (usage or pricing unavailable)</dd>
+           - unexpected value "Unknown (usage or pricing unavailable)"
+
+
+      25 |     const capsCleared = page.waitForResponse(r => r.url().endsWith("/api/owner/settings") && r.request().method() === "PATCH");
+      26 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await capsCleared).status()).toBe(200);
+    > 27 |     await expect(page.locator("[data-allowance=model] dd").last()).toHaveText("Unconfigured (no owner cap)");
+         |                                                                    ^
+      28 |     expect(scenario.app.business!.coordinator.store.settings().value.limits).toMatchObject({ purchaseMinor: null, modelMinor: null });
+      29 |     await navigate(page, "chat", "Chat");
+      30 |     await page.getByLabel("Message", { exact: true }).fill("business status"); await page.getByRole("button", { name: "Send message" }).click(); await expect(page.locator("#messages")).toContainText("Full autonomy");
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:27:68
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/validation-error-light-ea8dee4cb1035ef19e622285af61b128a98afdc9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: allowance-balances-light (image/png) ────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/allowance-balances-light-0e6c50aa8a8300aa28f8a1e751bb7c8300a75e1f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/failure-screenshot-01e78754746d43149771d65dfb7fbad70e940966.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/error-context.md
+
+  2) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('[data-allowance=model] dd').last()
+    Expected: "Unconfigured (no owner cap)"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" with timeout 10000ms
+      - waiting for locator('[data-allowance=model] dd').last()
+        12 × locator resolved to <dd>Unknown (usage or pricing unavailable)</dd>
+           - unexpected value "Unknown (usage or pricing unavailable)"
+
+
+      25 |     const capsCleared = page.waitForResponse(r => r.url().endsWith("/api/owner/settings") && r.request().method() === "PATCH");
+      26 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await capsCleared).status()).toBe(200);
+    > 27 |     await expect(page.locator("[data-allowance=model] dd").last()).toHaveText("Unconfigured (no owner cap)");
+         |                                                                    ^
+      28 |     expect(scenario.app.business!.coordinator.store.settings().value.limits).toMatchObject({ purchaseMinor: null, modelMinor: null });
+      29 |     await navigate(page, "chat", "Chat");
+      30 |     await page.getByLabel("Message", { exact: true }).fill("business status"); await page.getByRole("button", { name: "Send message" }).click(); await expect(page.locator("#messages")).toContainText("Full autonomy");
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:27:68
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/validation-error-dark-c79aee664bf09844a036178fd6673b34edf18b58.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: allowance-balances-dark (image/png) ─────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/allowance-balances-dark-b481f67144931cf3d667e0a080b771be540a3bf6.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/failure-screenshot-79e74bad45b47f40d9a0c8f61f6c871560b08261.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/error-context.md
+
+  3) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('[data-allowance=model] dd').last()
+    Expected: "Unconfigured (no owner cap)"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" with timeout 10000ms
+      - waiting for locator('[data-allowance=model] dd').last()
+        12 × locator resolved to <dd>Unknown (usage or pricing unavailable)</dd>
+           - unexpected value "Unknown (usage or pricing unavailable)"
+
+
+      25 |     const capsCleared = page.waitForResponse(r => r.url().endsWith("/api/owner/settings") && r.request().method() === "PATCH");
+      26 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await capsCleared).status()).toBe(200);
+    > 27 |     await expect(page.locator("[data-allowance=model] dd").last()).toHaveText("Unconfigured (no owner cap)");
+         |                                                                    ^
+      28 |     expect(scenario.app.business!.coordinator.store.settings().value.limits).toMatchObject({ purchaseMinor: null, modelMinor: null });
+      29 |     await navigate(page, "chat", "Chat");
+      30 |     await page.getByLabel("Message", { exact: true }).fill("business status"); await page.getByRole("button", { name: "Send message" }).click(); await expect(page.locator("#messages")).toContainText("Full autonomy");
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:27:68
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/validation-error-light-bb1ed6a42d36c842619d1b02494348742d85b5a9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: allowance-balances-light (image/png) ────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/allowance-balances-light-c3a575a2fa67ff5a2c5c46f1c176b51a7107cfea.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/failure-screenshot-a7106f3cf591dc3e67ba3feb840348368f8d3f7a.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/error-context.md
+
+  4) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('[data-allowance=model] dd').last()
+    Expected: "Unconfigured (no owner cap)"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" with timeout 10000ms
+      - waiting for locator('[data-allowance=model] dd').last()
+        12 × locator resolved to <dd>Unknown (usage or pricing unavailable)</dd>
+           - unexpected value "Unknown (usage or pricing unavailable)"
+
+
+      25 |     const capsCleared = page.waitForResponse(r => r.url().endsWith("/api/owner/settings") && r.request().method() === "PATCH");
+      26 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await capsCleared).status()).toBe(200);
+    > 27 |     await expect(page.locator("[data-allowance=model] dd").last()).toHaveText("Unconfigured (no owner cap)");
+         |                                                                    ^
+      28 |     expect(scenario.app.business!.coordinator.store.settings().value.limits).toMatchObject({ purchaseMinor: null, modelMinor: null });
+      29 |     await navigate(page, "chat", "Chat");
+      30 |     await page.getByLabel("Message", { exact: true }).fill("business status"); await page.getByRole("button", { name: "Send message" }).click(); await expect(page.locator("#messages")).toContainText("Full autonomy");
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:27:68
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/validation-error-dark-df25b0e1849d714810e31733db825a10d611843f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: allowance-balances-dark (image/png) ─────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/allowance-balances-dark-f6edebbd3f313dd2d432ba3ade5549d2a1f22c13.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: failure-screenshot (image/png) ──────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/failure-screenshot-6284bc5d4513f962e43bcf3a627e0b1620108548.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/error-context.md
+
+  4 failed
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+  30 passed (2.5m)
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test:e2e: `playwright test --config playwright.config.ts`
+Exit status 1
+ ELIFECYCLE  Command failed with exit code 1.
+
+
+Wall time: 155.73 seconds
+
+Command exited with code 1

@@ -1,0 +1,361 @@
+
+> open-instinct@0.1.0 typecheck /private/tmp/open-instinct
+> pnpm run build && pnpm -r --filter "./packages/*" run typecheck
+
+
+> open-instinct@0.1.0 build /private/tmp/open-instinct
+> pnpm -r --workspace-concurrency=1 --filter "./packages/*" run build
+
+Scope: 12 of 13 workspace projects
+
+> @open-instinct/core@0.1.0 build /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json
+
+
+> @open-instinct/ample@0.1.0 build /private/tmp/open-instinct/packages/ample
+> tsc -p tsconfig.json
+
+
+> @open-instinct/apps@0.1.0 build /private/tmp/open-instinct/packages/apps
+> tsc -p tsconfig.json
+
+
+> @open-instinct/atomicmail@0.1.0 build /private/tmp/open-instinct/packages/atomicmail
+> tsc -p tsconfig.json
+
+
+> @open-instinct/computer@0.1.0 build /private/tmp/open-instinct/packages/computer
+> tsc -p tsconfig.json
+
+
+> @open-instinct/context@0.1.0 build /private/tmp/open-instinct/packages/context
+> tsc -p tsconfig.json
+
+
+> @open-instinct/inkbox@0.1.0 build /private/tmp/open-instinct/packages/inkbox
+> tsc -p tsconfig.json
+
+
+> @open-instinct/payments@0.1.0 build /private/tmp/open-instinct/packages/payments
+> tsc -p tsconfig.json
+
+
+> @open-instinct/gateway@0.1.0 build /private/tmp/open-instinct/packages/gateway
+> tsc -p tsconfig.json
+
+
+> @open-instinct/network@0.1.0 build /private/tmp/open-instinct/packages/network
+> tsc -p tsconfig.json
+
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+> @open-instinct/cli@0.1.0 build /private/tmp/open-instinct/packages/cli
+> tsc -p tsconfig.json
+
+Scope: 12 of 13 workspace projects
+packages/core typecheck$ tsc -p tsconfig.json --noEmit
+packages/core typecheck: Done
+packages/ample typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck: Done
+packages/context typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck: Done
+packages/inkbox typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck: Done
+packages/payments typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck: Done
+packages/context typecheck: Done
+packages/payments typecheck: Done
+packages/inkbox typecheck: Done
+packages/network typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck: Done
+packages/network typecheck: Done
+packages/server typecheck$ tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+packages/server typecheck: Done
+packages/cli typecheck$ tsc -p tsconfig.json --noEmit
+packages/cli typecheck: Done
+
+> open-instinct@0.1.0 test /private/tmp/open-instinct
+> pnpm -r --filter "./packages/*" run test
+
+Scope: 12 of 13 workspace projects
+packages/core test$ vitest run --passWithNoTests
+packages/core test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+packages/core test:  ✓ test/contacts.test.ts (18 tests) 108ms
+packages/core test:  ✓ test/memory.test.ts (5 tests) 117ms
+packages/core test:  ✓ test/business-lock.test.ts (3 tests) 168ms
+packages/core test:  ✓ test/core-tools.test.ts (32 tests) 153ms
+packages/core test:  ✓ test/pdf.test.ts (12 tests) 386ms
+packages/core test:    ✓ renderMarkdownToPdf > never throws on odd input  321ms
+packages/core test:  ✓ test/config.test.ts (8 tests) 35ms
+packages/core test:  ✓ test/approvals.test.ts (15 tests) 42ms
+packages/core test:  ✓ test/business-recovery.test.ts (13 tests) 454ms
+packages/core test:  ✓ test/prompt.test.ts (13 tests) 45ms
+packages/core test:  ✓ test/scheduler.test.ts (14 tests) 546ms
+packages/core test:    ✓ nextCron > is strictly after `from` and gives up on impossible dates  410ms
+packages/core test:  ✓ test/audit.test.ts (5 tests) 23ms
+packages/core test:  ✓ test/persona.test.ts (9 tests) 11ms
+packages/core test:  ✓ test/principal.test.ts (13 tests) 16ms
+packages/core test:  ✓ test/state.test.ts (6 tests) 8ms
+packages/core test:  ✓ test/owner-claim.test.ts (4 tests) 22ms
+packages/core test:  ✓ test/policy.test.ts (34 tests) 16ms
+packages/core test:  ✓ test/notifier.test.ts (3 tests) 7ms
+packages/core test:  ✓ test/envelope.test.ts (4 tests) 4ms
+packages/core test:  ✓ test/credential-vault.test.ts (3 tests) 7ms
+packages/core test:  ✓ test/model.test.ts (5 tests) 2ms
+packages/core test:  ✓ test/tools.test.ts (9 tests) 8ms
+packages/core test:  ✓ test/chatgpt-subscription.test.ts (17 tests) 446ms
+packages/core test:  ✓ test/prompt-reach.test.ts (3 tests) 2ms
+packages/core test:  ✓ test/runtime.test.ts (86 tests) 2375ms
+packages/core test:    ✓ AgentRuntime.handleInbound > acks a slow owner text once on the waitForCompletion path, never for the text queued behind it  354ms
+packages/core test:    ✓ AgentRuntime.handleInbound > does not ack a fast reply, a group text or a contact  406ms
+packages/core test:  Test Files  24 passed (24)
+packages/core test:       Tests  334 passed (334)
+packages/core test:    Start at  12:18:57
+packages/core test:    Duration  3.16s (transform 558ms, setup 0ms, collect 3.02s, tests 5.00s, environment 2ms, prepare 1.24s)
+packages/core test: Done
+packages/ample test$ vitest run --passWithNoTests
+packages/apps test$ vitest run --passWithNoTests
+packages/computer test$ vitest run --passWithNoTests
+packages/atomicmail test$ vitest run --passWithNoTests
+packages/computer test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/computer
+packages/ample test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/ample
+packages/apps test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/apps
+packages/atomicmail test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/atomicmail
+packages/atomicmail test:  ✓ test/guidance.test.ts (5 tests) 7ms
+packages/atomicmail test:  ✓ test/capabilities.test.ts (10 tests) 4ms
+packages/apps test:  ✓ test/wrap.test.ts (15 tests) 54ms
+packages/apps test:  ✓ test/composio.test.ts (37 tests) 70ms
+packages/apps test:  ✓ test/capabilities.test.ts (92 tests) 17ms
+packages/ample test:  ✓ test/signup.test.ts (10 tests) 28ms
+packages/computer test:  ✓ test/schema.test.ts (7 tests) 12ms
+packages/computer test:  ✓ test/maritime.test.ts (14 tests) 19ms
+packages/apps test:  ✓ test/tools.test.ts (11 tests) 5ms
+packages/computer test:  ✓ test/detect.test.ts (17 tests) 35ms
+packages/computer test:  ✓ test/desktopd.test.ts (12 tests) 58ms
+packages/computer test:  Test Files  4 passed (4)
+packages/computer test:       Tests  50 passed (50)
+packages/computer test:    Start at  12:19:00
+packages/computer test:    Duration  2.53s (transform 549ms, setup 0ms, collect 6.11s, tests 124ms, environment 1ms, prepare 789ms)
+packages/atomicmail test:  ✓ test/backend.test.ts (13 tests) 75ms
+packages/atomicmail test:  ✓ test/wrap.test.ts (25 tests) 9ms
+packages/atomicmail test:  Test Files  4 passed (4)
+packages/atomicmail test:       Tests  53 passed (53)
+packages/atomicmail test:    Start at  12:19:00
+packages/atomicmail test:    Duration  2.60s (transform 349ms, setup 0ms, collect 3.11s, tests 95ms, environment 1ms, prepare 422ms)
+packages/computer test: Done
+packages/context test$ vitest run --passWithNoTests
+packages/apps test:  ✓ test/business-providers.test.ts (2 tests) 28ms
+packages/atomicmail test: Done
+packages/inkbox test$ vitest run --passWithNoTests
+packages/apps test:  ✓ test/business-reconnect.test.ts (6 tests) 56ms
+packages/ample test:  ✓ test/tools.test.ts (26 tests) 423ms
+packages/ample test:  Test Files  2 passed (2)
+packages/ample test:       Tests  36 passed (36)
+packages/ample test:    Start at  12:19:00
+packages/ample test:    Duration  2.82s (transform 421ms, setup 0ms, collect 3.21s, tests 451ms, environment 0ms, prepare 262ms)
+packages/apps test:  ✓ test/guidance.test.ts (8 tests) 4ms
+packages/apps test:  ✓ test/google-workspace.test.ts (7 tests) 270ms
+packages/apps test:  Test Files  8 passed (8)
+packages/apps test:       Tests  178 passed (178)
+packages/apps test:    Start at  12:19:00
+packages/apps test:    Duration  2.87s (transform 609ms, setup 0ms, collect 11.00s, tests 504ms, environment 1ms, prepare 1.82s)
+packages/ample test: Done
+packages/payments test$ vitest run --passWithNoTests
+packages/apps test: Done
+packages/context test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/context
+packages/inkbox test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/inkbox
+packages/payments test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/payments
+packages/inkbox test:  ✓ test/signature.test.ts (10 tests) 4ms
+packages/inkbox test:  ✓ test/a2a.test.ts (11 tests) 25ms
+packages/inkbox test:  ✓ test/http.test.ts (19 tests) 18ms
+packages/inkbox test:  ✓ test/provisioner.test.ts (24 tests) 22ms
+packages/inkbox test:  ✓ test/channel.test.ts (84 tests) 75ms
+packages/inkbox test:  ✓ test/inbox.test.ts (10 tests | 1 skipped) 230ms
+packages/payments test:  ✓ test/oauth.test.ts (14 tests) 7ms
+packages/payments test:  ✓ test/wallet.test.ts (26 tests) 35ms
+packages/context test:  ✓ test/tools.test.ts (3 tests) 4ms
+packages/context test:  Test Files  1 passed (1)
+packages/context test:       Tests  3 passed (3)
+packages/context test:    Start at  12:19:03
+packages/context test:    Duration  1.48s (transform 197ms, setup 0ms, collect 1.12s, tests 4ms, environment 0ms, prepare 144ms)
+packages/inkbox test:  ✓ test/events.test.ts (25 tests) 8ms
+packages/inkbox test:  ✓ test/hydration.test.ts (9 tests) 19ms
+packages/context test: Done
+packages/inkbox test:  ✓ test/calls.test.ts (12 tests) 5ms
+packages/inkbox test:  ✓ test/tools.test.ts (45 tests) 128ms
+packages/inkbox test:  Test Files  10 passed (10)
+packages/inkbox test:       Tests  248 passed | 1 skipped (249)
+packages/inkbox test:    Start at  12:19:03
+packages/inkbox test:    Duration  1.66s (transform 689ms, setup 0ms, collect 4.41s, tests 534ms, environment 2ms, prepare 1.12s)
+packages/payments test:  ✓ test/tools.test.ts (42 tests) 36ms
+packages/payments test:  Test Files  3 passed (3)
+packages/payments test:       Tests  82 passed (82)
+packages/payments test:    Start at  12:19:04
+packages/payments test:    Duration  1.34s (transform 372ms, setup 0ms, collect 1.14s, tests 78ms, environment 0ms, prepare 306ms)
+packages/inkbox test: Done
+packages/payments test: Done
+packages/gateway test$ vitest run --passWithNoTests
+packages/network test$ vitest run --passWithNoTests
+packages/network test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/network
+packages/gateway test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/gateway
+packages/gateway test:  ✓ test/limits.test.ts (3 tests) 2ms
+packages/gateway test:  ✓ test/store.test.ts (4 tests) 8ms
+packages/network test:  ✓ test/oip.test.ts (12 tests) 20ms
+packages/network test:  ✓ test/principal.test.ts (13 tests) 3ms
+packages/gateway test:  ✓ test/validate.test.ts (6 tests) 5ms
+packages/gateway test:  ✓ test/main.test.ts (5 tests) 3ms
+packages/gateway test:  ✓ test/relay.test.ts (14 tests) 11ms
+packages/gateway test:  ✓ test/provision.test.ts (15 tests) 62ms
+packages/network test:  ✓ test/tools.test.ts (52 tests) 26ms
+packages/network test:  Test Files  3 passed (3)
+packages/network test:       Tests  77 passed (77)
+packages/network test:    Start at  12:19:05
+packages/network test:    Duration  1.44s (transform 355ms, setup 0ms, collect 1.09s, tests 49ms, environment 0ms, prepare 308ms)
+packages/network test: Done
+packages/gateway test:  ✓ test/server.test.ts (17 tests) 418ms
+packages/gateway test:  ✓ test/inbox.test.ts (3 tests) 2703ms
+packages/gateway test:    ✓ webhook recovery > keeps an acknowledged event after all forwarding attempts fail  2588ms
+packages/gateway test:  Test Files  8 passed (8)
+packages/gateway test:       Tests  67 passed (67)
+packages/gateway test:    Start at  12:19:05
+packages/gateway test:    Duration  3.98s (transform 490ms, setup 0ms, collect 4.96s, tests 3.21s, environment 1ms, prepare 588ms)
+packages/gateway test: Done
+packages/server test$ vitest run --passWithNoTests
+packages/server test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ❯ test/scenarios/calendar-read.test.ts (3 tests | 1 failed) 746ms
+packages/server test:    ✓ Calendar day reads through the real business dispatcher (emulated) > reads today's Pacific overlaps and explicit recurring instances in chronological pages, not historical masters  456ms
+packages/server test:    × Calendar day reads through the real business dispatcher (emulated) > rejects misplaced camelCase/snake_case filters and non-string query values before provider dispatch, then reads the corrected window 189ms
+packages/server test:      → expected false to be true // Object.is equality
+packages/server test:    ✓ Calendar day reads through the real business dispatcher (emulated) > refuses unsupported recurrence expansion instead of inventing instances or returning a false empty day 100ms
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2975ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1432ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  484ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  772ms
+packages/server test:  ✓ test/scenarios/messaging-feedback.test.ts (17 tests) 3232ms
+packages/server test:    ✓ Business iMessage feedback through production boot and signed ingress > commits read and typing before a gated final reply and never repeats read or reaction on duplicate/restart  383ms
+packages/server test:    ✓ Business iMessage feedback through production boot and signed ingress > uses all seven registered named tapbacks without tasks and lets a reaction-only turn stay text-free  596ms
+packages/server test: Warning: Indexing all PDF objects
+packages/server test:  ✓ test/scenarios/dispatch-boundaries.test.ts (11 tests) 3653ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request  580ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request  370ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request  336ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'empty subject and final body newline' sends once per task but permits an intentional distinct owner request  388ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  620ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy  560ms
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/business-extraction.test.ts (12 tests) 4820ms
+packages/server test:    ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  825ms
+packages/server test:    ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  660ms
+packages/server test:    ✓ bounded real document workers > rejects unsafe office entry 'xl/externalLinks/link.xml' before parsing  318ms
+packages/server test:    ✓ bounded real document workers > rejects unsafe office entry 'word/encrypted.xml' before parsing  359ms
+packages/server test:    ✓ bounded real document workers > rejects unsafe office entry 'word/relationships.rels' before parsing  326ms
+packages/server test:    ✓ bounded real document workers > rejects unsafe office entry 'word/entity.xml' before parsing  344ms
+packages/server test:    ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  828ms
+packages/server test:  ✓ test/scenarios/workflows.test.ts (23 tests) 4098ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  573ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  493ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  496ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  395ms
+packages/server test: stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test: stderr | test/scenarios/general-delegation.test.ts > General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/scenarios/general-delegation.test.ts (1 test) 1808ms
+packages/server test:    ✓ General business delegation (emulated) > G1/G4/G8: prepares a cited client brief and supplier workbook through the generic durable runtime  1805ms
+packages/server test:  ✓ test/business-knowledge.test.ts (17 tests) 5149ms
+packages/server test:    ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  957ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  691ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > removes deleted sources from retrieval, keeps honest evidence retention and preserves the manifest  315ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > cannot retrieve a second workspace's sources  331ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > rejects traversal, unsafe types, HTML, upload excess, symlinks and modified originals  314ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1365ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > keeps image interpretations model-derived and removes derived retrieval with the original  315ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  506ms
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/http.test.ts (43 tests) 574ms
+packages/server test:  ✓ test/business-hosted-artifacts.test.ts (25 tests) 1478ms
+packages/server test:    ✓ hosted document artifact transfer > runs the real registered wrapper and dispatcher, preserving bytes and source without transfer payload in action history  335ms
+packages/server test:    ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  327ms
+packages/server test:  ✓ test/scenarios/open-thread-recovery.test.ts (5 tests) 692ms
+packages/server test:  ✓ test/scenarios/onboarding.test.ts (9 tests) 1748ms
+packages/server test:    ✓ assistant-led onboarding (emulated) > opens once across concurrent calls and refresh, restores owner tools for natural replies, and retains shared history and facts across restart  397ms
+packages/server test:  ✓ test/scenarios/operational-limits.test.ts (13 tests) 6542ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart  390ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: only twelve operational dispatches execute in a slice and useful work requeues without completion  4076ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: the contract's exact 60-second reasoning boundary prevents the next provider operation  365ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects missing-criterion and the owner detail never reports completed  407ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects fabricated-reference and the owner detail never reports completed  422ms
+packages/server test:  ✓ test/slow-reply-ack.test.ts (2 tests) 863ms
+packages/server test:    ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  624ms
+packages/server test:  ✓ test/scenarios/follow-through-send.test.ts (1 test) 1664ms
+packages/server test:    ✓ Autonomous unanswered follow-through (emulated) > sends one routine-authorized chase after controller downtime, dedupes restarts, and stops at two unanswered occurrences  1663ms
+packages/server test:  ✓ test/scenarios/security.test.ts (10 tests) 1325ms
+packages/server test:    ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  392ms
+packages/server test:  ✓ test/file-tools.test.ts (11 tests) 67ms
+packages/server test:  ✓ test/apps-shutdown.test.ts (1 test) 1083ms
+packages/server test:    ✓ app SDK process lifecycle > lets the controller finish asynchronous cleanup after SIGTERM  1082ms
+packages/server test:  ✓ test/business-commitments.test.ts (21 tests) 211ms
+packages/server test:  ✓ test/business-onboarding.test.ts (6 tests) 201ms
+packages/server test:  ✓ test/inbox.test.ts (2 tests) 209ms
+packages/server test:  ✓ test/business-owner-updates.test.ts (16 tests) 172ms
+packages/server test:  ✓ test/workspace-http.test.ts (2 tests) 474ms
+packages/server test:    ✓ returns 404 for absent records without turning missing stored bytes into a 404  454ms
+packages/server test:  ✓ test/contracts/providers.test.ts (10 tests) 401ms
+packages/server test:  ✓ test/workspace-session.test.ts (7 tests) 8ms
+packages/server test:  ✓ test/business-pricing.test.ts (5 tests) 17ms
+packages/server test:  ✓ test/skills.test.ts (13 tests) 51ms
+packages/server test:  ✓ test/business-image-accounting.test.ts (2 tests) 33ms
+packages/server test:  ✓ test/http-lifecycle.test.ts (1 test) 61ms
+packages/server test:  ✓ test/atomicmail.test.ts (5 tests) 50ms
+packages/server test:  ✓ test/business-acceptance-boundaries.test.ts (9 tests) 86ms
+packages/server test:  ✓ test/maritime-schedules.test.ts (6 tests) 8ms
+packages/server test:  ✓ test/payments.test.ts (4 tests) 2ms
+packages/server test:  ✓ test/subscription-auth.test.ts (5 tests) 89ms
+packages/server test:  ✓ test/console-outbox.test.ts (7 tests) 4ms
+packages/server test:  ✓ test/boot-phone.test.ts (5 tests) 48ms
+packages/server test:  ✓ test/evidence-redaction.test.ts (1 test) 6ms
+packages/server test:  ✓ test/bind.test.ts (3 tests) 2ms
+packages/server test:  ✓ test/hooks.test.ts (5 tests) 2ms
+packages/server test:  ✓ test/webhook-setup.test.ts (7 tests) 11ms
+packages/server test:  ✓ test/scenarios/crash-phases.test.ts (8 tests) 14406ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  2720ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  2797ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  2485ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  2131ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  1075ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  1081ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1056ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1059ms
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+packages/server test:  FAIL  test/scenarios/calendar-read.test.ts > Calendar day reads through the real business dispatcher (emulated) > rejects misplaced camelCase/snake_case filters and non-string query values before provider dispatch, then reads the corrected window
+packages/server test: AssertionError: expected false to be true // Object.is equality
+packages/server test: - Expected
+packages/server test: + Received
+packages/server test: - true
+packages/server test: + false
+packages/server test:  ❯ test/scenarios/calendar-read.test.ts:132:28
+packages/server test:     130|     expect(rejected).toHaveLength(3);
+packages/server test:     131|     for (const result of rejected) {
+packages/server test:     132|       expect(result.error).toBe(true);
+packages/server test:        |                            ^
+packages/server test:     133|       expect(result.text).toMatch(/input|query|timeMin|time_min|single…
+packages/server test:     134|       expect(result.proxies).toBe(baseline.proxies);
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+packages/server test:  Test Files  1 failed | 40 passed (41)
+packages/server test:       Tests  1 failed | 357 passed (358)
+packages/server test:    Start at  12:19:09
+packages/server test:    Duration  15.43s (transform 1.28s, setup 0ms, collect 31.91s, tests 59.07s, environment 6ms, prepare 2.16s)
+packages/server test: Failed
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test: `vitest run --passWithNoTests`
+Exit status 1
+ ELIFECYCLE  Test failed. See above for more details.

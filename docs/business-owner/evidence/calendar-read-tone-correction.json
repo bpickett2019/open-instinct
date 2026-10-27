@@ -1,0 +1,97 @@
+{
+  "status": "implemented_verified_scoped",
+  "reportedFailure": "Date-filtered owner request returned historical, unexpanded Calendar events and a technical internal handoff text",
+  "rootCause": "Persisted model arguments put camelCase filters, then snake_case alternatives, at input top level. business_google events only consumed input.query; the generic schema silently discarded filters. A second regression exposed SDK normalization dropping optional null bounds and coercing non-string values before normal adapter validation. Explicit query schema plus pure raw prepareArguments validation reject malformed requests before coercion or provider dispatch.",
+  "messageCause": "Reconciliation wait used its owner-facing question field for an internal handoff; taskNotice prefixed the task UUID.",
+  "providerContract": "https://docs.composio.dev/reference/v3/api-reference/tool-router/postToolRouterSessionBySessionIdProxyExecute",
+  "correctQueryLiveDiagnostic": {
+    "checkedAt": "2026-10-25T19:15:33.730Z",
+    "mode": "real provider, authorized read only",
+    "window": {
+      "timeMin": "2026-10-25T00:00:00-07:00",
+      "timeMax": "2026-10-26T00:00:00-07:00",
+      "timeZone": "America/Los_Angeles",
+      "singleEvents": "true",
+      "orderBy": "startTime",
+      "maxResults": "100"
+    },
+    "httpStatus": 200,
+    "providerStatus": 200,
+    "resultType": "completed",
+    "eventCount": 2,
+    "hasNextPage": false,
+    "unexpandedMasters": 0,
+    "appointmentsMutated": false,
+    "eventsWithinRequestedWindow": true,
+    "recurringInstances": 2
+  },
+  "privateEventEvidence": "$PRIVATE_STATE/evidence/calendar-correct-query-response.json",
+  "productionModelRead": {
+    "mode": "real ChatGPT Pro model, authenticated owner workspace, live account-bound Google read",
+    "taskId": "d233a313-e808-43fb-816f-ad65116475cf",
+    "status": "completed",
+    "googleReadActions": 1,
+    "googleReadStatus": "verified",
+    "googleMutationActions": 0,
+    "persistedQuery": {
+      "timeMin": "2026-10-25T00:00:00-07:00",
+      "timeMax": "2026-10-26T00:00:00-07:00",
+      "timeZone": "America/Los_Angeles",
+      "singleEvents": "true",
+      "orderBy": "startTime"
+    },
+    "result": "Two actual in-window events with local times; concise answer without internal task ID or reconciliation instructions",
+    "privateResult": "$PRIVATE_STATE/evidence/calendar-real-model-result.json",
+    "privateScreenshots": [
+      "$PRIVATE_STATE/evidence/calendar-real-model-desktop.png",
+      "$PRIVATE_STATE/evidence/calendar-real-model-mobile.png"
+    ],
+    "visualInspection": "Main inspected actual rendered answer on desktop and 390x844 mobile; private event contents are not published",
+    "restart": "Idle prior pilot stopped with exit 0; corrected compiled pilot started successfully and remains running",
+    "oldAttempt": "Original waiting task closed through authenticated owner UI; historical messages and evidence preserved"
+  },
+  "ownerPhoneCopy": {
+    "taskId": "9b5b32d5-9a1d-4f83-a2fe-d2e4494402d9",
+    "sendActions": 1,
+    "actionStatus": "accepted",
+    "taskStatus": "cancelled_after_operator_readback",
+    "recipient": "Previously authorized consenting owner phone",
+    "deliveryVerified": true,
+    "behavior": "One send, then silent reconciliation; technical details stayed in checkpoint. Subsequent independent identity-scoped readback matched exact text, consenting recipient and owner conversation, with provider status delivered and isRead true. Verification-only task then closed through owner UI, retaining history. No resend.",
+    "privateEvidence": "$PRIVATE_STATE/evidence/calendar-real-phone-result.json",
+    "privateDeliveryReadback": "$PRIVATE_STATE/evidence/calendar-real-phone-delivery.json",
+    "limit": "Provider-reported delivered/read is not a human attestation. Operator readback did not rewrite the durable tool action's accepted status or fabricate an automatic reconciliation receipt."
+  },
+  "checks": {
+    "failingBefore": "docs/business-owner/evidence/calendar-query-regression-before.txt",
+    "firstIntegrationFailure": "docs/business-owner/evidence/calendar-integration-first-run.txt",
+    "integrated": "docs/business-owner/evidence/calendar-integration-checks.txt",
+    "buildTypecheck": "12 packages passed",
+    "passingTests": { "core": 334, "apps": 178, "server": 371, "cli": 125 },
+    "calendarScenarios": "16 passed, including 14 malformed raw-input cases",
+    "ownerUpdateRegressions": "16 passed",
+    "smoke": "passed",
+    "browserInitial": "33 passed, 1 mobile-dark quote workflow failed before its first dispatch; retained as a failure",
+    "browserDiagnostics": "16 passed under temporary error capture; failure did not recur and root cause is not established. Capture wrapper removed.",
+    "browserFinal": "34 passed; 128 checkpoints, no missing captures, zero capture errors",
+    "browserFinalEvidence": "docs/business-owner/evidence/calendar-browser-final.txt",
+    "browserDiagnosticEvidence": "docs/business-owner/evidence/calendar-browser-diagnostics.txt",
+    "browserGallery": "packages/server/evidence/index.html",
+    "publicationScan": "Passed: 260 files, 4 expanded archive entries; pattern/canary check, not OCR or a full vulnerability review"
+  },
+  "security": {
+    "status": "scoped_pass",
+    "findings": [],
+    "evidence": "docs/business-owner/evidence/security-review-calendar-read.md",
+    "limit": "Independent source and integration-evidence review; private live Calendar and subsequent phone readback observations are Main-observed, not independently reviewed"
+  },
+  "pending": [],
+  "limits": [
+    "Authorized read-only Calendar verification; no appointment mutations or real-customer messages.",
+    "The Calendar emulator supports declared recurring instances, not arbitrary RRULE expansion.",
+    "Scripted injected-description coverage is not live-model prompt-injection-resistance proof.",
+    "Internal wait questions are structurally rejected; semantic duplication through separately authorized send_message actions is not universally prevented.",
+    "The original intermittent browser failure remains unexplained; final passing run does not retroactively change that result.",
+    "Mandatory Calendar writes, Gmail, hosted-computer, HTTPS and deployment-image/full-product live gates remain separate and incomplete."
+  ]
+}

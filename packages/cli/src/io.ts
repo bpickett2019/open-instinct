@@ -4,6 +4,9 @@
  */
 import type { ServerModule, TunnelConnector } from "./commands/dev.js";
 import type { ProvisionerFactory } from "./inkbox-client.js";
+import type { StateDir } from "@open-instinct/core";
+import type { ReadStream } from "node:tty";
+import type { SubscriptionSession } from "./commands/auth.js";
 
 export interface CliIo {
   stdout(text: string): void;
@@ -22,6 +25,11 @@ export interface CliIo {
   connectTunnel?: TunnelConnector;
   /** `dev` registers SIGINT/SIGTERM handlers unless this is false (tests). */
   installSignalHandlers?: boolean;
+  /** Private subscription storage factory; never consults global Codex credentials. */
+  openSubscription?: (state: StateDir) => Promise<SubscriptionSession>;
+  /** Cancellation and raw terminal injection for subscription sign-in. */
+  authSignal?: AbortSignal;
+  authInput?: ReadStream;
 }
 
 /** Thrown for bad invocations. Exit code 2, message printed without a stack. */

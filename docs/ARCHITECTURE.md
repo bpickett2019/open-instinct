@@ -101,7 +101,7 @@ open-instinct/
 
 Package rules:
 
-- TypeScript, ESM, Node 22.19+ (Pi requires it). `pnpm` workspaces. Strict mode.
+- TypeScript, ESM, Node >=22.22.3 and pnpm 10.6.1 workspaces. Strict mode. Native SQLite holds durable business state; personal state retains its existing formats.
 - `core` depends on Pi only. `inkbox`, `computer`, `apps`, `network` and `payments` depend on `core` for types. `server` wires them. `gateway` and `cli` depend on `maritime-sdk` and `@inkbox/sdk`.
 - Every package exports from `src/index.ts`, ships `dist/` built by `tsc`, and has vitest tests in `test/`.
 - No package reads `process.env` except `server`, `gateway` and `cli` (through `core`'s `loadConfig`). Libraries take options.

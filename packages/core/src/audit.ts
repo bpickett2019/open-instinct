@@ -23,13 +23,13 @@ export function localDate(d: Date, tz: string): string {
 export class AuditLog {
   private readonly state: StateDir;
 
-  constructor(state: StateDir) {
+  constructor(state: StateDir, private readonly redact: <T>(value: T) => T = value => value) {
     this.state = state;
   }
 
   append(entry: Omit<AuditEntry, "at">): void {
     const full: AuditEntry = { at: new Date().toISOString(), ...entry };
-    this.state.appendLine(FILE, JSON.stringify(full));
+    this.state.appendLine(FILE, JSON.stringify(this.redact(full)));
   }
 
   /** Oldest first. `limit` keeps the most recent N after filtering. */

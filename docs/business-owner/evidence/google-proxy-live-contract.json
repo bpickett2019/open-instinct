@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-25T18:49:36.201Z",
+  "mode": "real isolated Composio project; authorized owner Google account",
+  "accountIsolation": "Owner selected account after test-account request; suitability for synthetic appointment writes must be established before mutation",
+  "before": {
+    "controllerConnectionsHttp": 500,
+    "providerSessionHttp": 400,
+    "providerValidationErrors": [
+      "Error in payload.toolkits: Invalid input"
+    ],
+    "invalidRequest": {
+      "toolkits": [
+        "googlecalendar"
+      ]
+    }
+  },
+  "correctedContract": {
+    "apiVersion": "v3",
+    "requestToolkits": {
+      "enable": [
+        "googlecalendar"
+      ]
+    },
+    "connectedAccountsShape": "toolkit to one account-id string",
+    "providerSessionHttp": 201,
+    "returnedUserMatches": true,
+    "returnedAccountMatches": true,
+    "workbenchDisabled": true,
+    "connectionManagementDisabled": true
+  },
+  "readOnlyIdentity": {
+    "endpoint": "https://www.googleapis.com/calendar/v3/calendars/primary",
+    "method": "GET",
+    "outerHttp": 200,
+    "resultType": "completed",
+    "googleHttp": 200,
+    "identitySha256": "[withheld from public copy; retained in private evidence]"
+  },
+  "appointmentsRead": false,
+  "appointmentsMutated": false,
+  "productionControllerAfterFix": {
+    "httpStatus": 200,
+    "status": "connected",
+    "identityIndependentlyVerified": true,
+    "browserDisplaysConnected": true,
+    "evidence": "docs/business-owner/evidence/google-calendar-connected.json",
+    "privateScreenshot": "$PRIVATE_STATE/evidence/google-calendar-connected.png",
+    "screenshotVisuallyInspected": true
+  }
+}

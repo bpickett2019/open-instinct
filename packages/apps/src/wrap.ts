@@ -61,8 +61,13 @@ export function wrapMcpTool(source: McpToolSource, tool: McpTool): RegisteredToo
     label: tool.title ?? slug,
     description,
     parameters: parametersFor(tool.inputSchema),
-    meta: metaFor(upper),
-    execute: async (args, _ctx: ToolContext, signal?: AbortSignal): Promise<ToolResultLike> => {
+    meta: { ...metaFor(upper), ...(tool.annotations?.readOnlyHint === true ? { effect: "read" as const } : {}) },
+    execute: async (args, ctx: ToolContext, signal?: AbortSignal): Promise<ToolResultLike> => {
+      signal?.throwIfAborted();
+      if (ctx.taskRun) {
+        if (!ctx.assertBusinessDispatch) throw new Error("Concrete operation requires a final execution fence");
+        ctx.assertBusinessDispatch();
+      }
       const result = await source.callTool(slug, (args ?? {}) as Record<string, unknown>, { signal });
       // MCP reports tool failures inside the result rather than as protocol errors.
       return { content: toLlmContent(result), details: result.structuredContent, isError: result.isError === true };

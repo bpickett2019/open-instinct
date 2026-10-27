@@ -216,10 +216,57 @@ network calls.
 ## Notes for implementers
 
 - This package reads no environment variables. The server passes the key and the user id.
-- `@composio/core` 0.22.0 declares Node `>=22.22.3` in `engines`; it loads and runs on 22.20.0.
-  pnpm may print an engine warning.
+- `@composio/core` 0.22.0 requires Node `>=22.22.3`; use the repository runtime pin and pnpm 10.6.1.
 - The SDK's `Session` type is wide. `ComposioApps` types the subset it calls as
   `ComposioSessionLike` and `ComposioClientLike`, so a test can hand in a stub through
   `adapters: { createComposio, connectMcp }`.
 - `session.mcp.headers` carry the session credential. They go only to the MCP transport and are
   never logged.
+
+## Business adapters
+
+`createBusinessProviders({ apps, store })` uses the controller's existing BusinessStore.
+Boot registers its three tools: `business_google`, `business_apps_catalog` and
+`business_app`. Do not also register raw Google tools or router executors in business
+mode. Concrete app discovery is separate from dispatch and uses account-pinned direct
+sessions with remote workbench disabled. Generic app receipts are not verified outcomes.
+
+`GoogleWorkspace` accepts the exported `GoogleTransport` interface. Its production
+transport permits only native Gmail/Calendar hosts and fixed operations through the
+[v3 session proxy](https://docs.composio.dev/reference/v3/api-reference/tool-router/postToolRouterSessionBySessionIdProxyExecute).
+The raw v3 REST session request uses `toolkits: { enable: [toolkit] }` (not the SDK's
+toolkit array) and pins `connected_accounts` to one account-id string per toolkit.
+The returned workspace/account binding is checked before proxy execution; connection
+management and remote workbench remain disabled. `adapters.fetchImpl` is the test
+transport seam, not a model-visible proxy. Credentials never appear in tool inputs.
+SDK usage tracking is disabled: its telemetry signal handler re-sends SIGTERM and
+can otherwise interrupt the controller's asynchronous durable shutdown.
+
+List filters belong in `input.query`, with string values. Calendar reads use
+`timeMin`/`timeMax` for the owner's local day, `timeZone`, `singleEvents: "true"`
+and `orderBy: "startTime"`; consume every returned `nextPageToken` before claiming
+a complete schedule. Top-level filters, snake_case alternatives, unknown query
+keys and null/non-string values fail before provider dispatch. The pure
+`ToolSpec.prepareArguments` hook checks raw arguments before SDK normalization can
+drop null bounds or coerce invalid values into an accidentally broader read.
+
+The registry calls `prepareBusiness` before recording a dispatch: mail MIME, stable
+Message-ID, attachment hashes, event ID and connection epoch are immutable action inputs.
+Gmail verification means matching Sent content, not delivery or reading. Reconciliation
+only reads; missing Sent visibility never authorizes resend. Calendar writes use current
+free/busy, explicit offsets/timezones and conditional etags, followed by readback.
+Free/busy and insertion are not atomic against human edits.
+
+Connections expose safe live account metadata. Disconnect persists local disable before
+requesting upstream deletion with `revoke_on_delete=true`. Upstream status remains
+`requested`, not verified revoked. See the
+[revocation contract](https://docs.composio.dev/reference/v3/api-reference/connected-accounts/deleteConnectedAccountsByNanoid)
+and provider/dashboard controls. Browser logins require separate logout.
+
+`GmailIntake.activate()` must be called only for an explicitly enabled owner routine.
+`sweep()` durably discovers messages before cursor advancement and uses idempotent
+admission callbacks. Expired history triggers active-window rescan; old mail is not
+authorized merely by connecting an account. The coordinator owns classification and authority.
+
+MIME uses `mailparser` 3.12.4 and Nodemailer 10.2.1 (both publish Node >=20 requirements).
+Wire and MIME tests are deterministic local contract tests, not live OAuth/provider proof.

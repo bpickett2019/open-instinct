@@ -82,6 +82,77 @@ describe("createRest", () => {
     expect(fake.calls.map((c) => c.body)).toEqual([body, body]);
   });
 
+  it.each(["signal", "fence"] as const)("rechecks %s after a replay-safe retry prerequisite", async mode => {
+    const fake = fakeFetch({ "POST /a2a/peer": { status: 503 } });
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const controller = new AbortController();
+    let active = true;
+    const client = createRest({
+      apiKey: "test", baseUrl: BASE, fetchImpl: fake.fetchImpl,
+      sleep: async () => { entered.resolve(); await release.promise; },
+    });
+    const pending = client.requestUrl("POST", `${BASE}/a2a/peer`, {}, {}, {
+      replaySafe: true, signal: controller.signal,
+      assertBusinessDispatch: () => { if (!active) throw new Error("Stopped"); },
+    });
+    const rejected = expect(pending).rejects.toThrow("Stopped");
+    await entered.promise;
+    if (mode === "signal") controller.abort(new Error("Stopped"));
+    else active = false;
+    release.resolve();
+    await rejected;
+    expect(fake.calls).toHaveLength(1);
+  });
+
+  it.each(["request", "requestUrl"] as const)("%s cancels a held mutation in fetch without replay", async method => {
+    const entered = Promise.withResolvers<void>();
+    const controller = new AbortController();
+    const stopped = new Error("Stopped");
+    const sleeps: number[] = [];
+    let attempts = 0;
+    let canceled = false;
+    const client = createRest({
+      apiKey: "test", baseUrl: BASE,
+      sleep: async ms => { sleeps.push(ms); },
+      fetchImpl: async (_input, init) => {
+        attempts++;
+        const { promise, reject } = Promise.withResolvers<Response>();
+        init?.signal?.addEventListener("abort", () => {
+          canceled = true;
+          reject(init?.signal?.reason);
+        }, { once: true });
+        entered.resolve();
+        return promise;
+      },
+    });
+    const path = method === "request" ? "/imessage/typing" : `${BASE}/api/v1/imessage/typing`;
+    const pending = client[method]("POST", path, { conversation_id: "conv_1" }, undefined, { signal: controller.signal });
+    const rejected = expect(pending).rejects.toBe(stopped);
+    await entered.promise;
+    controller.abort(stopped);
+    await rejected;
+    expect(canceled).toBe(true);
+    expect(attempts).toBe(1);
+    expect(sleeps).toEqual([]);
+  });
+
+  it("does not replay a mutation after the response is lost", async () => {
+    let accepted = 0;
+    const sleeps: number[] = [];
+    const client = createRest({
+      apiKey: "test", baseUrl: BASE,
+      sleep: async ms => { sleeps.push(ms); },
+      fetchImpl: async () => {
+        accepted++;
+        throw new TypeError("Connection lost after acceptance");
+      },
+    });
+    await expect(client.request("POST", "/imessage/reactions", { message_id: "msg_1", reaction: "eyes", part_index: 0 })).rejects.toThrow();
+    expect(accepted).toBe(1);
+    expect(sleeps).toEqual([]);
+  });
+
   it("gives up on a long Retry-After and exposes it on the error", async () => {
     const fake = fakeFetch({ "GET /api/v1/identities/x": { status: 429, body: { detail: "rate limited" }, headers: { "Retry-After": "30" } } });
     const sleeps: number[] = [];

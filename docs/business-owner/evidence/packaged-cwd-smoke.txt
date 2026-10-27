@@ -1,0 +1,25 @@
+Wrote /var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-packaged-cwd-7srSwf/isolated-business/config.json
+  owner  Packaging Fixture  +12025550101
+  agent  Instinct
+  model  openai-compatible/packaging
+  apps   on  gmail,googlecalendar
+
+No INKBOX_ADMIN_API_KEY in the environment, so no Inkbox identity was provisioned.
+Set it and run init again, or export INKBOX_API_KEY / INKBOX_AGENT_HANDLE yourself.
+[instinct] wrote /var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-packaged-cwd-7srSwf/isolated-business/PERSONA.md (default persona)
+[instinct] Inkbox not configured: replies go to the console outbox
+[instinct] computer unavailable: computer mode "maritime" needs maritimeMcpUrl (MARITIME_COMPUTERS_MCP_URL) and maritimeApiKey (MARITIME_API_KEY)
+[instinct] loaded 16 skills from /private/tmp/open-instinct/skills
+[instinct] agent "Instinct" ready: model openai-compatible/packaging, 58 tools, data /var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-packaged-cwd-7srSwf/isolated-business
+(node:58876) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[instinct] listening on 127.0.0.1:55021
+[instinct] SIGTERM: shutting down
+[instinct] Inkbox not configured: replies go to the console outbox
+[instinct] computer unavailable: computer mode "maritime" needs maritimeMcpUrl (MARITIME_COMPUTERS_MCP_URL) and maritimeApiKey (MARITIME_API_KEY)
+[instinct] loaded 16 skills from /private/tmp/open-instinct/skills
+[instinct] agent "Instinct" ready: model openai-compatible/packaging, 58 tools, data /var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-packaged-cwd-7srSwf/isolated-business
+(node:58877) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[instinct] listening on 127.0.0.1:55021
+[instinct] SIGTERM: shutting down

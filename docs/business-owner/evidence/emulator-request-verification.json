@@ -1,0 +1,180 @@
+{
+  "status": "passed_emulator_scope_live_gates_unchanged",
+  "commands": [
+    {
+      "command": "npm exec --yes --package=pnpm@10.6.1 -- pnpm test && npm exec --yes --package=pnpm@10.6.1 -- pnpm smoke",
+      "result": {
+        "passed": 1510,
+        "skipped": 1,
+        "smoke": "passed"
+      }
+    },
+    {
+      "command": "npm exec --yes --package=pnpm@10.6.1 -- pnpm test:e2e",
+      "result": {
+        "passed": 34,
+        "checkpoints": 116,
+        "missing": [],
+        "captureErrors": 0
+      }
+    },
+    {
+      "command": "env INSTINCT_EVIDENCE_NEGATIVE_CASE=1 npm exec --yes --package=pnpm@10.6.1 -- pnpm --filter @open-instinct/server exec playwright test --config playwright.config.ts --project desktop --grep \"intentional semantic assertion failure\"",
+      "result": "expected exit1; assertion1!=2; failure screenshot and redacted trace/report generated"
+    },
+    {
+      "command": "node scripts/check-evidence.mjs",
+      "result": {
+        "status": "passed",
+        "files": 236,
+        "archiveEntries": 4,
+        "expandedBytes": 2314001
+      }
+    },
+    {
+      "command": "node scripts/check-evidence.mjs --negative",
+      "result": {
+        "status": "passed",
+        "files": 7,
+        "archiveEntries": 6,
+        "expandedBytes": 172480
+      }
+    },
+    {
+      "command": "npm exec --yes --package=pnpm@10.6.1 -- pnpm --filter @open-instinct/server exec vitest run test/scenarios/follow-through-send.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "1 passed; actual Gmail inventory contains original plus exactly two permitted chases, no duplicates after further downtime/restart"
+    },
+    {
+      "command": "env INSTINCT_SCENARIO_EVIDENCE_DIR=/tmp/open-instinct/docs/business-owner/evidence/emulator-general npm exec --yes --package=pnpm@10.6.1 -- pnpm --filter @open-instinct/server exec vitest run test/contracts/providers.test.ts test/scenarios/general-delegation.test.ts test/scenarios/follow-through-send.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "12 passed after binary fixture correction",
+      "evidence": "docs/business-owner/evidence/emulator-request-integrated.txt"
+    },
+    {
+      "command": "env INSTINCT_SCENARIO_EVIDENCE_DIR=/tmp/open-instinct/docs/business-owner/evidence/emulator-general npm exec --yes --package=pnpm@10.6.1 -- pnpm --filter @open-instinct/server exec vitest run test/scenarios/general-delegation.test.ts --maxWorkers=1 --no-file-parallelism",
+      "result": "1 passed after removing duplicate PDF title and widening fixture spreadsheet columns; actual downloaded deliverables recaptured"
+    }
+  ],
+  "visualInspection": [
+    "desktop-dark-gmail-reconciled.png",
+    "mobile-light-computer.png",
+    "mobile-dark-calendar-conflict.png",
+    "desktop-light-provider-stop-persisted.png",
+    "mobile-dark-onboarding.png",
+    "desktop-light-knowledge-detail.png",
+    "mobile-light-settings.png"
+  ],
+  "visualResult": "Inspected actual refreshed screenshots; controls/text readable and no observed clipping in these selected views. Automated matrix additionally checks mobile horizontal overflow. Full-page images may require scrolling.",
+  "isolation": "Explicit synthetic environment, controlled model, fresh private directories and exact allocated loopback origins; no actual Pro token or liveprovider used.",
+  "limitations": [
+    "Emulated computer protocol/file/takeover is not an OS sandbox or real officeexecution proof",
+    "Deterministic model does not prove planning quality",
+    "No live customer receipt/calendar delivery or providerOAuth certification",
+    "Original live scenarios remain separately blocked; subscription probe evidence not relabeled as emulator evidence"
+  ],
+  "workflowCoverage": [
+    {
+      "workflow": "Onboarding, authenticated owner workspace and Google OAuth protocol",
+      "scenarios": [
+        "packages/server/e2e/workspace.spec.ts",
+        "packages/server/test/contracts/providers.test.ts"
+      ],
+      "status": "passed_emulated"
+    },
+    {
+      "workflow": "Source-backed customer request, PDF quote, Gmail SENT readback and durable evidence",
+      "scenarios": [
+        "packages/server/test/scenarios/document-lifecycle.test.ts",
+        "packages/server/e2e/customer-lifecycle.spec.ts"
+      ],
+      "status": "passed_emulated"
+    },
+    {
+      "workflow": "Restarted no-reply follow-through, two-chase bound, reply/intervention suppression",
+      "scenarios": [
+        "packages/server/test/scenarios/follow-through-send.test.ts",
+        "packages/server/test/scenarios/document-lifecycle.test.ts",
+        "packages/server/test/scenarios/workflows.test.ts"
+      ],
+      "status": "passed_emulated",
+      "newCaseResult": "1 passed; 622ms scenario, 2.42s command"
+    },
+    {
+      "workflow": "Calendar create/revise/cancel, attendee/timezone readback, stale etag and conflicts",
+      "scenarios": [
+        "packages/server/test/scenarios/document-lifecycle.test.ts",
+        "packages/server/e2e/customer-lifecycle.spec.ts"
+      ],
+      "status": "passed_emulated"
+    },
+    {
+      "workflow": "General mail/calendar/source-backed client brief and PDF/XLSX deliverables",
+      "scenarios": [
+        "packages/server/test/scenarios/general-delegation.test.ts"
+      ],
+      "status": "passed_emulated",
+      "evidence": "docs/business-owner/evidence/emulator-general/proof.json"
+    },
+    {
+      "workflow": "Hosted computer protocol, files, entitlement failures, takeover and tenant binding",
+      "scenarios": [
+        "packages/server/test/contracts/providers.test.ts",
+        "packages/server/e2e/workspace.spec.ts",
+        "packages/server/test/scenarios/operational-limits.test.ts"
+      ],
+      "status": "passed_emulated_protocol_only",
+      "limitation": "No actual desktop/OS isolation or remote office execution claim"
+    },
+    {
+      "workflow": "Priority stop from signed text and browser, late in-flight results and restart",
+      "scenarios": [
+        "packages/server/test/scenarios/operational-limits.test.ts",
+        "packages/server/test/scenarios/workflows.test.ts",
+        "packages/server/e2e/changed-flows.spec.ts"
+      ],
+      "status": "passed_emulated"
+    },
+    {
+      "workflow": "Account disconnect/rebind, multitab nondestructive history, files/activity after reload",
+      "scenarios": [
+        "packages/server/test/scenarios/dispatch-boundaries.test.ts",
+        "packages/server/test/scenarios/open-thread-recovery.test.ts",
+        "packages/server/test/scenarios/security.test.ts",
+        "packages/server/e2e/workspace.spec.ts"
+      ],
+      "status": "passed_emulated"
+    },
+    {
+      "workflow": "Snapshot/restore stopped, reconciliation without resend, export and selective deletion",
+      "scenarios": [
+        "packages/server/test/scenarios/workflows.test.ts",
+        "packages/core/test/business-recovery.test.ts",
+        "packages/server/e2e/changed-flows.spec.ts"
+      ],
+      "status": "passed_emulated"
+    }
+  ],
+  "checkOrdering": "1510-test and full34-browser baseline precedes new2cases and binaryfixture extension. After extension, targeted12cases passed. Final fixturelayout-only edit followed by generalcase1pass. No productioncode changed in this requestedpass; do not claim fullsuite rerun afternewcases.",
+  "securityReview": {
+    "status": "passed_scoped_no_findings",
+    "evidence": "docs/business-owner/evidence/security-review-emulator-request.md"
+  },
+  "deliverableInspection": {
+    "status": "passed",
+    "pdf": "Actual generated PDF opened in Chromium; 222.00/255.00 totals,33.00difference,sources and officeemulation disclosure inspected; duplicateheadingremoved",
+    "workbook": "Actual downloaded XLSX rendered with macOS QuickLook native preview,openedbothSuppliers/Context sheetsinChromium; columns widened, figuresandcitations inspected",
+    "screenshots": [
+      "docs/business-owner/evidence/emulator-general/client-brief-browser.png",
+      "docs/business-owner/evidence/emulator-general/workbook-browser.png",
+      "docs/business-owner/evidence/emulator-general/workbook-context-browser.png"
+    ],
+    "qualification": "Native preview is localrendering only, notremoteLibreOffice orformula recalculation",
+    "browserCleanup": "Ego taskspace15 finished withkeep[]; no upgradeperformed"
+  },
+  "changedFiles": [
+    "packages/server/testing/emulators/maritime.ts",
+    "packages/server/test/scenarios/general-delegation.test.ts",
+    "packages/server/test/scenarios/follow-through-send.test.ts",
+    "packages/server/testing/emulators/CONTRACT-COVERAGE.md"
+  ],
+  "authoringCorrections": "New controlled-model fixture regex initially omitted singularday; corrected withoutchangingproduction. Allsourcechunks inspected. Callbackassertion capture nowexposes originalfailure ratherthantimeout."
+}

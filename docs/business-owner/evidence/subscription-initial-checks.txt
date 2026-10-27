@@ -1,0 +1,388 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> open-instinct@0.1.0 build /private/tmp/open-instinct
+> pnpm -r --workspace-concurrency=1 --filter "./packages/*" run build
+
+Scope: 12 of 13 workspace projects
+
+> @open-instinct/core@0.1.0 build /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json
+
+
+> @open-instinct/ample@0.1.0 build /private/tmp/open-instinct/packages/ample
+> tsc -p tsconfig.json
+
+
+> @open-instinct/apps@0.1.0 build /private/tmp/open-instinct/packages/apps
+> tsc -p tsconfig.json
+
+
+> @open-instinct/atomicmail@0.1.0 build /private/tmp/open-instinct/packages/atomicmail
+> tsc -p tsconfig.json
+
+
+> @open-instinct/computer@0.1.0 build /private/tmp/open-instinct/packages/computer
+> tsc -p tsconfig.json
+
+
+> @open-instinct/context@0.1.0 build /private/tmp/open-instinct/packages/context
+> tsc -p tsconfig.json
+
+
+> @open-instinct/inkbox@0.1.0 build /private/tmp/open-instinct/packages/inkbox
+> tsc -p tsconfig.json
+
+
+> @open-instinct/payments@0.1.0 build /private/tmp/open-instinct/packages/payments
+> tsc -p tsconfig.json
+
+
+> @open-instinct/gateway@0.1.0 build /private/tmp/open-instinct/packages/gateway
+> tsc -p tsconfig.json
+
+
+> @open-instinct/network@0.1.0 build /private/tmp/open-instinct/packages/network
+> tsc -p tsconfig.json
+
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+
+> @open-instinct/cli@0.1.0 build /private/tmp/open-instinct/packages/cli
+> tsc -p tsconfig.json
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Scope: 12 of 13 workspace projects
+packages/core typecheck$ tsc -p tsconfig.json --noEmit
+packages/core typecheck: Done
+packages/apps typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck: Done
+packages/context typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck: Done
+packages/inkbox typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck: Done
+packages/payments typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck: Done
+packages/context typecheck: Done
+packages/payments typecheck: Done
+packages/inkbox typecheck: Done
+packages/gateway typecheck$ tsc -p tsconfig.json --noEmit
+packages/network typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck: Done
+packages/network typecheck: Done
+packages/server typecheck$ tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+packages/server typecheck: Done
+packages/cli typecheck$ tsc -p tsconfig.json --noEmit
+packages/cli typecheck: Done
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+
+ ✓ test/chatgpt-subscription.test.ts (17 tests) 316ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  09:09:55
+   Duration  1.04s (transform 81ms, setup 0ms, collect 513ms, tests 316ms, environment 0ms, prepare 39ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/cli@0.1.0 test /private/tmp/open-instinct/packages/cli
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/cli
+
+ ✓ test/auth.test.ts (20 tests) 15ms
+ ✓ test/units.test.ts (19 tests) 13ms
+ ✓ test/provision.test.ts (13 tests) 31ms
+ ✓ test/business.test.ts (19 tests) 70ms
+ ✓ test/cli.test.ts (40 tests) 86ms
+ ✓ test/dev-tunnel.test.ts (1 test) 58ms
+ ✓ test/persona.test.ts (13 tests) 567ms
+   ✓ persona > edit runs $EDITOR on the file and reports the result  430ms
+
+ Test Files  7 passed (7)
+      Tests  125 passed (125)
+   Start at  09:09:57
+   Duration  1.49s (transform 547ms, setup 0ms, collect 5.33s, tests 840ms, environment 0ms, prepare 322ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+ ❯ test/subscription-auth.test.ts (5 tests | 2 failed) 45ms
+   ✓ subscription-only server authentication > never maps Codex subscription requests to environment API keys while preserving personal OpenAI 1ms
+   ✓ subscription-only server authentication > blocks a real runtime request before the injected model stream when private Codex auth is missing 22ms
+   ✓ subscription-only server authentication > still supplies the personal OpenAI API key to a successful runtime request 7ms
+   × subscription-only server authentication > does not treat subscription catalog rates as billed API charges (cap=false) 10ms
+     → expected { Object (inputTokens, modelMinor, ...) } to match object { inputTokens: 12, …(2) }
+(2 matching properties omitted from actual)
+   × subscription-only server authentication > does not treat subscription catalog rates as billed API charges (cap=true) 6ms
+     → promise resolved "AssistantMessageEventStream{ …(7) }" instead of rejecting
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/subscription-auth.test.ts > subscription-only server authentication > does not treat subscription catalog rates as billed API charges (cap=false)
+AssertionError: expected { Object (inputTokens, modelMinor, ...) } to match object { inputTokens: 12, …(2) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "inputTokens": 12,
+-   "modelPriceUnknown": true,
+-   "outputTokens": 3,
++   "inputTokens": 9,
++   "modelPriceUnknown": false,
++   "outputTokens": 6,
+  }
+
+ ❯ test/subscription-auth.test.ts:120:46
+    118|       else {
+    119|         await request;
+    120|         expect(store.settings().value.usage).toMatchObject({ inputToke…
+       |                                              ^
+    121|         expect(store.list("usage")[0]!.value).toMatchObject({ costMino…
+    122|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/subscription-auth.test.ts > subscription-only server authentication > does not treat subscription catalog rates as billed API charges (cap=true)
+AssertionError: promise resolved "AssistantMessageEventStream{ …(7) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ AssistantMessageEventStream {
++   "done": true,
++   "extractResult": [Function anonymous],
++   "finalResultPromise": Promise {},
++   "isComplete": [Function anonymous],
++   "queue": FifoQueue {
++     "incoming": [
++       {
++         "partial": {
++           "api": "openai-codex-responses",
++           "content": [],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "pending",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "type": "start",
++       },
++       {
++         "contentIndex": 0,
++         "partial": {
++           "api": "openai-codex-responses",
++           "content": [
++             {
++               "text": "Subscription response.",
++               "type": "text",
++             },
++           ],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "pending",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "type": "text_start",
++       },
++       {
++         "contentIndex": 0,
++         "delta": "Subscription res",
++         "partial": {
++           "api": "openai-codex-responses",
++           "content": [
++             {
++               "text": "Subscription response.",
++               "type": "text",
++             },
++           ],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "pending",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "type": "text_delta",
++       },
++       {
++         "contentIndex": 0,
++         "delta": "ponse.",
++         "partial": {
++           "api": "openai-codex-responses",
++           "content": [
++             {
++               "text": "Subscription response.",
++               "type": "text",
++             },
++           ],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "pending",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "type": "text_delta",
++       },
++       {
++         "content": "Subscription response.",
++         "contentIndex": 0,
++         "partial": {
++           "api": "openai-codex-responses",
++           "content": [
++             {
++               "text": "Subscription response.",
++               "type": "text",
++             },
++           ],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "pending",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "type": "text_end",
++       },
++       {
++         "message": {
++           "api": "openai-codex-responses",
++           "content": [
++             {
++               "text": "Subscription response.",
++               "type": "text",
++             },
++           ],
++           "model": "gpt-5.3-codex-spark",
++           "provider": "openai-codex",
++           "role": "assistant",
++           "stopReason": "stop",
++           "timestamp": 1792771800400,
++           "usage": {
++             "cacheRead": 0,
++             "cacheWrite": 0,
++             "cost": {
++               "cacheRead": 0,
++               "cacheWrite": 0,
++               "input": 0,
++               "output": 0,
++               "total": 0,
++             },
++             "input": 9,
++             "output": 6,
++             "totalTokens": 15,
++           },
++         },
++         "reason": "stop",
++         "type": "done",
++       },
++     ],
++     "outgoing": [],
++   },
++   "resolveFinalResult": [Function anonymous],
++   "waiting": FifoQueue {
++     "incoming": [],
++     "outgoing": [],
++   },
+  }
+
+ ❯ test/subscription-auth.test.ts:117:41
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  09:09:59
+   Duration  897ms (transform 214ms, setup 0ms, collect 652ms, tests 45ms, environment 0ms, prepare 30ms)
+
+undefined
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/subscription-auth.test.ts

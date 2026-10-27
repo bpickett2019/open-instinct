@@ -4,7 +4,7 @@
  * the agent boots without payment tools. The contract below mirrors the package's
  * exports so this file typechecks on its own.
  */
-import type { AuditLog, InstinctConfig, Outbox, RegisteredTool, StateDir } from "@open-instinct/core";
+import type { AuditLog, CredentialVault, InstinctConfig, Outbox, RegisteredTool, StateDir } from "@open-instinct/core";
 
 export interface LinkWalletLike {
   authorizeUrl(): { url: string; state: string };
@@ -29,6 +29,8 @@ export interface PaymentsToolDeps {
   config: InstinctConfig;
   audit: AuditLog;
   state: StateDir;
+  credentialVault?: CredentialVault;
+  workspaceId?: string;
 }
 
 export interface PaymentsModule {

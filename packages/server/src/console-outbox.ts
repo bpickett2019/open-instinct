@@ -118,8 +118,16 @@ export class ChatAwareOutbox implements Outbox {
     await this.inner.send(msg, ctx);
   }
 
-  async typing(conversationKey: string): Promise<void> {
+  async typing(conversationKey: string, options?: Parameters<NonNullable<Outbox["typing"]>>[1]): Promise<void> {
     if (conversationKey.startsWith("chat:")) return;
-    await this.inner.typing?.(conversationKey);
+    await this.inner.typing?.(conversationKey, options);
+  }
+  async markRead(conversationKey: string, options?: Parameters<NonNullable<Outbox["markRead"]>>[1]): Promise<void> {
+    if (!this.inner.markRead) throw new Error("Read receipts are unavailable");
+    await this.inner.markRead(conversationKey, options);
+  }
+  async react(conversationKey: string, messageId: string, reaction: string, options?: Parameters<NonNullable<Outbox["react"]>>[3]): Promise<void> {
+    if (!this.inner.react) throw new Error("Reactions are unavailable");
+    await this.inner.react(conversationKey, messageId, reaction, options);
   }
 }

@@ -1,0 +1,279 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/core@0.1.0 build /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/server@0.1.0 build /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/core@0.1.0 typecheck /private/tmp/open-instinct/packages/core
+> tsc -p tsconfig.json --noEmit
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/server@0.1.0 typecheck /private/tmp/open-instinct/packages/server
+> tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> vitest run --passWithNoTests
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+
+ ✓ test/approvals.test.ts (15 tests) 57ms
+ ✓ test/business-lock.test.ts (3 tests) 146ms
+ ✓ test/contacts.test.ts (18 tests) 96ms
+ ✓ test/memory.test.ts (5 tests) 110ms
+ ✓ test/core-tools.test.ts (32 tests) 112ms
+ ✓ test/owner-claim.test.ts (4 tests) 13ms
+ ✓ test/audit.test.ts (5 tests) 26ms
+ ✓ test/config.test.ts (8 tests) 30ms
+ ✓ test/prompt.test.ts (13 tests) 20ms
+ ✓ test/pdf.test.ts (12 tests) 331ms
+ ✓ test/business-recovery.test.ts (13 tests) 407ms
+ ✓ test/scheduler.test.ts (14 tests) 442ms
+   ✓ nextCron > is strictly after `from` and gives up on impossible dates  311ms
+ ✓ test/policy.test.ts (34 tests) 11ms
+ ✓ test/persona.test.ts (9 tests) 12ms
+ ✓ test/principal.test.ts (13 tests) 13ms
+ ✓ test/notifier.test.ts (3 tests) 5ms
+ ✓ test/credential-vault.test.ts (3 tests) 8ms
+ ✓ test/state.test.ts (6 tests) 8ms
+ ✓ test/tools.test.ts (9 tests) 3ms
+ ✓ test/model.test.ts (5 tests) 2ms
+ ✓ test/envelope.test.ts (4 tests) 2ms
+ ✓ test/prompt-reach.test.ts (3 tests) 2ms
+ ✓ test/runtime.test.ts (84 tests) 2501ms
+   ✓ AgentRuntime.handleInbound > acks a slow owner text once on the waitForCompletion path, never for the text queued behind it  350ms
+   ✓ AgentRuntime.handleInbound > does not ack a fast reply, a group text or a contact  406ms
+
+ Test Files  23 passed (23)
+      Tests  315 passed (315)
+   Start at  02:35:24
+   Duration  3.12s (transform 571ms, setup 0ms, collect 2.02s, tests 4.36s, environment 2ms, prepare 996ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> vitest run --passWithNoTests
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/business-hosted-artifacts.test.ts (25 tests) 1554ms
+   ✓ hosted document artifact transfer > runs the real registered wrapper and dispatcher, preserving bytes and source without transfer payload in action history  301ms
+   ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  353ms
+   ✓ hosted document artifact transfer > rejects oversized transfer before registration  410ms
+   ✓ hosted document artifact transfer > does not convert a primitive transfer into verified document evidence when extracted totals mismatch  337ms
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided. (×2)
+ ✓ test/scenarios/security.test.ts (10 tests) 1303ms
+   ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  405ms
+ ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2293ms
+   ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1159ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  319ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  639ms
+Warning: Indexing all PDF objects
+ ✓ test/scenarios/dispatch-boundaries.test.ts (11 tests) 2827ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request  558ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request  366ms
+   ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  437ms
+   ✓ Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy  401ms
+ ✓ test/scenarios/open-thread-recovery.test.ts (5 tests) 636ms
+   ✓ BO153 production Gmail open-thread recovery (stateful emulation) > recovers an old active-thread reply after history expiry without replaying closed, unrelated or other-account mail  306ms
+ ✓ test/business-extraction.test.ts (12 tests) 4317ms
+   ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  833ms
+   ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  685ms
+   ✓ bounded real document workers > rejects unsafe office entry 'xl/externalLinks/link.xml' before parsing  334ms
+   ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  674ms
+ ✓ test/slow-reply-ack.test.ts (2 tests) 852ms
+   ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  588ms
+ ✓ test/http.test.ts (43 tests) 394ms
+ ✓ test/scenarios/workflows.test.ts (23 tests) 3701ms
+   ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  618ms
+   ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  458ms
+   ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  378ms
+   ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  332ms
+ ✓ test/business-knowledge.test.ts (17 tests) 4481ms
+   ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  753ms
+   ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  613ms
+   ✓ immutable shared artifacts and safe retrieval > cannot retrieve a second workspace's sources  325ms
+   ✓ immutable shared artifacts and safe retrieval > rejects traversal, unsafe types, HTML, upload excess, symlinks and modified originals  337ms
+   ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1169ms
+   ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  456ms
+ ✓ test/workspace-http.test.ts (2 tests) 370ms
+   ✓ returns 404 for absent records without turning missing stored bytes into a 404  352ms
+ ✓ test/contracts/providers.test.ts (10 tests) 245ms
+ ✓ test/business-commitments.test.ts (21 tests) 188ms
+ ✓ test/inbox.test.ts (2 tests) 146ms
+ ✓ test/http-lifecycle.test.ts (1 test) 56ms
+ ✓ test/skills.test.ts (13 tests) 66ms
+ ✓ test/business-image-accounting.test.ts (2 tests) 56ms
+ ✓ test/file-tools.test.ts (11 tests) 84ms
+ ✓ test/business-acceptance-boundaries.test.ts (9 tests) 83ms
+ ✓ test/atomicmail.test.ts (5 tests) 58ms
+ ✓ test/business-pricing.test.ts (5 tests) 25ms
+ ✓ test/maritime-schedules.test.ts (6 tests) 20ms
+ ✓ test/workspace-session.test.ts (7 tests) 8ms
+ ✓ test/console-outbox.test.ts (7 tests) 4ms
+ ✓ test/payments.test.ts (4 tests) 3ms
+ ✓ test/hooks.test.ts (5 tests) 2ms
+ ✓ test/bind.test.ts (3 tests) 1ms
+ ✓ test/evidence-redaction.test.ts (1 test) 2ms
+ ✓ test/webhook-setup.test.ts (7 tests) 17ms
+ ✓ test/boot-phone.test.ts (5 tests) 35ms
+ ✓ test/setup-summary.test.ts (3 tests) 1ms
+ ✓ test/scenarios/operational-limits.test.ts (13 tests) 5516ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart  370ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: only twelve operational dispatches execute in a slice and useful work requeues without completion  3494ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects missing-criterion and the owner detail never reports completed  306ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects fabricated-reference and the owner detail never reports completed  335ms
+ ✓ test/scenarios/crash-phases.test.ts (8 tests) 11753ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  2483ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  2442ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1867ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1004ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  993ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  1003ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  976ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  984ms
+
+ Test Files  33 passed (33)
+      Tests  302 passed (302)
+   Start at  02:35:28
+   Duration  12.12s (transform 1.26s, setup 0ms, collect 17.75s, tests 41.10s, environment 3ms, prepare 1.70s)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+ (×2)
+> node dist/smoke.js
+
+health
+  ok   GET /health is 200 {ok:true}
+1. owner remembers a preference
+  ok   POST /chat is 200
+  ok   reply is the model's final text (got "Noted: window seats from now on.")
+  ok   MEMORY.md contains the preference
+2. stranger asks for the calendar
+  ok   envelope /chat returns an empty response (reply goes through the outbox)
+  ok   outbox got exactly one iMessage for imessage:conv_stranger (got 1)
+  ok   stranger's memory_write did not land
+  note policy deny not in audit: tool was hidden from the stranger (Pi answers 'tool not found' before beforeToolCall)
+3. schedules
+  ok   GET /schedules starts empty
+  ok   schedule chat answered
+  ok   GET /schedules has one entry (got 1)
+  ok   schedule carries cron and enabled
+4. a stranger's agent asks for the calendar over A2A
+  ok   A2A envelope /chat returns an empty response
+  ok   conversation key is a2a:ctx_smoke_1 (got "a2a:ctx_smoke_1")
+  ok   owner got exactly one notification through the outbox (got 1)
+  ok   the notification names the calendar ask and the refusal
+  ok   the notification was sent on behalf of the stranger agent (got stranger:a2a:unknown-agent)
+  ok   the notification is prefixed with who asked
+  ok   exactly one A2A reply went back on the task (got 1)
+  ok   the reply completes task task_smoke_1 (got {"taskId":"task_smoke_1","intent":"complete"})
+  ok   the reply carries the inbound replyRef
+  ok   the reply declines in words
+  ok   nothing else left the process for this task (got 2 sends)
+  ok   the owner's memory did not leak to the stranger or the notice
+  ok   the caller resolved to a stranger (got stranger:a2a:unknown-agent)
+  ok   policy allowed only notify_owner for the stranger (got ["notify_owner"])
+  ok   memory_read never executed for the stranger
+5. owner asks for a PDF
+  ok   PDF chat is 200
+  ok   a real PDF exists at workspace/briefs/smoke.pdf
+  ok   create_pdf wrote the file and reported one page (got "Wrote /private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-MmEdNk/workspace/briefs/smoke.pdf (1.9 KB, 1 page).")
+  ok   send_file answered with the file's path (got "/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-MmEdNk/workspace/briefs/smoke.pdf (1929 bytes) is ready. Paste this block verbatim in your reply so the dashboard attaches it:\n```maritime-file\n{\"path\":\"/private/var/folders/2n/pwq7q3k93dn939w0gm4p59b80000gn/T/instinct-smoke-Mm…")
+  ok   the reply carries the maritime-file block or the path
+status
+  ok   status page names the agent and model
+
+smoke passed
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+ (×2)
+> playwright test --config playwright.config.ts
+
+Running 34 tests using 1 worker
+
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (4.0s)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (727ms)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (617ms)
+  ✓   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (3.1s)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (717ms)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (603ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (391ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (713ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (777ms)
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.2s)
+  ✓  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (1.4s)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (923ms)
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:58606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.1s)
+  ✓  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (1.4s)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (906ms)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (4.0s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (4.0s)
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (3.2s)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (695ms)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (589ms)
+  ✓  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (3.1s)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (693ms)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (573ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (387ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (717ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (798ms)
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✓  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (1.3s)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (893ms)
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:58634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.0s)
+  ✓  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (1.3s)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (858ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (3.8s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (3.8s)
+
+  34 passed (1.1m)
+[raw output: artifact://234]
+
+
+Wall time: 95.67 seconds

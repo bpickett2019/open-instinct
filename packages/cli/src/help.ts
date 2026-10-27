@@ -19,6 +19,19 @@ export const HELP_GROUPS: HelpGroup[] = [
     title: "Set up",
     entries: [
       {
+        name: "auth",
+        usage: "auth login [--device] | status | logout | models",
+        summary: "Sign in with ChatGPT for Codex subscription models, scoped to --data-dir. Never imports global Codex credentials.",
+        example: "instinct auth login --device --data-dir .instinct",
+        flags: [
+          "login: browser callback with hidden manual fallback; --device prints a one-time code and waits for approval",
+          "status: local login metadata only, not a live entitlement check",
+          "models: installed subscription model catalog, without a model request",
+          "logout: remove only this data directory's login, not global credentials or provider sessions",
+          "Login never changes the model. Select an openai-codex/<id> from auth models and restart the server.",
+        ],
+      },
+      {
         name: "init",
         usage: "init --name <you> [--phone +1...] [--email ...] [--handle <handle>] [--model provider/id] [--apps] [--toolkits a,b]",
         summary: "Write config.json and, with INKBOX_ADMIN_API_KEY, provision the agent's iMessage identity.",
@@ -33,6 +46,7 @@ export const HELP_GROUPS: HelpGroup[] = [
           "--rotate-signing-key (replace the identity's signing key; other receivers must use the new key)",
           "--apps / --no-apps (Composio apps; on by itself when COMPOSIO_API_KEY or COMPOSIO_TOOLKITS is in env)",
           "--toolkits gmail,googlecalendar,googlecontacts (also turns apps on)",
+          "--business (enable full-autonomy business mode; defaults to Gmail and Google Calendar unless --toolkits is supplied)",
         ],
       },
       {
@@ -57,6 +71,20 @@ export const HELP_GROUPS: HelpGroup[] = [
         usage: 'chat "<message>" [--url http://127.0.0.1:8080] [--agent <maritimeAgentId>] [--conversation <id>]',
         summary: "Send one message to a running agent, locally or through api.maritime.sh. Local calls send INSTINCT_CHAT_TOKEN when set; --agent uses MARITIME_API_KEY.",
         example: 'instinct chat "what is on my calendar tomorrow"',
+      },
+      {
+        name: "business",
+        usage: "business status | tasks | task <id> | pause | resume | stop [id] | close <id> [--url <https-origin> | --agent <id>]",
+        summary: "Authenticated durable owner controls. Local HTTP needs INSTINCT_CHAT_TOKEN; Maritime needs MARITIME_API_KEY. Stop is not an undo.",
+        example: "instinct business pause",
+        flags: [
+          "backup --destination <private-backup-dir> --retention <count>: offline operator snapshot of --business-dir (default <dataDir>/business)",
+          "export --destination <new-private-file.json>: offline credential-free business export",
+          "restore --source <snapshot-dir> --destination <business-state-dir>: offline fresh/stopped restore, always stopped; prior directory retained",
+          "delete --confirm-workspace <uuid>: offline deliberate deletion, requires durable stop and provider disconnect/revocation requests",
+          "--business-dir <path>: use the configured business state directory for offline operations; stop the controller process first",
+          "Backups/restore/export/delete are local operator filesystem commands, never remotely served raw backups or worker tools.",
+        ],
       },
       {
         name: "status",

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Principal } from "@open-instinct/core";
-import { InkboxChannel, parseConversationKey, splitMessageText } from "../src/channel.js";
+import { InkboxChannel, parseConversationKey, splitMessageText, type DispatchOptions } from "../src/channel.js";
 import { fakeFetch, rawIdentity, type Recorded } from "./fake-fetch.js";
 
 const BASE = "https://inkbox.test";
@@ -10,12 +10,12 @@ const ctx = (conversationKey: string) => ({ principal: owner, conversationKey })
 function sdkRoutes(extra: Record<string, unknown> = {}) {
   return {
     "GET /api/v1/identities/maria-instinct": { body: rawIdentity(extra) },
-    "GET /api/v1/imessage/messages/msg_1": { body: { id: "msg_1", conversation_id: "conv_1", created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } },
+    "GET /api/v1/imessage/messages/msg_1": { body: { id: "msg_1", conversation_id: "conv_1", direction: "inbound", created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } },
     "POST /api/v1/imessage/messages": (req: Recorded) => ({ body: { message: { id: "sent_1", conversation_id: req.body && (req.body as { conversation_id?: string }).conversation_id, created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } } }),
     "POST /api/v1/phone/numbers/pn_1/texts": { body: { id: "txt_1", created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } },
     "POST /api/v1/mail/mailboxes/maria-instinct@inkbox.ai/messages": { body: { id: "mail_1", created_at: "2026-10-03T00:00:00Z" } },
     "POST /api/v1/imessage/typing": { status: 204 },
-    "POST /api/v1/imessage/reactions": { body: { id: "r_1", conversation_id: "conv_1", message_id: "msg_1", reaction: "love", created_at: "2026-10-03T00:00:00Z" } },
+    "POST /api/v1/imessage/reactions": { body: { id: "r_1", conversation_id: "conv_1", target_message_id: "msg_1", direction: "outbound", reaction: "love", part_index: 0, created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } },
     "POST /api/v1/imessage/mark-read": { body: { conversation_id: "conv_1", updated_count: 2 } },
     "POST /api/v1/identities/maria-instinct/a2a/tasks/task_1/reply": { body: { id: "task_1", context_id: "ctx_1", state: "completed", caller: { identity_id: "x", organization_id: "y", handle: "sam" }, messages: [], created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" } },
   };
@@ -37,6 +37,134 @@ function channel() {
 function sends(path: string) {
   return fake.calls.filter((c) => c.method === "POST" && c.path === path);
 }
+
+type Feedback = "typing" | "markRead" | "react";
+function feedback(ch: InkboxChannel, operation: Feedback, options: DispatchOptions = {}) {
+  return operation === "react"
+    ? ch.react("imessage:conv_1", "msg_1", "love", options)
+    : ch[operation]("imessage:conv_1", options);
+}
+
+function holdResponse(path: string) {
+  const { promise: reached, resolve: entered } = Promise.withResolvers<void>();
+  const { promise: held, resolve: release } = Promise.withResolvers<void>();
+  const fetchImpl = fake.fetchImpl;
+  let first = true;
+  fake.fetchImpl = async (input, init) => {
+    const response = await fetchImpl(input, init);
+    const url = new URL(input instanceof Request ? input.url : input.toString());
+    if (first && url.pathname === path) {
+      first = false;
+      entered();
+      await held;
+    }
+    return response;
+  };
+  vi.stubGlobal("fetch", fake.fetchImpl);
+  return { reached, release };
+}
+
+describe("final transport dispatch fences", () => {
+  it.each(["imessage", "sms", "email", "a2a"] as const)("blocks %s after identity lookup when the task is stopped", async channelName => {
+    const gate = holdResponse("/api/v1/identities/maria-instinct");
+    let active = true;
+    const pending = channel().send({
+      channel: channelName, to: channelName === "email" ? "sam@example.com" : "+14155550100",
+      text: "Customer update", a2a: { taskId: "task_1", intent: "complete" },
+    }, { ...ctx("chat:x"), assertBusinessDispatch: () => { if (!active) throw new Error("Task stopped"); } });
+    const rejected = expect(pending).rejects.toThrow("Task stopped");
+    await gate.reached;
+    active = false;
+    gate.release();
+    await rejected;
+    expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+  });
+
+  it.each(["imessage", "sms"] as const)("keeps an accepted %s upload receipt but blocks delivery after cancellation", async channelName => {
+    fake = fakeFetch({ ...sdkRoutes(), "POST /api/v1/imessage/media": { body: { media_url: "https://media.inkbox.ai/file", content_type: "text/plain", size: 3 } } });
+    const gate = holdResponse("/api/v1/imessage/media");
+    const controller = new AbortController();
+    const receipts: unknown[] = [];
+    const pending = channel().sendFile({
+      channel: channelName, to: "+14155550100", filename: "note.txt", contentType: "text/plain", content: Buffer.from("abc"),
+    }, { ...ctx("chat:x"), signal: controller.signal, recordBusinessReceipt: receipt => receipts.push(receipt) });
+    const rejected = expect(pending).rejects.toThrow("Canceled");
+    await gate.reached;
+    controller.abort(new Error("Canceled"));
+    gate.release();
+    await rejected;
+    expect(receipts).toEqual([{ channel: channelName, operation: "media-upload", mediaUrl: "https://media.inkbox.ai/file", evidenceLevel: "primitive-only" }]);
+    expect(fake.calls.filter(call => call.method === "POST").map(call => call.path)).toEqual(["/api/v1/imessage/media"]);
+  });
+
+  it.each(["imessage", "sms"] as const)("keeps the first accepted %s chunk and blocks the next after source changes", async channelName => {
+    const path = channelName === "sms" ? "/api/v1/phone/numbers/pn_1/texts" : "/api/v1/imessage/messages";
+    const gate = holdResponse(path);
+    let current = true;
+    const receipts: unknown[] = [];
+    const pending = channel().send({ channel: channelName, to: "+14155550100", text: "word ".repeat(500) }, {
+      ...ctx("chat:x"),
+      assertBusinessDispatch: () => { if (!current) throw new Error("Source changed"); },
+      recordBusinessReceipt: receipt => receipts.push(receipt),
+    });
+    const rejected = expect(pending).rejects.toThrow("Source changed");
+    await gate.reached;
+    current = false;
+    gate.release();
+    await rejected;
+    expect(sends(path)).toHaveLength(1);
+    expect(receipts).toEqual([expect.objectContaining({ acceptedChunks: 1, totalChunks: 2 })]);
+  });
+
+  it.each(["task", "notice"] as const)("does not retry an ambiguous %s message", async kind => {
+    fake = fakeFetch({ ...sdkRoutes(), "POST /api/v1/imessage/messages": { status: 503, body: { detail: "Acceptance unknown" } } });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await expect(channel().send({ channel: "imessage", to: "+14155550100", text: "Update" }, {
+      ...ctx("chat:x"), ...(kind === "task" ? { assertBusinessDispatch: () => {} } : { notificationId: "notice-1" }),
+    })).rejects.toThrow("503");
+    expect(sends("/api/v1/imessage/messages")).toHaveLength(1);
+  });
+
+  it("keeps single-attempt task wire shapes for SMS and email attachments", async () => {
+    const mailPath = "/api/v1/mail/mailboxes/maria-instinct%40inkbox.ai/messages";
+    fake = fakeFetch({ ...sdkRoutes(), [`POST ${mailPath}`]: { body: { id: "mail_1" } } });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    const ch = channel();
+    const dispatch = { ...ctx("chat:x"), assertBusinessDispatch: () => {} };
+    await ch.send({ channel: "sms", to: "+14155550100", text: "Update", mediaUrls: ["https://media.inkbox.ai/file"] }, dispatch);
+    expect(sends("/api/v1/phone/numbers/pn_1/texts")[0]?.body).toEqual({ to: "+14155550100", text: "Update", media_urls: ["https://media.inkbox.ai/file"] });
+    await ch.sendFile({
+      channel: "email", to: "sam@example.com", filename: "note.txt", contentType: "text/plain",
+      content: Buffer.from("abc"), caption: "Attached", subject: "Brief",
+    }, dispatch);
+    expect(sends(mailPath)[0]?.body).toEqual({
+      recipients: { to: ["sam@example.com"] }, subject: "Brief", body_text: "Attached",
+      attachments: [{ filename: "note.txt", content_type: "text/plain", content_base64: Buffer.from("abc").toString("base64") }],
+    });
+  });
+
+  it.each(["lost", "malformed"] as const)("leaves %s acceptance unknown without a receipt or retry", async failure => {
+    fake = fakeFetch({ ...sdkRoutes(), "POST /api/v1/imessage/messages": { body: {} } });
+    const fetchImpl = fake.fetchImpl;
+    fake.fetchImpl = async (input, init) => {
+      const response = await fetchImpl(input, init);
+      if (failure === "lost" && init?.method === "POST") throw new Error("Response lost");
+      return response;
+    };
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    const receipts: unknown[] = [];
+    await expect(channel().send({ channel: "imessage", to: "+14155550100", text: "Update" }, {
+      ...ctx("chat:x"), assertBusinessDispatch: () => {}, recordBusinessReceipt: receipt => receipts.push(receipt),
+    })).rejects.toThrow(failure === "lost" ? "Response lost" : "acceptance is unknown");
+    expect(sends("/api/v1/imessage/messages")).toHaveLength(1);
+    expect(receipts).toHaveLength(0);
+  });
+
+  it("allows owner stop acknowledgments without a task fence", async () => {
+    await channel().send({ channel: "imessage", to: "+14155550100", text: "Stopped." }, { ...ctx("chat:x"), notificationId: "stop-notice" });
+    expect(sends("/api/v1/imessage/messages")).toHaveLength(1);
+  });
+});
 
 describe("InkboxChannel routing", () => {
   it("replies in an iMessage conversation by conversation id and resolves the identity once", async () => {
@@ -159,18 +287,17 @@ describe("InkboxChannel routing", () => {
     await expect(channel().send({ channel: "chat", conversationKey: "chat:1", text: "x" }, ctx("chat:1"))).rejects.toThrow(/cannot deliver/);
   });
 
-  it("typing, react and markRead hit the iMessage endpoints and no-op elsewhere", async () => {
+  it("uses the SDK wire shapes for feedback with identity-scoped target reads", async () => {
     const ch = channel();
     await ch.typing("imessage:conv_1");
-    await ch.typing("sms:+1415");
     await ch.markRead("imessage:conv_1");
-    await ch.markRead("email:x");
     await ch.react("imessage:conv_1", "msg_1", "love");
-    expect(sends("/api/v1/imessage/typing")).toHaveLength(1);
-    expect(sends("/api/v1/imessage/typing")[0]?.body).toEqual({ conversation_id: "conv_1" });
-    expect(sends("/api/v1/imessage/mark-read")).toHaveLength(1);
-    expect(sends("/api/v1/imessage/reactions")[0]?.body).toEqual({ message_id: "msg_1", reaction: "love", part_index: 0 });
-    await expect(ch.react("sms:+1", "m", "love")).rejects.toThrow(/iMessage/);
+    expect(fake.calls.filter(call => call.method === "POST").map(({ path, query, body }) => ({ path, query, body }))).toEqual([
+      { path: "/api/v1/imessage/typing", query: {}, body: { conversation_id: "conv_1" } },
+      { path: "/api/v1/imessage/mark-read", query: {}, body: { conversation_id: "conv_1" } },
+      { path: "/api/v1/imessage/reactions", query: {}, body: { message_id: "msg_1", reaction: "love", part_index: 0 } },
+    ]);
+    expect(fake.calls.find(call => call.path === "/api/v1/imessage/messages/msg_1")?.query).toEqual({ agent_identity_id: "ident_1" });
   });
 
   it("retries the identity lookup after a failure instead of caching the rejection", async () => {
@@ -199,6 +326,139 @@ describe("InkboxChannel routing", () => {
     vi.stubGlobal("fetch", fake.fetchImpl);
     expect(await channel().emailAttachment("mail_1", "photo #1/final.png")).toEqual({ url: "https://media.example.test/signed" });
     expect(fake.calls.at(-1)?.query).toEqual({ redirect: "false" });
+  });
+});
+
+describe("feedback transport safety", () => {
+  it.each(["sms:+14155550100", "email:thread", "chat:web", "imessage:"])("does not send iMessage feedback for %s", async key => {
+    const ch = channel();
+    await ch.typing(key);
+    await ch.markRead(key);
+    await expect(ch.react(key, "msg_1", "love")).rejects.toThrow();
+    expect(fake.calls).toHaveLength(0);
+  });
+
+  it.each(["typing", "markRead", "react"] as const)("requires iMessage capability for %s", async operation => {
+    fake = fakeFetch(sdkRoutes({ imessage_enabled: false }));
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await expect(feedback(channel(), operation)).rejects.toThrow();
+    expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+  });
+
+  it.each(["love", "like", "dislike", "laugh", "emphasize", "question", "eyes"])("allows %s on inbound group messages", async reaction => {
+    fake = fakeFetch({
+      ...sdkRoutes(),
+      "GET /api/v1/imessage/messages/msg_1": { body: {
+        id: "msg_1", conversation_id: "group_1", direction: "inbound",
+        sender_number: "+14155550100", participants: ["+14155550100", "+14155550101"],
+        created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z",
+      } },
+    });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await channel().react("imessage:group_1", "msg_1", reaction);
+    expect(sends("/api/v1/imessage/reactions").map(call => call.body)).toEqual([{ message_id: "msg_1", reaction, part_index: 0 }]);
+  });
+
+  it.each(["custom", "heart", "", "toString"])("rejects unsupported reaction %s without dispatch", async reaction => {
+    await expect(channel().react("imessage:conv_1", "msg_1", reaction)).rejects.toThrow();
+    expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+  });
+
+  it("does not react to an outbound message even in the current conversation", async () => {
+    fake = fakeFetch({
+      ...sdkRoutes(),
+      "GET /api/v1/imessage/messages/msg_1": { body: {
+        id: "msg_1", conversation_id: "conv_1", direction: "outbound",
+        created_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z",
+      } },
+    });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await expect(channel().react("imessage:conv_1", "msg_1", "love")).rejects.toThrow();
+    expect(sends("/api/v1/imessage/reactions")).toHaveLength(0);
+  });
+
+  it("honors a provider denial of the identity-scoped target lookup", async () => {
+    fake = fakeFetch({
+      ...sdkRoutes(),
+      "GET /api/v1/imessage/messages/msg_1": { status: 404, body: { detail: "Not visible to this identity" } },
+    });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await expect(channel().react("imessage:conv_1", "msg_1", "love")).rejects.toThrow();
+    expect(fake.calls.find(call => call.path === "/api/v1/imessage/messages/msg_1")?.query).toEqual({ agent_identity_id: "ident_1" });
+    expect(sends("/api/v1/imessage/reactions")).toHaveLength(0);
+  });
+
+  it.each(["typing", "markRead"] as const)("propagates unsupported group %s without replay", async operation => {
+    const path = operation === "typing" ? "/api/v1/imessage/typing" : "/api/v1/imessage/mark-read";
+    fake = fakeFetch({ ...sdkRoutes(), [`POST ${path}`]: { status: 409, body: { detail: "Group conversation unsupported" } } });
+    vi.stubGlobal("fetch", fake.fetchImpl);
+    await expect(channel()[operation]("imessage:group_1")).rejects.toMatchObject({ status: 409 });
+    expect(sends(path)).toHaveLength(1);
+  });
+
+  describe.each(["signal", "fence"] as const)("stopped by %s", mode => {
+    it.each([
+      ["typing", "/api/v1/identities/maria-instinct"],
+      ["markRead", "/api/v1/identities/maria-instinct"],
+      ["react", "/api/v1/identities/maria-instinct"],
+      ["react", "/api/v1/imessage/messages/msg_1"],
+    ] as const)("prevents %s dispatch after held %s", async (operation, lookup) => {
+      const gate = holdResponse(lookup);
+      const controller = new AbortController();
+      let active = true;
+      const stopped = new Error("Stopped");
+      const pending = feedback(channel(), operation, {
+        signal: controller.signal,
+        assertBusinessDispatch: () => { if (!active) throw stopped; },
+      });
+      const rejected = expect(pending).rejects.toBe(stopped);
+      await gate.reached;
+      if (mode === "signal") controller.abort(stopped);
+      else active = false;
+      gate.release();
+      await rejected;
+      expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+    });
+  });
+
+  describe.each(["typing", "markRead", "react"] as const)("%s single-attempt mutations", operation => {
+    it.each(["503", "response-loss"] as const)("never replays after %s, using injectable REST rather than SDK fetch", async failure => {
+      const injected = fakeFetch({}, () => {
+        if (failure === "response-loss") throw new TypeError("Connection lost after acceptance");
+        return { status: 503, headers: { "Retry-After": "0" } };
+      });
+      const ch = new InkboxChannel({ apiKey: "ik_test", handle: "maria-instinct", baseUrl: BASE, fetchImpl: injected.fetchImpl });
+      await expect(feedback(ch, operation)).rejects.toThrow();
+      expect(injected.calls).toHaveLength(1);
+      expect(injected.calls[0]?.method).toBe("POST");
+      expect(fake.calls.filter(call => call.method === "POST")).toHaveLength(0);
+    });
+
+    it("aborts an in-flight feedback mutation without replay", async () => {
+      const entered = Promise.withResolvers<void>();
+      const controller = new AbortController();
+      const stopped = new Error("Stopped");
+      let attempts = 0;
+      let canceled = false;
+      const fetchImpl: typeof fetch = async (_input, init) => {
+        attempts++;
+        const { promise, reject } = Promise.withResolvers<Response>();
+        init?.signal?.addEventListener("abort", () => {
+          canceled = true;
+          reject(init?.signal?.reason);
+        }, { once: true });
+        entered.resolve();
+        return promise;
+      };
+      const ch = new InkboxChannel({ apiKey: "ik_test", handle: "maria-instinct", baseUrl: BASE, fetchImpl });
+      const pending = feedback(ch, operation, { signal: controller.signal });
+      const rejected = expect(pending).rejects.toBe(stopped);
+      await entered.promise;
+      controller.abort(stopped);
+      await rejected;
+      expect(canceled).toBe(true);
+      expect(attempts).toBe(1);
+    });
   });
 });
 

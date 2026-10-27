@@ -10,3 +10,13 @@ dist/
 .DS_Store
 coverage/
 .pnpm-store/
+packages/server/playwright-report/
+packages/server/test-results/
+packages/server/evidence/
+packages/server/playwright-report-negative/
+packages/server/test-results-negative/
+packages/server/evidence-negative/
+# Local live-provider evidence must not be published.
+docs/business-owner/evidence/phone-setup.json
+docs/business-owner/evidence/google-clean-shutdown.txt
+docs/business-owner/evidence/google-connector-auth-configs.png

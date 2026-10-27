@@ -1,0 +1,180 @@
+{
+  "recordedAt": "2026-10-25T18:10:10.293878+00:00",
+  "status": "verified_emulated_and_live_owner_probe",
+  "requirements": [
+    {
+      "id": "MSGFEEDBACK-1",
+      "requirement": "Read the actual admitted private owner iMessage once and show bounded typing during the foreground model turn; duplicate/restart does not replay read receipt",
+      "implementation": [
+        "packages/core/src/runtime.ts",
+        "packages/server/src/business-service.ts",
+        "packages/server/src/business-outbox.ts",
+        "packages/server/src/console-outbox.ts"
+      ],
+      "verification": [
+        "signed webhook with gated model",
+        "duplicate/restart",
+        "hung feedback and priority stop/shutdown",
+        "typing cleanup"
+      ],
+      "evidence": [
+        "docs/business-owner/evidence/messaging-feedback-verification.json"
+      ],
+      "status": "emulated_passed_live_owner_probe_confirmed"
+    },
+    {
+      "id": "MSGFEEDBACK-2",
+      "requirement": "Allow natural, current-message-only foreground named tapbacks without creating tasks; reaction-only acknowledgement does not produce a fake error text; separately authorized task reactions remain dispatcher-governed",
+      "implementation": [
+        "packages/core/src/tools.ts",
+        "packages/core/src/runtime.ts",
+        "packages/inkbox/src/tools.ts",
+        "packages/server/src/business-service.ts",
+        "packages/server/src/boot.ts"
+      ],
+      "verification": [
+        "all seven tapbacks",
+        "reaction-only final model turn",
+        "uncertain reaction no replay",
+        "foreign/outbound target rejection",
+        "no guidance/web escalation",
+        "separately authorized task reaction uses action journal; response loss and restart do not replay"
+      ],
+      "evidence": [
+        "docs/business-owner/evidence/messaging-feedback-verification.json"
+      ],
+      "status": "emulated_passed_live_owner_probe_confirmed"
+    },
+    {
+      "id": "MSGFEEDBACK-3",
+      "requirement": "Provider feedback mutations use actual contract shapes, abort guards and single attempts; preserve personal/nonowner boundaries and record live limitations",
+      "implementation": [
+        "packages/inkbox/src/channel.ts",
+        "packages/inkbox/src/http.ts",
+        "packages/server/testing/emulators/inkbox.ts"
+      ],
+      "verification": [
+        "provider unit regressions",
+        "stateful feedback emulator",
+        "independent security review",
+        "available isolated live carrier proof distinct from phone-rendered observation"
+      ],
+      "evidence": [
+        "docs/business-owner/evidence/messaging-feedback-verification.json",
+        "docs/business-owner/evidence/security-review-messaging-feedback.md"
+      ],
+      "status": "emulated_and_security_passed_live_owner_probe_confirmed"
+    }
+  ],
+  "commands": [
+    {
+      "command": "pnpm typecheck && pnpm test && pnpm smoke",
+      "exitCode": 0,
+      "results": {
+        "packagesBuiltAndTypechecked": 12,
+        "testsPassed": 1590,
+        "existingSkips": 1,
+        "smoke": "passed"
+      },
+      "evidence": "docs/business-owner/evidence/messaging-feedback-consolidated-checks.txt",
+      "scope": "Integrated code; feedback suite contained16cases. One additional regression was then added without production changes."
+    },
+    {
+      "command": "pnpm --filter @open-instinct/server exec vitest run test/scenarios/messaging-feedback.test.ts && pnpm test:e2e && pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+      "exitCode": 0,
+      "results": {
+        "feedbackScenarios": 17,
+        "chromiumTests": 34,
+        "browserCheckpoints": 128,
+        "publicationFiles": 260,
+        "publicationArchiveEntries": 4,
+        "publicationScan": "passed"
+      },
+      "evidence": "docs/business-owner/evidence/messaging-feedback-browser-checks.txt",
+      "scope": "Production integration with scripted models and isolated stateful provider emulators; real Chromium, not live providers"
+    },
+    {
+      "command": "node_modules/.pnpm/esbuild@0.28.2/node_modules/esbuild/bin/esbuild packages/server/testing/.messaging-feedback-smoke.ts --bundle --platform=node --format=esm --packages=external '--external:../dist/*' --outfile=packages/server/testing/.messaging-feedback-smoke.mjs && node packages/server/testing/.messaging-feedback-smoke.mjs",
+      "exitCode": 0,
+      "evidence": "docs/business-owner/evidence/messaging-feedback-runtime-smoke.json",
+      "scope": "Standalone Node actual boot, signed ingress, runtime and tools; fixtures-only network assertion passed at teardown; temporary source and bundle removed"
+    },
+    {
+      "command": "kill -TERM 1458",
+      "exitCode": 0,
+      "result": "Previous idle local pilot exited0 gracefully; persistent business state retained"
+    },
+    {
+      "command": "node $PRIVATE_STATE/start-local.mjs",
+      "result": "Managed service instinct-messaging-feedback ready, pid55058, loopback8787, tunnel connected; persistent mode enabled",
+      "scope": "Updated authorized local pilot startup only; not live feedback or full-product proof"
+    }
+  ],
+  "behaviorEvidence": [
+    "Signed private owner ingress: read receipt and typing arrive before gated model reply",
+    "Typing pulses single-flight, refresh while composing, cancel on reply and foreground close",
+    "All seven named tapbacks including eyes; reaction-only turn sends no error text and creates no task",
+    "Foreground courtesy reaction bound to current admitted message; later route cannot redirect it",
+    "Foreign and outbound targets rejected; web and tool-free guidance have no courtesy authority",
+    "Group, unknown-scope, SMS and nonowner business boundaries retained; personal behavior retained",
+    "Read/reaction ambiguous acceptance and restart never replay effects; optional feedback cannot hold priority stop or shutdown",
+    "Separately authorized delegated reaction stays in action journal; response loss, repeated tool call and restart produce one unknown action and no duplicate mutation",
+    "Single-attempt REST shapes match installed SDK0.7.13; abort and final dispatch guards tested after delayed identity/target lookup"
+  ],
+  "browser": {
+    "mode": "real Chromium with emulated providers and models",
+    "testsPassed": 34,
+    "matrixCheckpoints": 128,
+    "manualRenderedInspection": [
+      "packages/server/evidence/screenshots/desktop-light-onboarding-welcome.png",
+      "packages/server/evidence/screenshots/mobile-dark-onboarding-connected.png"
+    ],
+    "observed": "Desktop conversation-first surface and mobile dark connected/error/draft state rendered without horizontal clipping; hostile fixture text remains visible inert text, not executed markup",
+    "phoneDisplayProof": false
+  },
+  "live": {
+    "status": "live_owner_probe_confirmed",
+    "service": "instinct-messaging-feedback",
+    "controller": "http://127.0.0.1:8787",
+    "startup": "Updated Pro-backed assistant and Inkbox tunnel running; state preserved",
+    "readback": "docs/business-owner/evidence/messaging-feedback-live-readback.json",
+    "confirmationEvidence": "docs/business-owner/evidence/messaging-feedback-live-confirmation.json",
+    "ownerReport": "Okay that worked",
+    "confirmationScope": "Owner-reported success of requested phone probe; durable real-provider activity confirms accepted read and like reaction. No independently captured phone screenshot; seven-reaction and failure/restart coverage remain emulator-backed.",
+    "noReplay": "No old real messages replayed and no fabricated live ingress used",
+    "preProbeObservation": {
+      "checkedAt": "2026-10-25T18:08:38.913Z",
+      "authentication": "owner session created using private token; credential excluded",
+      "controller": "http://127.0.0.1:8787",
+      "busy": 0,
+      "feedbackActivityCount": 0,
+      "feedbackActivityKinds": [],
+      "scope": "Read-only live controller status and durable feedback activity, not a fabricated carrier event or recipient-display proof"
+    },
+    "phoneDisplayConfirmed": true,
+    "phoneConfirmationMethod": "Owner report, not independent screenshot capture",
+    "realFeedbackMutationConfirmed": true,
+    "noNewCredentialsRequiredForThisCheck": true,
+    "hostedComputerStartup": "Unavailable: required Maritime configuration absent"
+  },
+  "security": {
+    "status": "scoped_pass",
+    "releaseBlockingFindings": [],
+    "evidence": "docs/business-owner/evidence/security-review-messaging-feedback.md",
+    "withdrawnFinding": "Initial P2 conflated current-message-only foreground courtesy with separately authorized dispatcher-governed task reactions; reviewer retraced and withdrew it. Existing task capability retained and regression added.",
+    "limitations": "Local/emulated evidence only; SDK prerequisite reads can outlive cancellation, but final mutation guard prevents late dispatch; carrier acceptance is not recipient-display proof"
+  },
+  "initialSmokeExportFailure": {
+    "evidence": "docs/business-owner/evidence/messaging-feedback-smoke-initial.txt",
+    "cause": "Throwaway evidence serialization referenced private fixture field s.isolation; corrected to public allowedOrigins and successful real teardown assertion, then rerun passed; no product change"
+  },
+  "documentation": [
+    "packages/inkbox/README.md",
+    "docs/SELF-HOST.md",
+    "docs/business-owner/integration-contracts.md",
+    "docs/business-owner/ACCEPTANCE.md",
+    "docs/business-owner/acceptance.json"
+  ],
+  "cleanup": "Temporary standalone smoke source and bundle removed after successful proof; deterministic regressions and evidence retained",
+  "overallProductAcceptance": "Still blocked by required live Google/Maritime/business workflows and deployment-image runtime; this correction does not complete the original goal"
+}

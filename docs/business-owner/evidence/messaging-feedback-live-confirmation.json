@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-25T18:22:12.440Z",
+  "mode": "real provider activity plus owner-reported phone observation",
+  "activity": [
+    {
+      "kind": "owner.feedback.attempted",
+      "feedbackKind": "read"
+    },
+    {
+      "kind": "owner.feedback.accepted",
+      "feedbackKind": "read",
+      "delivery": "unconfirmed"
+    },
+    {
+      "kind": "owner.feedback.attempted",
+      "feedbackKind": "reaction",
+      "reaction": "like"
+    },
+    {
+      "kind": "owner.feedback.accepted",
+      "feedbackKind": "reaction",
+      "delivery": "unconfirmed"
+    }
+  ],
+  "ownerReport": "Okay that worked",
+  "ownerReportContext": "Response to the requested fresh private iMessage thumbs-up probe and read/typing/tapback check",
+  "limitation": "Owner-reported success, not an independently captured phone screenshot; seven-reaction coverage and failure/restart cases remain emulator-backed"
+}

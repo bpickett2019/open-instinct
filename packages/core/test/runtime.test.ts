@@ -169,6 +169,73 @@ function harness(opts: HarnessOptions = {}): Harness {
   return { runtime: new AgentRuntime(deps), faux, sent, deps, calls, ownerTurns, gate };
 }
 
+it.each([128, 129])("bounds a business model catalog of %i tools before contacting the provider", async count => {
+  const h = harness({ extraTools: Array.from({ length: count }, (_, index) => defineTool({
+    name: `catalog_${index}`, label: `Catalog ${index}`, description: "Synthetic owner operation",
+    parameters: Type.Object({}), meta: { capabilities: ["converse"], group: "system", execution: "owner" },
+    execute: async () => { throw new Error("This scenario must not execute a tool"); },
+  })) });
+  h.deps.config.business = { autonomy: "full" };
+  h.deps.business = {
+    context: () => "", assertActive: () => { throw new Error("Unexpected task assertion"); },
+    dispatch: async () => { throw new Error("Unexpected task dispatch"); },
+    intake: async () => { throw new Error("Unexpected intake"); },
+  };
+  h.deps.model = { ...h.faux.getModel(), api: "openai-completions" };
+  const providerRequests: number[] = [];
+  h.deps.streamFn = (_model, context, options) => {
+    providerRequests.push(context.messages.flatMap(message => message.role === "system" ? message.toolsAdded ?? [] : []).length);
+    return (streamSimple as StreamFn)(h.faux.getModel(), context, options);
+  };
+  h.faux.setResponses([fauxAssistantMessage("Catalog accepted.")]);
+  const message = inbound({ from: OWNER_PHONE, channel: "imessage", text: "Show my business controls." });
+  try {
+    const result = h.runtime.runBusinessOwner(message, h.runtime.ownerPrincipal(), `owner:${message.id}`);
+    if (count === 128) { expect(await result).toBe("Catalog accepted."); expect(providerRequests).toEqual([128]); }
+    else { await expect(result).rejects.toThrow(); expect(providerRequests).toEqual([]); }
+    expect(h.runtime.stats().busy).toBe(0);
+  } finally { h.runtime.closeBusinessForeground(); fs.rmSync(h.deps.state.root, { recursive: true, force: true }); }
+});
+
+it.each(["reply", "close"] as const)("keeps business typing single-flight and cancels it on %s", async finish => {
+  vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+  const firstPulse = makeGate(), modelTurn = makeGate(), entered = makeGate();
+  const pulses: AbortSignal[] = [];
+  const h = harness({ typing: async (_key, options) => {
+    const signal = options!.signal!; pulses.push(signal);
+    if (pulses.length === 1) await firstPulse.promise;
+    else await new Promise<void>((_resolve, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+  } });
+  h.deps.config.business = { autonomy: "full" };
+  h.deps.business = {
+    context: () => "", assertActive: () => { throw new Error("Unexpected task assertion"); },
+    dispatch: async () => { throw new Error("Unexpected task dispatch"); },
+    intake: async () => { throw new Error("Unexpected intake"); },
+  };
+  h.faux.setResponses([async () => { entered.open(); await modelTurn.promise; return fauxAssistantMessage("Finished replying."); }]);
+  const message = inbound({ from: OWNER_PHONE, channel: "imessage", conversationKey: "imessage:typing-owner", text: "Think about this.", replyRef: { messageId: "incoming-owner" }, meta: { conversationScopeKnown: true, isGroup: false } });
+  const run = h.runtime.runBusinessOwner(message, h.runtime.ownerPrincipal(), `owner:${message.id}`);
+  try {
+    await entered.promise;
+    expect(pulses).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(15000);
+    expect(pulses).toHaveLength(1);
+    firstPulse.open();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(pulses).toHaveLength(2);
+    if (finish === "close") { h.runtime.closeBusinessForeground(); expect(pulses[1]!.aborted).toBe(true); }
+    modelTurn.open();
+    await run.catch(error => { if (finish !== "close") throw error; });
+    expect(pulses[1]!.aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(pulses).toHaveLength(2);
+  } finally {
+    firstPulse.open(); modelTurn.open(); h.runtime.closeBusinessForeground();
+    await run.catch(() => {}); vi.useRealTimers();
+    fs.rmSync(h.deps.state.root, { recursive: true, force: true });
+  }
+});
+
 const replyInstinctTool = defineTool({
   name: "reply_instinct",
   label: "Reply to Instinct",

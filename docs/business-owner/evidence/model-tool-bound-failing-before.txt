@@ -1,0 +1,124 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+
+ ❯ test/runtime.test.ts (84 tests | 1 failed | 82 skipped) 21ms
+   ✓ bounds a business model catalog of 128 tools before contacting the provider 14ms
+   × bounds a business model catalog of 129 tools before contacting the provider 7ms
+     → promise resolved "'Catalog accepted.'" instead of rejecting
+   ↓ AgentRuntime.handleInbound > runs a scripted tool call then text and returns the reply for chat
+   ↓ AgentRuntime.handleInbound > sends the reply through the outbox for channel messages and audits it
+   ↓ AgentRuntime.handleInbound > texts a one-line ack into an iMessage thread when the reply passes the budget and ackSlowReplies is on
+   ↓ AgentRuntime.handleInbound > acks a slow owner text once on the waitForCompletion path, never for the text queued behind it
+   ↓ AgentRuntime.handleInbound > does not ack a fast reply, a group text or a contact
+   ↓ AgentRuntime.handleInbound > duplicate replies in a carrier thread > drops the echo when a text queued behind the answer gets the same answer
+   ↓ AgentRuntime.handleInbound > duplicate replies in a carrier thread > delivers the same answer to two separate requests
+   ↓ AgentRuntime.handleInbound > duplicate replies in a carrier thread > always delivers a failure line, even to a queued text
+   ↓ AgentRuntime.handleInbound > duplicate replies in a carrier thread > resends an identical reply when the first send failed
+   ↓ AgentRuntime.handleInbound > duplicate replies in a carrier thread > never deduplicates in a group thread
+   ↓ AgentRuntime.handleInbound > deduplicates by message id
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > with no code configured nobody can claim, even with the flag set and a code-looking message
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > a wrong code leaves the sender a stranger and does not use up the claim
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > the right code makes the sender the owner, clears the code, strips it from the model's view, and works once
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > accepts the code typed with spaces and lower case as the whole message, and the model sees a fixed welcome
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > never claims from a group thread, an unresolved scope, a reaction, an email, A2A or when phones are already set
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > a duplicate delivery cannot claim
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > stops a number from claiming after too many wrong codes, without locking out others
+   ↓ AgentRuntime.handleInbound > owner claim on first contact > an expired code cannot claim
+   ↓ AgentRuntime.handleInbound > queues a busy conversation until its current run is persisted
+   ↓ AgentRuntime.handleInbound > stashes a slow dashboard reply and returns it on the next turn instead of sending it to the outbox
+   ↓ AgentRuntime.handleInbound > does not let a hung typing indicator eat the reply budget
+   ↓ AgentRuntime.handleInbound > passes the inbound replyRef and conversation key on every outbound for that thread
+   ↓ AgentRuntime.handleInbound > keeps attachment metadata from non-owners inside the untrusted boundary
+   ↓ AgentRuntime.handleInbound > puts the OIP data part in front of the model inside the untrusted block and wires promptExtra
+   ↓ AgentRuntime.handleInbound > builds the skills section per principal, so a stranger never sees the owner's private skills
+   ↓ AgentRuntime.handleInbound > keeps the live transcript bounded across many turns in one process
+   ↓ AgentRuntime.handleInbound > acknowledges when the budget is exceeded and delivers the final text later
+   ↓ AgentRuntime.handleInbound > wraps non-owner text as untrusted and keeps owner text bare
+   ↓ AgentRuntime.handleInbound > hides tools the tier can never use and shows the right system prompt
+   ↓ AgentRuntime.handleInbound > rate limits strangers per conversation and per day
+   ↓ AgentRuntime.handleInbound > reports model failures to the owner instead of swallowing them
+   ↓ policy guard > blocks denied calls and the model explains
+   ↓ policy guard > tells the owner once per conversation per hour when it declines someone else's request
+   ↓ policy guard > records spend in the audit log for allowed purchases
+   ↓ policy guard > leaves spend to tools that record their own, so a request is not counted before it completes
+   ↓ approval flow > creates an approval, texts the owner, and resumes the waiting conversation on yes
+   ↓ approval flow > tells the waiting conversation when the owner says no
+   ↓ approval flow > queues the follow-up when the waiting conversation is still busy
+   ↓ approval scoping > a relay approval (ask_owner) never pre-authorises a purchase or a calendar write
+   ↓ approval scoping > an approval covers one exact call: other arguments or amounts need a new one, the exact retry passes once
+   ↓ approval scoping > holds every phone call for the owner's own yes: the exact approved call dials once, anything else waits or is refused
+   ↓ approval scoping > hashes arguments independent of key order
+   ↓ approval scoping > ignores casual or conversational owner messages while an approval is pending, and runs them normally
+   ↓ approval scoping > runs the rest of a token reply through the owner's own conversation
+   ↓ approval scoping > never settles an approval from an email that claims to be the owner, and gives it partner tier only
+   ↓ group threads > caps a partner and their personal grants to the least-trusted group member
+   ↓ group threads > gives every participant its own transcript and caps the owner to the lowest tier present
+   ↓ group threads > caps the owner to stranger when an unknown number is in the group or the member list is missing
+   ↓ group threads > keeps a partner's blocked request blocked when the owner types in the group
+   ↓ group threads > starts a fresh transcript when a different principal appears on the same 1:1 key
+   ↓ A2A delivery > never raises the captured group audience cap when refreshing a delegated contact
+   ↓ A2A delivery > retains a stricter group cap observed after delegation, including after restart
+   ↓ A2A delivery > applies a group audience reduction queued before a delegated result executes
+   ↓ A2A delivery > routes a persisted delegation result to the original owner thread, without replying as its worker
+   ↓ A2A delivery > recovers a delegation whose send response was lost by matching its persisted message ID
+   ↓ A2A delivery > keeps simultaneous tasks in one context on their own immutable reply targets
+   ↓ A2A delivery > does not let a delayed admission snapshot replace a newer caller generation
+   ↓ A2A delivery > cancels active work and prevents later tool calls or completion
+   ↓ A2A delivery > does not admit a delayed event for an already terminal task
+   ↓ A2A delivery > leaves pre-admission failures retryable but quarantines a failed send after execution across restarts
+   ↓ A2A delivery > does not let a delegated peer answer an owner's approval
+   ↓ A2A delivery > answers progress while waiting on the owner, then completes on the stored task id after approval
+   ↓ A2A delivery > does not answer a task twice when the model used reply_instinct
+   ↓ memory for non-owners > shares only the Preferences section, scaled to the tier, and nothing with contacts
+   ↓ sessions > persists messages as JSON lines and restores them in a new runtime
+   ↓ sessions > rebuilds the system prompt on every run
+   ↓ shortReason > keeps a human reason and drops JSON bodies and status prefixes
+   ↓ restoreMessages in a tool loop > starts at an assistant turn when no user turn is left in the window
+   ↓ restoreMessages in a tool loop > never starts the kept slice at a tool result when the newest screenshot alone is over budget
+   ↓ restoreMessages in a tool loop > swaps older screenshots for a placeholder and keeps the newest two
+   ↓ restoreMessages > returns short transcripts unchanged apart from system messages
+   ↓ restoreMessages > keeps the last 60 messages starting at a user turn and summarises the rest
+   ↓ restoreMessages > drops an assistant tool call that never got its result
+   ↓ afterApproval > wakes the conversation that asked and delivers its next reply
+   ↓ ownerTurn > is true only while a run started by the owner's own iMessage, SMS or chat message is going
+   ↓ runScheduled > restores the verified private owner thread after restart without replacing it with a group
+   ↓ runScheduled > runs as the owner and texts the result to the owner's phone
+   ↓ runScheduled > sends nothing when the model has nothing to say
+   ↓ runSystemTask > runs as the owner on system:<id>, texts the result unless quiet, and audits
+   ↓ runSystemTask > is not an owner turn: a tool inside it sees ownerTurn false
+   ↓ runSystemTask > surfaces a failed run to the caller and audits it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/runtime.test.ts > bounds a business model catalog of 129 tools before contacting the provider
+AssertionError: promise resolved "'Catalog accepted.'" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+"Catalog accepted."
+
+ ❯ test/runtime.test.ts:195:31
+    193|     const result = h.runtime.runBusinessOwner(message, h.runtime.owner…
+    194|     if (count === 128) { expect(await result).toBe("Catalog accepted."…
+    195|     else { await expect(result).rejects.toThrow(); expect(providerRequ…
+       |                               ^
+    196|     expect(h.runtime.stats().busy).toBe(0);
+    197|   } finally { h.runtime.closeBusinessForeground(); fs.rmSync(h.deps.st…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 82 skipped (84)
+   Start at  02:34:32
+   Duration  487ms (transform 118ms, setup 0ms, collect 261ms, tests 21ms, environment 0ms, prepare 30ms)
+
+undefined
+/private/tmp/open-instinct/packages/core:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run test/runtime.test.ts -t bounds a business model catalog

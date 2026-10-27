@@ -23,10 +23,11 @@ bank are yours to hand over at move-in.
 
 | Setup | Required | Optional |
 |---|---|---|
-| Try it on your laptop, no phone | `ANTHROPIC_API_KEY` (or another model key) | `COMPOSIO_API_KEY`, `BRAVE_SEARCH_API_KEY` |
+| Try it on your laptop, no phone | `ANTHROPIC_API_KEY` (or another model key), or an eligible ChatGPT subscription login below | `COMPOSIO_API_KEY`, `BRAVE_SEARCH_API_KEY` |
 | Give it an iMessage line | the above plus `INKBOX_ADMIN_API_KEY` | `LINK_*` for payments |
 | Run it on Maritime for one person | the above plus `MARITIME_API_KEY` | same |
 | Run it for many people (gateway) | all of the above plus `GATEWAY_SIGNUP_SECRET` | `LINK_*` |
+| Business-owner controller | model, Inkbox texting, Composio, separate `MARITIME_COMPUTER_API_KEY`, `INSTINCT_CHAT_TOKEN` and configured HTTPS workspace origin | Stripe Link when purchases need it |
 
 Rough monthly cost for one active person, as of October 2026: the model is the biggest
 line (a few dollars a day of heavy use on Fable 5.1, far less on Sonnet 5.5); Inkbox has a
@@ -46,6 +47,55 @@ example `anthropic/claude-sonnet-5-5` for a cheaper agent, or any provider in Pi
 (`openai/gpt-...`, `google/gemini-...`, `groq/...`). Each provider reads its usual variable
 (`OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`). For an OpenAI-compatible proxy set
 `INSTINCT_MODEL=openai-compatible/<model>` plus `OPENAI_BASE_URL` and `OPENAI_API_KEY`.
+
+### ChatGPT Pro through Codex subscription access
+
+A ChatGPT Pro subscription is separate from OpenAI API billing. To use eligible
+Codex subscription models in the existing Open Instinct agent, sign in explicitly:
+
+```bash
+instinct auth login --data-dir .instinct
+# On SSH/headless hosts:
+instinct auth login --device --data-dir .instinct
+instinct auth status --data-dir .instinct
+instinct auth models --data-dir .instinct
+```
+
+Browser login prints a URL to open. The loopback callback completes sign-in without
+typing a code. If the callback cannot reach the CLI, an interactive terminal accepts
+the final redirect URL or authorization code without echoing it. Device login prints
+a verification URL and one-time user code, then lets Pi poll for approval. Enter that
+code only for a login you started. Ctrl-C cancels either flow. Never paste codes or
+tokens into command arguments, logs, chat, or source files.
+
+The login is private to `<dataDir>/model-auth/auth.json` (directory 0700, file 0600).
+It never imports, changes, or logs out your global Codex login. Do not point this
+directory at Codex's credential directory or copy tokens between them.
+
+Login does not change configuration or start a second assistant. Pick a full
+`openai-codex/<id>` from `auth models`, set `INSTINCT_MODEL` to that value (or set
+`config.json` `model.primary`), and restart the existing server using the same data
+directory. The successful login prints model-selection guidance.
+`openai-codex` has no paid API-key fallback, including when `OPENAI_API_KEY` is set.
+Other providers and services, such as Anthropic, Inkbox, Composio, and Maritime,
+still need their own credentials.
+
+`status` reports only locally stored login metadata and whether token refresh is
+needed. `models` lists the installed catalog. Neither command verifies live model
+entitlement, makes a model request, or incurs a model-call charge. Account eligibility,
+available models, and subscription rate/usage limits are determined by OpenAI; Pro
+does not promise unlimited agent use.
+
+Catalog dollar rates are not proof of subscription charges or remaining plan credits.
+Business mode records subscription token usage with unknown monetary cost. A configured
+USD model cap therefore blocks subscription dispatch rather than assuming free usage.
+OpenAI's own plan limits and any separately enabled credits remain provider-controlled.
+
+`instinct auth logout --data-dir .instinct` removes only that directory's login.
+Restart running servers to discard cached credentials. It does not revoke the
+provider session or change global Codex authentication. Use OpenAI account controls
+for provider-side revocation. Authentication is excluded from business exports;
+protect any full-data-directory backups as credentials.
 
 ## 3. Inkbox (iMessage, phone, email, agent-to-agent)
 
@@ -82,6 +132,13 @@ Variable: `MARITIME_API_KEY`
 
 Creating an agent debits your Maritime wallet; a sleeping agent costs nothing. The image is
 public and needs no registry login. See [DEPLOY-MARITIME.md](DEPLOY-MARITIME.md).
+
+Business mode requires a separate `MARITIME_COMPUTER_API_KEY` with computer access.
+It is not the agent-provisioning credential. Keep controller secrets and SQLite on the
+controller, never on the hosted desktop. Transfer only task-required files. Logins in
+the hosted browser are still credentials and must be logged out separately on teardown.
+A successful provisioning response does not prove entitlement: verify a real action.
+The controller stays awake; personal sleeping-agent cost assumptions do not apply.
 
 ## 5. Composio (Gmail, Calendar and 1000+ apps)
 
@@ -134,6 +191,7 @@ the screen at checkout instead of paying.
 
 - Shell environment, or `deploy/.env` copied from [`deploy/.env.example`](../deploy/.env.example). `.env` is in `.gitignore`.
 - `.instinct/secrets/*.json`, written by the CLI with mode 0600. The whole `.instinct/` folder is in `.gitignore`.
+- `<dataDir>/model-auth/auth.json`, for the separate ChatGPT/Codex subscription login. Never export it with business records or put it in an environment variable.
 - On Maritime, as encrypted agent environment variables. On the gateway, in its data directory.
 - Never in a prompt, a skill file, a log line or a test fixture. The repo runs
   [gitleaks](../.github/workflows/secret-scan.yml) on every push with rules for each key format

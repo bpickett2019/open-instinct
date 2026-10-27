@@ -42,10 +42,15 @@ import {
   type Tier,
   type ToolMeta,
 } from "./types.js";
+import type { BusinessDispatch, BusinessTask, TaskRunBinding } from "./business-types.js";
+import { businessHash } from "./business-store.js";
+import { assertBusinessOwner } from "./business-types.js";
 
 export interface Outbox {
-  send(msg: OutboundMessage, ctx: { principal: Principal; conversationKey: string }): Promise<void>;
-  typing?(conversationKey: string): Promise<void>;
+  send(msg: OutboundMessage, ctx: { principal: Principal; conversationKey: string; messageId?: string; notificationId?: string; signal?: AbortSignal; assertBusinessDispatch?: () => void; recordBusinessReceipt?: ToolContext["recordBusinessReceipt"] }): Promise<void>;
+  typing?(conversationKey: string, options?: { signal?: AbortSignal; assertBusinessDispatch?: () => void }): Promise<void>;
+  markRead?(conversationKey: string, options?: { signal?: AbortSignal; assertBusinessDispatch?: () => void }): Promise<void>;
+  react?(conversationKey: string, messageId: string, reaction: string, options?: { signal?: AbortSignal; assertBusinessDispatch?: () => void }): Promise<void>;
 }
 
 export interface RuntimeDeps {
@@ -68,6 +73,7 @@ export interface RuntimeDeps {
   skillsPrompt?: string | ((principal: Principal) => string | undefined);
   streamFn?: StreamFn;
   now?: () => Date;
+  redact?: <T>(value: T) => T;
   replyBudgetMs?: number;
   sessionsDir?: string;
   /** API key lookup handed to Pi; needed for "openai-compatible/..." models. Core never reads env. */
@@ -80,6 +86,17 @@ export interface RuntimeDeps {
   setupSummary?: () => string | undefined;
   a2aStore?: A2AStore;
   loadA2ATask?: (taskId: string) => Promise<unknown>;
+  business?: {
+    dispatch: BusinessDispatch;
+    assertActive(binding: TaskRunBinding): void;
+    intake(message: InboundMessage, principal: Principal): Promise<HandleResult>;
+    context(mode?: "foreground" | "worker"): string;
+    stream?(binding: TaskRunBinding, source: StreamFn): StreamFn;
+    sourceRevisions?(taskId: string): Record<string, number>;
+    recordSource?(binding: TaskRunBinding, sourceId: string, revision: number): void;
+    foregroundStream?(source: StreamFn): StreamFn;
+    reactToOwnerMessage?(sourceId: string, messageId: string, reaction: string, signal?: AbortSignal): Promise<void>;
+  };
 }
 
 export interface HandleResult {
@@ -159,6 +176,7 @@ interface ConversationOptions {
   replyRef: ReplyRef;
   refreshPrompt: () => string;
   now: () => Date;
+  redact?: <T>(value: T) => T;
 }
 
 export class Conversation {
@@ -171,6 +189,8 @@ export class Conversation {
   readonly channel: Channel;
   /** Channel ids of the latest inbound message (email Message-ID, A2A task id, ...). */
   replyRef: ReplyRef;
+  /** Stable inbound/event occurrence used to journal transport independently of retries. */
+  messageId?: string;
   /** Set when the model answered an A2A task itself during the current run. */
   repliedViaTool = false;
   /** True while the current run was started by the owner's own direct message (see ToolContext.ownerTurn). */
@@ -179,6 +199,7 @@ export class Conversation {
   private readonly sessionFile: string;
   private readonly refreshPrompt: () => string;
   private readonly now: () => Date;
+  private readonly redact: <T>(value: T) => T;
 
   constructor(opts: ConversationOptions) {
     this.key = opts.key;
@@ -190,6 +211,7 @@ export class Conversation {
     this.replyRef = opts.replyRef;
     this.refreshPrompt = opts.refreshPrompt;
     this.now = opts.now;
+    this.redact = opts.redact ?? (value => value);
   }
 
   /** Prompt the agent, wait until it is idle, and return the final assistant text. */
@@ -200,15 +222,15 @@ export class Conversation {
     try {
       this.applySystemPrompt();
       // The transcript grows between restarts too, so the fold runs before every turn.
-      this.agent.state.messages = trimContext(this.agent.state.messages, this.now());
+      this.agent.state.messages = this.redact(trimContext(this.agent.state.messages, this.now()));
       const before = this.agent.state.messages.length;
-      await this.agent.prompt(text, images);
+      await this.agent.prompt(this.redact(text), images);
       await this.agent.waitForIdle();
       const fresh = this.agent.state.messages.slice(before);
       this.persist();
       const failure = runFailure(fresh);
       if (failure) throw new Error(failure);
-      return finalAssistantText(fresh);
+      return this.redact(finalAssistantText(fresh));
     } finally {
       this.busy = false;
     }
@@ -224,7 +246,7 @@ export class Conversation {
 
   /** Write the transcript (without system messages, which are rebuilt) as JSON lines. */
   persist(): void {
-    writeSession(this.sessionFile, this.agent.state.messages);
+    writeSession(this.sessionFile, this.redact(this.agent.state.messages));
   }
 
   /** The prompt carries the date, memory and pending approvals, so it is rebuilt per run. */
@@ -265,6 +287,10 @@ export class AgentRuntime {
   private readonly a2aAdmissions = new Map<string, Promise<unknown>>();
   private readonly backgroundReplies = new Set<string>();
   private ownerLast?: { conversationKey: string; channel: Channel };
+  private readonly businessRuns = new Map<string, { binding: TaskRunBinding; dispatches: number }>();
+  private readonly businessOwnerSources = new Map<string, Readonly<{ authorityRef: string; text: string; messageId: string; feedbackMessageId?: string }>>();
+  private businessForegroundClosed = false;
+  private readonly ownerTypingStops = new Set<() => void>();
 
   constructor(deps: RuntimeDeps) {
     this.deps = deps;
@@ -280,7 +306,7 @@ export class AgentRuntime {
       state: deps.state,
       audit: deps.audit,
       now: this.now,
-      send: (text) => this.sendToOwner(text, this.ownerPrincipal(), "system"),
+      send: (text, messageId) => this.sendToOwner(text, this.ownerPrincipal(), "system", { messageId }),
     });
   }
 
@@ -300,6 +326,90 @@ export class AgentRuntime {
     let busy = 0;
     for (const c of this.conversations.values()) if (c.busy) busy++;
     return { conversations: this.conversations.size, busy };
+  }
+
+  /** Task-scoped Pi turn using the same model, provider keys, policy and tool registry. */
+  async runBusinessTask(binding: TaskRunBinding, task: BusinessTask, signal: AbortSignal): Promise<string> {
+    if (!this.deps.business) throw new Error("Business runtime is not configured");
+    this.deps.business.assertActive(binding);
+    const key = `system:business:${task.id}`;
+    this.businessRuns.set(key, { binding, dispatches: 0 });
+    const conv = this.conversation(key, this.ownerPrincipal(), { deliveryKey: task.origin.conversationKey, replyRef: task.origin.replyRef });
+    conv.ownerTurn = false;
+    conv.agent.state.tools = this.bindTools(conv);
+    const abort = () => conv.agent.abort();
+    signal.addEventListener("abort", abort, { once: true });
+    try {
+      if (signal.aborted) throw new Error("Business run cancelled");
+      return await conv.run(`Durable task ${task.id}\nObjective: ${task.objective}\nDone criteria: ${JSON.stringify(task.doneCriteria)}\nCheckpoint: ${JSON.stringify(task.checkpoint)}\nUse existing action evidence; never repeat an already attempted effect. Finish a bounded useful step, not an invented success. Use task_finish with criterion evidence when the objective is satisfied.`);
+    } finally {
+      signal.removeEventListener("abort", abort);
+      this.businessRuns.delete(key);
+      conv.agent.state.tools = [];
+    }
+  }
+
+  /** Direct owner management uses the existing conversation queue, never a worker's ownerTurn. */
+  async runBusinessOwner(message: InboundMessage, principal: Principal, authorityRef: string, mode: "owner" | "guidance" = "owner"): Promise<string> {
+    assertBusinessOwner(principal, message.channel, isGroup(message));
+    if (!this.deps.business || authorityRef !== `owner:${message.id}`) throw new Error("Persisted owner instruction required");
+    const key = runtimeKey(message, principal);
+    const before = this.inboundQueues.get(key) ?? Promise.resolve();
+    const work = before.catch(() => undefined).then(async () => {
+      if (this.businessForegroundClosed) throw new Error("Business owner intake is closed");
+      const conv = this.conversation(key, principal, { deliveryKey: message.conversationKey, replyRef: message.replyRef });
+      const feedbackMessageId = mode === "owner" && message.channel === "imessage" && message.meta?.conversationScopeKnown === true && !message.meta?.reaction && String(message.meta?.service ?? "").toLowerCase() !== "sms" ? message.replyRef.messageId : undefined;
+      this.businessOwnerSources.set(key, Object.freeze({ authorityRef, text: message.text, messageId: message.id, ...(feedbackMessageId ? { feedbackMessageId } : {}) }));
+      conv.messageId = message.id;
+      // Opening setup requests conversation, not authority to perform work or save facts.
+      conv.ownerTurn = mode === "owner"; conv.agent.state.tools = mode === "owner" ? this.bindTools(conv) : [];
+      if (["sms", "imessage"].includes(message.channel)) {
+        this.ownerLast = { conversationKey: message.conversationKey, channel: message.channel };
+        this.deps.state.writeJson("owner-route.json", this.ownerLast);
+      }
+      const timer = setTimeout(() => conv.agent.abort(), 60_000);
+      const stopTyping = feedbackMessageId ? this.startOwnerTyping(message, principal) : undefined;
+      try { return await conv.run(message.text); }
+      finally { clearTimeout(timer); stopTyping?.(); conv.ownerTurn = false; this.businessOwnerSources.delete(key); conv.agent.state.tools = []; }
+    });
+    this.inboundQueues.set(key, work);
+    void work.finally(() => { if (this.inboundQueues.get(key) === work) this.inboundQueues.delete(key); }).catch(() => {});
+    return work;
+  }
+  private startOwnerTyping(message: InboundMessage, principal: Principal): () => void {
+    let closed = false;
+    let active: AbortController | undefined;
+    const pulse = () => {
+      if (closed || active || !this.deps.outbox.typing) return;
+      const controller = new AbortController(); active = controller;
+      const timeout = setTimeout(() => controller.abort(new Error("Typing feedback timed out")), TYPING_TIMEOUT_MS);
+      const assertBusinessDispatch = () => { controller.signal.throwIfAborted(); if (closed || this.businessForegroundClosed) throw new Error("Owner turn ended"); };
+      void Promise.resolve().then(() => {
+        assertBusinessDispatch();
+        return this.deps.outbox.typing!(message.conversationKey, { signal: controller.signal, assertBusinessDispatch });
+      }).then(
+        () => { if (!closed) this.deps.audit.append({ kind: "outbound", principal: principal.id, conversationKey: message.conversationKey, detail: { feedback: "typing", messageId: message.id, status: "accepted", delivery: "unconfirmed" } }); },
+        () => { if (!closed) this.deps.audit.append({ kind: "error", principal: principal.id, conversationKey: message.conversationKey, detail: { feedback: "typing", messageId: message.id, status: "unknown" } }); },
+      ).finally(() => { clearTimeout(timeout); active = undefined; }).catch(() => {});
+    };
+    pulse();
+    const interval = setInterval(pulse, 5000); interval.unref();
+    const stop = () => { closed = true; clearInterval(interval); active?.abort(new Error("Owner turn ended")); this.ownerTypingStops.delete(stop); };
+    this.ownerTypingStops.add(stop);
+    return stop;
+  }
+  closeBusinessForeground(): void {
+    this.businessForegroundClosed = true;
+    for (const stop of this.ownerTypingStops) stop();
+    for (const key of this.businessOwnerSources.keys()) this.conversations.get(key)?.agent.abort();
+  }
+
+  /** Signed carrier controls bypass the durable inbox and the model's conversation queue. */
+  async handleBusinessPriority(message: InboundMessage): Promise<HandleResult | undefined> {
+    if (!this.deps.business || !/^(stop|pause|business (status|tasks|pause|resume|(?:task|stop|close) [a-zA-Z0-9-]+))$/i.test(message.text.trim())) return undefined;
+    const principal = resolvePrincipal(message, this.deps.config, this.deps.contacts);
+    if (principal.kind !== "owner" || principal.tier !== "owner" || principal.cappedFrom || isGroup(message) || message.meta?.conversationScopeKnown === false || !["chat", "sms", "imessage"].includes(message.channel)) return undefined;
+    return this.deps.business.intake(message, principal);
   }
 
   /**
@@ -347,7 +457,17 @@ export class AgentRuntime {
         tools: [],
         messages: restored,
       },
-      streamFn: this.deps.streamFn ?? (streamSimple as StreamFn),
+      streamFn: (model, context, options) => {
+        // Conservative compatibility bound for OpenAI-style proxies; count the
+        // task-filtered Pi declarations, not every tool in the global registry.
+        if (this.deps.config.business && model.api === "openai-completions" && conv.agent.state.tools.length > 128) {
+          throw new Error("Business model catalog exceeds the 128-tool OpenAI-compatible safety bound; reduce enabled provider tools");
+        }
+        const source = this.deps.streamFn ?? (streamSimple as StreamFn);
+        const binding = this.businessRuns.get(key)?.binding;
+        const stream = binding && this.deps.business?.stream ? this.deps.business.stream(binding, source) : this.businessOwnerSources.has(key) && this.deps.business?.foregroundStream ? this.deps.business.foregroundStream(source) : source;
+        return stream(model, this.deps.redact ? this.deps.redact(context) : context, options);
+      },
       getApiKey: this.deps.getApiKey,
       toolExecution: "sequential",
       transformContext: async (messages) => trimContext(messages, this.now()),
@@ -366,6 +486,7 @@ export class AgentRuntime {
       sessionFile,
       replyRef: opts.replyRef ?? {},
       now: this.now,
+      redact: this.deps.redact,
       refreshPrompt: () => this.systemPromptFor(conv),
     });
     agent.state.tools = this.bindTools(conv);
@@ -379,6 +500,9 @@ export class AgentRuntime {
     let msg = incoming;
     const originalPrincipal = resolvePrincipal(msg, this.deps.config, this.deps.contacts);
     let base = { principal: originalPrincipal, conversationKey: msg.conversationKey, acked: true as const };
+    if (this.deps.business && originalPrincipal.kind === "owner" && originalPrincipal.tier === "owner" && !originalPrincipal.cappedFrom && !isGroup(msg) && msg.meta?.conversationScopeKnown !== false && ["chat", "imessage", "sms"].includes(msg.channel)) {
+      return this.deps.business.intake(msg, originalPrincipal);
+    }
     if (this.seenBefore(msg.id)) return { ...base, blocked: "duplicate" };
     if (msg.channel === "a2a" && msg.meta?.eventType === "a2a.task.canceled") {
       this.cancelA2A(msg);
@@ -566,6 +690,7 @@ export class AgentRuntime {
     const promptedBefore = approvals.promptedToken();
     // Only a run the owner started with their own words may settle an approval through a tool.
     conv.ownerTurn = principal.kind === "owner" && !group && !msg.meta?.delegatedResult && APPROVAL_CHANNELS.has(msg.channel);
+    conv.messageId = msg.id;
     const ack = this.startSlowReplyAck(msg, principal, group || arrival.queued || Boolean(msg.meta?.delegatedResult));
     const run = conv.run(prompt).finally(() => {
       conv.ownerTurn = false;
@@ -579,13 +704,14 @@ export class AgentRuntime {
     const reply = this.replyText(outcome, principal);
     if (!outcome.ok) this.auditError(conv.key, principal, outcome.error);
     if (DELIVERABLE.has(msg.channel) && reply) {
-      await this.deliver(conv, reply, { keepPrompt: approvals.promptedToken() !== promptedBefore, arrivedSeq: arrival.arrivedSeq, failure: !outcome.ok });
+      await this.deliver(conv, reply, { messageId: msg.id, keepPrompt: approvals.promptedToken() !== promptedBefore, arrivedSeq: arrival.arrivedSeq, failure: !outcome.ok });
     }
     return { ...base, acked: true, reply: joinReply(reply) };
   }
 
   /** Scheduled jobs run as the owner in their own conversation; results go to the owner's phone. */
   async runScheduled(entry: ScheduleEntry): Promise<void> {
+    if (this.deps.business) throw new Error("Business schedules must use durable commitments");
     const principal = this.ownerPrincipal();
     const key = `scheduled:${entry.id}`;
     const conv = this.conversation(key, principal);
@@ -609,6 +735,7 @@ export class AgentRuntime {
    * approval_settle is refused inside it.
    */
   async runSystemTask(task: { id: string; name?: string; prompt: string; quiet?: boolean }): Promise<string> {
+    if (this.deps.business) throw new Error("Business system work requires durable admission");
     const principal = this.ownerPrincipal();
     const key = `system:${task.id}`;
     const conv = this.conversation(key, principal);
@@ -725,6 +852,12 @@ export class AgentRuntime {
   }
 
   private async guard(conv: Conversation, toolName: string, args: unknown): Promise<BeforeToolCallResult | undefined> {
+    const businessRun = this.businessRuns.get(conv.key);
+    if (businessRun) {
+      this.deps.business!.assertActive(businessRun.binding);
+      if (++businessRun.dispatches > 12) return { block: true, reason: "Reasoning slice dispatch limit reached. Save progress and yield." };
+      if (["trust_set_tier", "trust_grant", "trust_revoke", "approval_settle", "apps_connect", "payment_connect", "bash"].includes(toolName)) return { block: true, reason: "Owner control-plane operation is unavailable to task workers" };
+    }
     if (conv.channel === "a2a") {
       try { await this.assertA2AActive(conv); }
       catch (error) {
@@ -742,7 +875,7 @@ export class AgentRuntime {
       if (limit) return { block: true, reason: limit };
     }
 
-    const decision = policy.evaluate(principal, meta, args);
+    const decision = businessRun || this.businessOwnerSources.has(conv.key) ? policy.evaluateBusinessOwner(principal, meta, args) : policy.evaluate(principal, meta, args);
     audit.append({
       kind: "policy",
       conversationKey: conv.key,
@@ -835,7 +968,7 @@ export class AgentRuntime {
     await this.afterApproval(resolved, match.approved);
 
     if (DELIVERABLE.has(msg.channel)) {
-      await this.safeSend({ channel: msg.channel as OutboundChannel, conversationKey: msg.conversationKey, text: note, replyRef: msg.replyRef }, principal, msg.conversationKey);
+      await this.safeSend({ channel: msg.channel as OutboundChannel, conversationKey: msg.conversationKey, text: note, replyRef: msg.replyRef }, principal, msg.conversationKey, `approval-answer:${msg.id}`);
     }
     return note;
   }
@@ -848,11 +981,11 @@ export class AgentRuntime {
    */
   async afterApproval(approval: Approval, approved: boolean): Promise<void> {
     if (approved && approval.capability !== "owner.relay") this.rememberApproved(approval);
-    await this.resumeConversation(approval.conversationKey, `Owner ${approved ? "approved" : "denied"}: ${approval.summary}`);
+    await this.resumeConversation(approval.conversationKey, `Owner ${approved ? "approved" : "denied"}: ${approval.summary}`, `approval-resume:${approval.token}`);
   }
 
   /** Wake the conversation that was waiting on the owner. Busy: queue. Idle: run and deliver. */
-  private async resumeConversation(key: string, text: string): Promise<void> {
+  private async resumeConversation(key: string, text: string, messageId: string): Promise<void> {
     const live = this.conversations.get(key);
     const record = live ? { principal: live.principal, deliveryKey: live.deliveryKey, replyRef: live.replyRef } : this.recallRecord(key);
     if (!record) return;
@@ -866,8 +999,9 @@ export class AgentRuntime {
       if (running) await running;
       else await conv.agent.waitForIdle();
     }
+    conv.messageId = messageId;
     const reply = await conv.run(text);
-    if (reply) await this.deliver(conv, reply);
+    if (reply) await this.deliver(conv, reply, { messageId });
   }
 
   // -------------------------------------------------------------------------
@@ -879,7 +1013,7 @@ export class AgentRuntime {
    * its text is stashed for the next turn. A2A replies carry the task id and say "progress"
    * while an approval is pending, and are skipped when the model already answered itself.
    */
-  private async deliver(conv: Conversation, text: string, opts: { keepPrompt?: boolean; arrivedSeq?: number; failure?: boolean } = {}): Promise<void> {
+  private async deliver(conv: Conversation, text: string, opts: { messageId: string; keepPrompt?: boolean; arrivedSeq?: number; failure?: boolean }): Promise<void> {
     const channel = conv.channel;
     if (channel === "scheduled" || channel === "system") return;
     if (!DELIVERABLE.has(channel)) {
@@ -905,7 +1039,7 @@ export class AgentRuntime {
     }
     // A reply to the owner changes what their next bare "yes" is about, unless this run raised the question.
     if (conv.principal.kind === "owner" && !opts.keepPrompt) this.deps.approvals.clearPrompted();
-    await this.safeSend(out, conv.principal, conv.key);
+    await this.safeSend(out, conv.principal, conv.key, `reply:${opts.messageId}`);
     if (out.a2a && out.a2a.intent === "complete") this.a2aStore.recordTask({ taskId: out.a2a.taskId, state: "completed" });
   }
 
@@ -939,7 +1073,7 @@ export class AgentRuntime {
     let timer: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
       timer = undefined;
       if ((this.lastDelivered.get(thread)?.seq ?? -1) > startSeq) return;
-      sending = this.safeSend({ channel: msg.channel as OutboundChannel, conversationKey: thread, text: ackText(msg.channel), replyRef: msg.replyRef }, principal, thread).catch(() => undefined);
+      sending = this.safeSend({ channel: msg.channel as OutboundChannel, conversationKey: thread, text: ackText(msg.channel), replyRef: msg.replyRef }, principal, thread, `slow-ack:${msg.id}`).catch(() => undefined);
     }, this.deps.replyBudgetMs ?? DEFAULT_REPLY_BUDGET_MS);
     return {
       stop: async () => {
@@ -954,7 +1088,7 @@ export class AgentRuntime {
    * For the server's own owner-facing texts (a finished phone call, for example): the same
    * route as the runtime's messages. False when there is no way to reach the owner.
    */
-  async relayToOwner(text: string, originKey: string, opts: { approvalToken?: string } = {}): Promise<boolean> {
+  async relayToOwner(text: string, originKey: string, opts: { approvalToken?: string; messageId?: string } = {}): Promise<boolean> {
     const last = this.ownerLast;
     const reachable = Boolean(this.deps.config.owner.phones[0]) || Boolean(last && DELIVERABLE.has(last.channel) && last.channel !== "a2a");
     if (!reachable) return false;
@@ -966,7 +1100,7 @@ export class AgentRuntime {
    * Owner messages go to the owner's last live text thread, else to their first phone by
    * iMessage, else to their last email thread. Group threads are never used for this.
    */
-  private async sendToOwner(text: string, principal: Principal, originKey: string, opts: { approvalToken?: string } = {}): Promise<void> {
+  private async sendToOwner(text: string, principal: Principal, originKey: string, opts: { approvalToken?: string; messageId?: string } = {}): Promise<void> {
     const last = this.ownerLast;
     const phone = this.deps.config.owner.phones[0];
     let out: OutboundMessage;
@@ -980,15 +1114,15 @@ export class AgentRuntime {
       this.deps.audit.append({ kind: "error", conversationKey: originKey, principal: principal.id, detail: { message: "No way to reach the owner: no phone and no prior conversation" } });
       return;
     }
-    const sent = await this.safeSend(out, principal, originKey);
+    const sent = await this.safeSend(out, principal, originKey, opts.messageId ?? (opts.approvalToken ? `approval:${opts.approvalToken}` : `owner-event:${originKey}`));
     if (!sent) return;
     if (opts.approvalToken) this.deps.approvals.markPrompted(opts.approvalToken);
     else this.deps.approvals.clearPrompted();
   }
 
-  private async safeSend(out: OutboundMessage, principal: Principal, conversationKey: string): Promise<boolean> {
+  private async safeSend(out: OutboundMessage, principal: Principal, conversationKey: string, messageId: string): Promise<boolean> {
     try {
-      await this.deps.outbox.send(out, { principal, conversationKey });
+      await this.deps.outbox.send(out, { principal, conversationKey, messageId });
       // Recorded only once the carrier took it: a failed send must not suppress the retry.
       if (CARRIER_CHANNELS.has(out.channel) && out.conversationKey) this.lastDelivered.set(out.conversationKey, { text: out.text, seq: ++this.sendSeq });
       this.deps.audit.append({ kind: "outbound", conversationKey, principal: principal.id, detail: { channel: out.channel, to: out.to, conversationKey: out.conversationKey, chars: out.text.length } });
@@ -1027,6 +1161,9 @@ export class AgentRuntime {
     }
     const pending = approvals.pending().filter((a) => (principal.kind === "owner" && principal.tier === "owner") || a.conversationKey === conv.key);
     const extra = this.deps.promptExtra?.(principal, conv.channel) ?? [];
+    if (config.business && principal.kind === "owner" && principal.tier === "owner" && !principal.cappedFrom) extra.push(this.deps.business?.context(this.businessOwnerSources.has(conv.key) ? "foreground" : "worker") ?? "");
+    const ownerSource = this.businessOwnerSources.get(conv.key);
+    if (conv.ownerTurn && ownerSource?.feedbackMessageId) extra.push(`## Messaging presence\nRead and typing feedback are automatic while this private iMessage is handled. The current inbound carrier message ID is ${JSON.stringify(ownerSource.feedbackMessageId)}. Use react naturally when a tapback is a better acknowledgement or adds warmth: like, love, laugh, emphasize, question, dislike, or eyes. Do not react mechanically to every message. A tapback is not evidence that business work was accepted or finished. Only this current incoming message can be targeted, once. If a successful tapback fully answers a brief acknowledgement, you may finish without another text bubble; otherwise give your useful reply. Never claim an uncertain reaction was delivered.`);
     return buildSystemPrompt({
       config,
       principal,
@@ -1053,6 +1190,7 @@ export class AgentRuntime {
   private memoryDigestFor(principal: Principal): string {
     const { memory, policy } = this.deps;
     if (principal.kind === "owner" && principal.tier === "owner") return memory.digest(4000, this.now());
+    if (this.deps.config.business) return "";
     const permission = policy.permissionFor(principal.tier, "owner.profile.preferences");
     if (permission !== "yes" && permission !== "partial") return "";
     const prefs = memory.preferencesDigest(permission === "yes" ? 1500 : 600);
@@ -1063,6 +1201,8 @@ export class AgentRuntime {
 
   private bindTools(conv: Conversation): AgentTool<any>[] {
     const { registry, policy } = this.deps;
+    const businessRun = this.businessRuns.get(conv.key);
+    const ownerSource = this.businessOwnerSources.get(conv.key);
     const ctx: ToolContext = {
       get principal() {
         return conv.principal;
@@ -1075,10 +1215,46 @@ export class AgentRuntime {
         if (conv.replyRef.taskId) this.a2aStore.recordTask({ taskId: conv.replyRef.taskId, state });
       },
       channel: conv.channel,
+      get messageId() { return ownerSource?.messageId ?? conv.messageId; },
       get ownerTurn() { return conv.ownerTurn; },
+      redact: this.deps.redact,
+      get businessOwnerSource() { return ownerSource; },
+      ...(ownerSource?.feedbackMessageId && this.deps.business?.reactToOwnerMessage ? {
+        businessOwnerReaction: (messageId: string, reaction: string, signal?: AbortSignal) => {
+          if (!conv.ownerTurn || this.businessForegroundClosed || this.businessOwnerSources.get(conv.key) !== ownerSource) throw new Error("Owner reaction turn is no longer active");
+          return this.deps.business!.reactToOwnerMessage!(ownerSource.messageId, messageId, reaction, signal);
+        },
+      } : {}),
       now: this.now,
+      get taskRun() { return businessRun?.binding; },
+      ...(businessRun ? {
+        businessDispatch: this.deps.business!.dispatch,
+        businessSources: () => this.deps.business!.sourceRevisions?.(businessRun.binding.taskId) ?? {},
+        recordBusinessSource: (id, revision) => {
+          if (!this.deps.business!.recordSource) throw new Error("Source fence persistence unavailable");
+          this.deps.business!.recordSource(businessRun.binding, id, revision);
+        },
+        authorizeBusinessOperation: (tool, meta, args) => {
+          this.deps.business!.assertActive(businessRun.binding);
+          if (meta.execution && meta.execution !== "operation") throw new Error("Concrete app operation cannot invoke control-plane tools");
+          const decision = policy.evaluateBusinessOwner(conv.principal, meta, args);
+          this.deps.audit.append({ kind: "policy", conversationKey: conv.key, principal: conv.principal.id, detail: { tool, outcome: decision.outcome, reason: decision.reason } });
+          if (decision.outcome !== "allow") throw new Error(`Concrete app operation blocked: ${decision.reason}`);
+        },
+        nextBusinessStep: (_toolCallId: string, tool: string, args: unknown) => registry.meta(tool)?.effect === "read" ? `${businessRun.binding.runId}:read:${businessRun.dispatches}:${businessHash({ tool, args })}` : businessHash({ tool, args }),
+        updateTaskRun: (binding: TaskRunBinding) => {
+          if (binding.taskId !== businessRun.binding.taskId || binding.runId !== businessRun.binding.runId) throw new Error("Cannot replace task authority");
+          this.deps.business!.assertActive(binding);
+          businessRun.binding = binding;
+        },
+      } : {}),
     };
-    const visible = (t: RegisteredTool) => t.spec.meta.capabilities.every((c) => policy.canEver(conv.principal, c));
+    const visible = (t: RegisteredTool) => {
+      if (this.deps.config.business && (conv.principal.kind !== "owner" || conv.principal.tier !== "owner" || conv.principal.cappedFrom)) return ["notify_owner", "send_typing", "react"].includes(t.spec.name);
+      if (this.deps.config.business && !businessRun) return Boolean(ownerSource && (t.spec.meta.execution === "owner" || ["business_profile", "business_fact", "business_files", "knowledge_search", "knowledge_source", "business_price"].includes(t.spec.name) || t.spec.name === "react" && ownerSource.feedbackMessageId && this.deps.business?.reactToOwnerMessage));
+      if (businessRun && (t.spec.meta.execution === "owner" || ["trust_set_tier", "trust_grant", "trust_revoke", "approval_settle", "apps_connect", "payment_connect", "bash"].includes(t.spec.name))) return false;
+      return t.spec.meta.capabilities.every((c) => policy.canEver(conv.principal, c));
+    };
     return registry.bind(ctx, visible);
   }
 

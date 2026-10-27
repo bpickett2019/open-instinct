@@ -1,0 +1,388 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> open-instinct@0.1.0 test:e2e /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run test:e2e
+
+
+> @open-instinct/server@0.1.0 test:e2e /private/tmp/open-instinct/packages/server
+> playwright test --config playwright.config.ts
+
+
+Running 34 tests using 1 worker
+
+(node:49462) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49462) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (1.7s)
+(node:49996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (1.1s)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (1.1s)
+  ✘   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (947ms)
+(node:50075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (909ms)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (648ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (442ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (903ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (984ms)
+(node:50075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:50075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.6s)
+  ✘  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (11.0s)
+(node:50211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (1.1s)
+(node:50211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:50211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.2s)
+  ✘  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (11.1s)
+(node:50227) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50227) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (1.1s)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (4.7s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (3.9s)
+(node:50239) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50239) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (794ms)
+(node:50244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart light (823ms)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest light (592ms)
+  ✘  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (597ms)
+(node:50252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:115:3 › direct stop fences active work and survives restart dark (796ms)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:177:3 › unknown hosted effect and disconnected account remain honest dark (594ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:272:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (431ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:360:1 › owner changes and closes queued work without losing prior versions (744ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:414:1 › hostile source content stays inert and selective deletion removes retrieval (810ms)
+(node:50252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:50252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✘  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (11.3s)
+(node:50267) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50267) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (1.0s)
+(node:50267) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:50267) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.4s)
+  ✘  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (10.9s)
+(node:50276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (986ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (3.8s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (3.6s)
+
+
+  1) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -13,6 +13,7 @@
+          "limitMinor": 1000,
+          "remainingMinor": 1000,
+          "unknown": false,
+          "usedMinor": 0,
+        },
+    +   "savedOwner": null,
+      }
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toEqual({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/attachments/validation-error-light-ea8dee4cb1035ef19e622285af61b128a98afdc9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-desktop/error-context.md
+
+  2) [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -13,6 +13,7 @@
+          "limitMinor": 1000,
+          "remainingMinor": 1000,
+          "unknown": false,
+          "usedMinor": 0,
+        },
+    +   "savedOwner": null,
+      }
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toEqual({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/attachments/validation-error-dark-c79aee664bf09844a036178fd6673b34edf18b58.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-desktop/error-context.md
+
+  3) [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light 
+
+    Error: Timed out gated calendar task active; tasks=[{"authorityRef":"owner:web:5f563c4f-9bd4-4be2-824d-c3c739d9c19a","blocker":"Reconcile prior effects before dispatch","checkpoint":{"ownerInformation":"Create one more synthetic appointment after the model gate opens.","previous":null,"sourceId":"web:53bc32d8-8c2e-4480-bc9a-85ff3d5fe91a"},"createdAt":1792404000000,"dispatches":0,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":[],"executionEpoch":1,"id":"59628cf7-509c-4c5c-9fe5-1ffad5e705a5","nextWake":null,"noProgress":0,"objective":"Try the previous appointment revision, respecting its saved etag.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":null,"runId":null,"sourceRefs":["web:5f563c4f-9bd4-4be2-824d-c3c739d9c19a"],"status":"blocked","updatedAt":1792404000000,"version":6,"workspaceId":"258088da-3418-4d7f-a31b-4f6555341eae"},{"authorityRef":"owner:web:061f675c-65bc-488d-b730-44e5d0797ee6","blocker":null,"checkpoint":{"criteriaEvidence":[{"criterion":0,"evidenceRefs":["calendar:owner@fixture.test:6c91ba94f76fe825008913633f1ced743c8dd32912c2fcfd772e97538144a52a","calendar:owner@fixture.test:6c91ba94f76fe825008913633f1ced743c8dd32912c2fcfd772e97538144a52a","calendar:owner@fixture.test:6c91ba94f76fe825008913633f1ced743c8dd32912c2fcfd772e97538144a52a"]}],"verdicts":{"businessOutcome":"unknown","requestedOutcome":"evidence-linked","toolExecution":"verified"}},"createdAt":1792404000000,"dispatches":7,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":["calendar:owner@fixture.test:6c91ba94f76fe825008913633f1ced743c8dd32912c2fcfd772e97538144a52a"],"executionEpoch":1,"id":"87d13e77-d096-4db0-93fc-9d1ba451fbf9","nextWake":null,"noProgress":0,"objective":"Create the synthetic assessment appointment, revise its summary, then cancel it.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":"Created, revised and cancelled the assessment appointment with Calendar readback.","runId":null,"sourceRefs":["web:061f675c-65bc-488d-b730-44e5d0797ee6"],"status":"completed","updatedAt":1792404000000,"version":3,"workspaceId":"258088da-3418-4d7f-a31b-4f6555341eae"}]
+
+       at ../testing/scenario-app.ts:90
+
+      88 |       get url(){return url;},get tunnelUrl(){return tunnelUrl;},token,signingKey,root,state,model,foregroundModel,
+      89 |       get app(){return app;},providers:{google,calendar,composio,maritime,inkbox},fetch:isolation.fetch,allowedOrigins:isolation.origins,
+    > 90 |       async waitFor(predicate:()=>boolean|Promise<boolean>,label:string,timeout=10_000){const deadline=Date.now()+timeout;while(!await predicate()){if(Date.now()>deadline)throw new Error(`Timed out ${label}; tasks=${JSON.stringify(app.business?.coordinator.store.tasks())}`);const tick=Promise.withResolvers<void>();setImmediate(tick.resolve);await tick.promise;}},
+         |                                                                                                                                                                                  ^
+      91 |       async login(){const response=await isolation.fetch(`${url}/api/owner/session`,{method:"POST",headers:{origin:url,"content-type":"application/json"},body:JSON.stringify({token})});if(!response.ok)throw new Error(`Login failed ${response.status}: ${await response.text()}`);cookie=response.headers.get("set-cookie")?.split(";")[0]??"";csrf=string(record(await response.json()).csrf);return {cookie,csrf};},
+      92 |       async owner(path:string,options:{method?:string;body?:unknown;headers?:Record<string,string>}={}){return isolation.fetch(`${url}/api/owner${path}`,{method:options.method??"GET",headers:{cookie,origin:url,"content-type":"application/json","x-workspace-csrf":csrf,...options.headers},...(options.body!==undefined?{body:JSON.stringify(options.body)}:{})});},
+      93 |       async postMessage(text:string,id=randomUUID()){if(!cookie)await facade.login();return facade.owner("/messages",{method:"POST",body:{text,clientId:id}});},
+        at Object.waitFor (/private/tmp/open-instinct/packages/server/testing/scenario-app.ts:90:178)
+        at /private/tmp/open-instinct/packages/server/e2e/customer-lifecycle.spec.ts:168:5
+
+    attachment #1: calendar-lifecycle-light (image/png) ────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-desktop/attachments/calendar-lifecycle-light-3dbb72aa9414c2d2688a2bda7d9af322909405b9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: calendar-conflict-light (image/png) ─────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-desktop/attachments/calendar-conflict-light-a6b6f84f7c2fdd668bb0bcb78d4a97a00ff184a6.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-desktop/error-context.md
+
+  4) [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark 
+
+    Error: Timed out gated calendar task active; tasks=[{"authorityRef":"owner:web:a0705598-5c0a-4bb3-9922-57f500a27396","blocker":"Reconcile prior effects before dispatch","checkpoint":{"ownerInformation":"Create one more synthetic appointment after the model gate opens.","previous":null,"sourceId":"web:2fb417f1-8e2f-49d2-a6c3-75f2cd824986"},"createdAt":1792404000000,"dispatches":0,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":[],"executionEpoch":1,"id":"0137bbdc-6e4e-44a8-bf68-9758395387bb","nextWake":null,"noProgress":0,"objective":"Try the previous appointment revision, respecting its saved etag.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":null,"runId":null,"sourceRefs":["web:a0705598-5c0a-4bb3-9922-57f500a27396"],"status":"blocked","updatedAt":1792404000000,"version":6,"workspaceId":"339e910b-b74c-43ea-b268-4fca2b583501"},{"authorityRef":"owner:web:f79f183f-6aa0-4b9b-b3a6-409e16375acb","blocker":null,"checkpoint":{"criteriaEvidence":[{"criterion":0,"evidenceRefs":["calendar:owner@fixture.test:cdb3242fa7e344af47f1f947fc84a5e9d0655dc12a8fa52c7a8042e10814e1be","calendar:owner@fixture.test:cdb3242fa7e344af47f1f947fc84a5e9d0655dc12a8fa52c7a8042e10814e1be","calendar:owner@fixture.test:cdb3242fa7e344af47f1f947fc84a5e9d0655dc12a8fa52c7a8042e10814e1be"]}],"verdicts":{"businessOutcome":"unknown","requestedOutcome":"evidence-linked","toolExecution":"verified"}},"createdAt":1792404000000,"dispatches":7,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":["calendar:owner@fixture.test:cdb3242fa7e344af47f1f947fc84a5e9d0655dc12a8fa52c7a8042e10814e1be"],"executionEpoch":1,"id":"af6d687d-a532-4323-a590-9a3fbc747724","nextWake":null,"noProgress":0,"objective":"Create the synthetic assessment appointment, revise its summary, then cancel it.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":"Created, revised and cancelled the assessment appointment with Calendar readback.","runId":null,"sourceRefs":["web:f79f183f-6aa0-4b9b-b3a6-409e16375acb"],"status":"completed","updatedAt":1792404000000,"version":3,"workspaceId":"339e910b-b74c-43ea-b268-4fca2b583501"}]
+
+       at ../testing/scenario-app.ts:90
+
+      88 |       get url(){return url;},get tunnelUrl(){return tunnelUrl;},token,signingKey,root,state,model,foregroundModel,
+      89 |       get app(){return app;},providers:{google,calendar,composio,maritime,inkbox},fetch:isolation.fetch,allowedOrigins:isolation.origins,
+    > 90 |       async waitFor(predicate:()=>boolean|Promise<boolean>,label:string,timeout=10_000){const deadline=Date.now()+timeout;while(!await predicate()){if(Date.now()>deadline)throw new Error(`Timed out ${label}; tasks=${JSON.stringify(app.business?.coordinator.store.tasks())}`);const tick=Promise.withResolvers<void>();setImmediate(tick.resolve);await tick.promise;}},
+         |                                                                                                                                                                                  ^
+      91 |       async login(){const response=await isolation.fetch(`${url}/api/owner/session`,{method:"POST",headers:{origin:url,"content-type":"application/json"},body:JSON.stringify({token})});if(!response.ok)throw new Error(`Login failed ${response.status}: ${await response.text()}`);cookie=response.headers.get("set-cookie")?.split(";")[0]??"";csrf=string(record(await response.json()).csrf);return {cookie,csrf};},
+      92 |       async owner(path:string,options:{method?:string;body?:unknown;headers?:Record<string,string>}={}){return isolation.fetch(`${url}/api/owner${path}`,{method:options.method??"GET",headers:{cookie,origin:url,"content-type":"application/json","x-workspace-csrf":csrf,...options.headers},...(options.body!==undefined?{body:JSON.stringify(options.body)}:{})});},
+      93 |       async postMessage(text:string,id=randomUUID()){if(!cookie)await facade.login();return facade.owner("/messages",{method:"POST",body:{text,clientId:id}});},
+        at Object.waitFor (/private/tmp/open-instinct/packages/server/testing/scenario-app.ts:90:178)
+        at /private/tmp/open-instinct/packages/server/e2e/customer-lifecycle.spec.ts:168:5
+
+    attachment #1: calendar-lifecycle-dark (image/png) ─────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-desktop/attachments/calendar-lifecycle-dark-33ea05f9f3c2dfd9ba99ded8e721759bebcc0b98.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: calendar-conflict-dark (image/png) ──────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-desktop/attachments/calendar-conflict-dark-068e02e1597be1f761e02330db6736edb3d46d9b.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-desktop/error-context.md
+
+  5) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -13,6 +13,7 @@
+          "limitMinor": 1000,
+          "remainingMinor": 1000,
+          "unknown": false,
+          "usedMinor": 0,
+        },
+    +   "savedOwner": null,
+      }
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toEqual({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-light (image/png) ──────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/attachments/validation-error-light-bb1ed6a42d36c842619d1b02494348742d85b5a9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-3eb0d-xpired-authentication-light-mobile/error-context.md
+
+  6) [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -13,6 +13,7 @@
+          "limitMinor": 1000,
+          "remainingMinor": 1000,
+          "unknown": false,
+          "usedMinor": 0,
+        },
+    +   "savedOwner": null,
+      }
+
+      16 |     await page.getByRole("button", { name: "Save settings", exact: true }).click(); expect((await settingsSaved).status()).toBe(200);
+      17 |     await page.reload(); await expect(page.getByLabel("Model limit in USD cents (blank means no owner cap)", { exact: true })).toHaveValue("500");
+    > 18 |     expect(scenario.app.business!.coordinator.store.allowanceBalances()).toEqual({
+         |                                                                          ^
+      19 |       purchase: { currency: before.value.currency, limitMinor: 1000, usedMinor: 0, heldMinor: 0, remainingMinor: 1000, unknown: false },
+      20 |       model: { currency: "USD", limitMinor: 500, usedMinor: 0, heldMinor: 0, remainingMinor: 500, unknown: false },
+      21 |     });
+        at /private/tmp/open-instinct/packages/server/e2e/changed-flows.spec.ts:18:74
+
+    attachment #1: validation-error-dark (image/png) ───────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/attachments/validation-error-dark-df25b0e1849d714810e31733db825a10d611843f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/changed-flows-settings-err-0b947-expired-authentication-dark-mobile/error-context.md
+
+  7) [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light 
+
+    Error: Timed out gated calendar task active; tasks=[{"authorityRef":"owner:web:939581c9-c1f2-4e59-8634-5fba787853a7","blocker":"Reconcile prior effects before dispatch","checkpoint":{"ownerInformation":"Create one more synthetic appointment after the model gate opens.","previous":null,"sourceId":"web:0f3eda44-125a-42e2-af07-553821ab0e37"},"createdAt":1792404000000,"dispatches":0,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":[],"executionEpoch":1,"id":"a31d2c8b-9c60-4083-aa8b-ada60fc99d85","nextWake":null,"noProgress":0,"objective":"Try the previous appointment revision, respecting its saved etag.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":null,"runId":null,"sourceRefs":["web:939581c9-c1f2-4e59-8634-5fba787853a7"],"status":"blocked","updatedAt":1792404000000,"version":6,"workspaceId":"65a875b0-e5dd-4bf7-927c-66d5f0e1d785"},{"authorityRef":"owner:web:c2d65bbe-65bb-4f7f-94ed-01e763a156ed","blocker":null,"checkpoint":{"criteriaEvidence":[{"criterion":0,"evidenceRefs":["calendar:owner@fixture.test:275099c47598204e5ca37b99583758a42b1d8aa89146a498dd6e54f08db183e5","calendar:owner@fixture.test:275099c47598204e5ca37b99583758a42b1d8aa89146a498dd6e54f08db183e5","calendar:owner@fixture.test:275099c47598204e5ca37b99583758a42b1d8aa89146a498dd6e54f08db183e5"]}],"verdicts":{"businessOutcome":"unknown","requestedOutcome":"evidence-linked","toolExecution":"verified"}},"createdAt":1792404000000,"dispatches":7,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":["calendar:owner@fixture.test:275099c47598204e5ca37b99583758a42b1d8aa89146a498dd6e54f08db183e5"],"executionEpoch":1,"id":"5f64948d-c4dc-4a27-bb49-71f2636155d6","nextWake":null,"noProgress":0,"objective":"Create the synthetic assessment appointment, revise its summary, then cancel it.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":"Created, revised and cancelled the assessment appointment with Calendar readback.","runId":null,"sourceRefs":["web:c2d65bbe-65bb-4f7f-94ed-01e763a156ed"],"status":"completed","updatedAt":1792404000000,"version":3,"workspaceId":"65a875b0-e5dd-4bf7-927c-66d5f0e1d785"}]
+
+       at ../testing/scenario-app.ts:90
+
+      88 |       get url(){return url;},get tunnelUrl(){return tunnelUrl;},token,signingKey,root,state,model,foregroundModel,
+      89 |       get app(){return app;},providers:{google,calendar,composio,maritime,inkbox},fetch:isolation.fetch,allowedOrigins:isolation.origins,
+    > 90 |       async waitFor(predicate:()=>boolean|Promise<boolean>,label:string,timeout=10_000){const deadline=Date.now()+timeout;while(!await predicate()){if(Date.now()>deadline)throw new Error(`Timed out ${label}; tasks=${JSON.stringify(app.business?.coordinator.store.tasks())}`);const tick=Promise.withResolvers<void>();setImmediate(tick.resolve);await tick.promise;}},
+         |                                                                                                                                                                                  ^
+      91 |       async login(){const response=await isolation.fetch(`${url}/api/owner/session`,{method:"POST",headers:{origin:url,"content-type":"application/json"},body:JSON.stringify({token})});if(!response.ok)throw new Error(`Login failed ${response.status}: ${await response.text()}`);cookie=response.headers.get("set-cookie")?.split(";")[0]??"";csrf=string(record(await response.json()).csrf);return {cookie,csrf};},
+      92 |       async owner(path:string,options:{method?:string;body?:unknown;headers?:Record<string,string>}={}){return isolation.fetch(`${url}/api/owner${path}`,{method:options.method??"GET",headers:{cookie,origin:url,"content-type":"application/json","x-workspace-csrf":csrf,...options.headers},...(options.body!==undefined?{body:JSON.stringify(options.body)}:{})});},
+      93 |       async postMessage(text:string,id=randomUUID()){if(!cookie)await facade.login();return facade.owner("/messages",{method:"POST",body:{text,clientId:id}});},
+        at Object.waitFor (/private/tmp/open-instinct/packages/server/testing/scenario-app.ts:90:178)
+        at /private/tmp/open-instinct/packages/server/e2e/customer-lifecycle.spec.ts:168:5
+
+    attachment #1: calendar-lifecycle-light (image/png) ────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-mobile/attachments/calendar-lifecycle-light-bbb4bd0fee2af201eece45d2f19178f1ced76231.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: calendar-conflict-light (image/png) ─────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-mobile/attachments/calendar-conflict-light-ca7bc47268efe72aa098d39e3072403234bbd84c.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customer-lifecycle-calenda-44417--direct-provider-stop-light-mobile/error-context.md
+
+  8) [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark 
+
+    Error: Timed out gated calendar task active; tasks=[{"authorityRef":"owner:web:aa90d54b-af29-4063-abf4-3c10c4e98c3d","blocker":"Reconcile prior effects before dispatch","checkpoint":{"ownerInformation":"Create one more synthetic appointment after the model gate opens.","previous":null,"sourceId":"web:7aa2c41c-13aa-4885-8334-27c8b9c7178b"},"createdAt":1792404000000,"dispatches":0,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":[],"executionEpoch":1,"id":"f920c6fd-32d1-4a38-b841-0509807333f0","nextWake":null,"noProgress":0,"objective":"Try the previous appointment revision, respecting its saved etag.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":null,"runId":null,"sourceRefs":["web:aa90d54b-af29-4063-abf4-3c10c4e98c3d"],"status":"blocked","updatedAt":1792404000000,"version":6,"workspaceId":"c37fa93f-a828-45ea-bbab-a9a61cf1a8b8"},{"authorityRef":"owner:web:f95a00d5-af76-4c1e-a64b-aaaec76e78a2","blocker":null,"checkpoint":{"criteriaEvidence":[{"criterion":0,"evidenceRefs":["calendar:owner@fixture.test:59fc2bb4b653fa356bca2a2a7c4dd173391185a5f006bf563dec8a457f5cbaf7","calendar:owner@fixture.test:59fc2bb4b653fa356bca2a2a7c4dd173391185a5f006bf563dec8a457f5cbaf7","calendar:owner@fixture.test:59fc2bb4b653fa356bca2a2a7c4dd173391185a5f006bf563dec8a457f5cbaf7"]}],"verdicts":{"businessOutcome":"unknown","requestedOutcome":"evidence-linked","toolExecution":"verified"}},"createdAt":1792404000000,"dispatches":7,"doneCriteria":["Satisfy the owner's objective with independently inspectable outcome evidence."],"evidenceRefs":["calendar:owner@fixture.test:59fc2bb4b653fa356bca2a2a7c4dd173391185a5f006bf563dec8a457f5cbaf7"],"executionEpoch":1,"id":"14daca07-55df-4837-bbb8-adfe178c82d5","nextWake":null,"noProgress":0,"objective":"Create the synthetic assessment appointment, revise its summary, then cancel it.","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:business-owner","replyRef":{},"requester":"owner"},"result":"Created, revised and cancelled the assessment appointment with Calendar readback.","runId":null,"sourceRefs":["web:f95a00d5-af76-4c1e-a64b-aaaec76e78a2"],"status":"completed","updatedAt":1792404000000,"version":3,"workspaceId":"c37fa93f-a828-45ea-bbab-a9a61cf1a8b8"}]
+
+       at ../testing/scenario-app.ts:90
+
+      88 |       get url(){return url;},get tunnelUrl(){return tunnelUrl;},token,signingKey,root,state,model,foregroundModel,
+      89 |       get app(){return app;},providers:{google,calendar,composio,maritime,inkbox},fetch:isolation.fetch,allowedOrigins:isolation.origins,
+    > 90 |       async waitFor(predicate:()=>boolean|Promise<boolean>,label:string,timeout=10_000){const deadline=Date.now()+timeout;while(!await predicate()){if(Date.now()>deadline)throw new Error(`Timed out ${label}; tasks=${JSON.stringify(app.business?.coordinator.store.tasks())}`);const tick=Promise.withResolvers<void>();setImmediate(tick.resolve);await tick.promise;}},
+         |                                                                                                                                                                                  ^
+      91 |       async login(){const response=await isolation.fetch(`${url}/api/owner/session`,{method:"POST",headers:{origin:url,"content-type":"application/json"},body:JSON.stringify({token})});if(!response.ok)throw new Error(`Login failed ${response.status}: ${await response.text()}`);cookie=response.headers.get("set-cookie")?.split(";")[0]??"";csrf=string(record(await response.json()).csrf);return {cookie,csrf};},
+      92 |       async owner(path:string,options:{method?:string;body?:unknown;headers?:Record<string,string>}={}){return isolation.fetch(`${url}/api/owner${path}`,{method:options.method??"GET",headers:{cookie,origin:url,"content-type":"application/json","x-workspace-csrf":csrf,...options.headers},...(options.body!==undefined?{body:JSON.stringify(options.body)}:{})});},
+      93 |       async postMessage(text:string,id=randomUUID()){if(!cookie)await facade.login();return facade.owner("/messages",{method:"POST",body:{text,clientId:id}});},
+        at Object.waitFor (/private/tmp/open-instinct/packages/server/testing/scenario-app.ts:90:178)
+        at /private/tmp/open-instinct/packages/server/e2e/customer-lifecycle.spec.ts:168:5
+
+    attachment #1: calendar-lifecycle-dark (image/png) ─────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-mobile/attachments/calendar-lifecycle-dark-c120df66885b4bac34b4557fc053191a10b0e681.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: calendar-conflict-dark (image/png) ──────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-mobile/attachments/calendar-conflict-dark-d5cdcb39fbc6847650477e8389c47b0ee92123e8.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customer-lifecycle-calenda-fc849-d-direct-provider-stop-dark-mobile/error-context.md
+
+  8 failed
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+    [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light 
+    [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light 
+    [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark 
+    [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light 
+    [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark 
+  26 passed (1.8m)
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test:e2e: `playwright test --config playwright.config.ts`
+Exit status 1
+ ELIFECYCLE  Command failed with exit code 1.
+[raw output: artifact://85]

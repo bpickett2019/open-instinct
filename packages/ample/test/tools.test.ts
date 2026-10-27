@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -246,6 +246,82 @@ describe("tokens", () => {
   });
 });
 
+describe("final dispatch authorization", () => {
+  const cases = [
+    { name: "deploy", args: { path: "apps/bake-sale" } },
+    { name: "logs", args: { deployment_id: "dep_1" } },
+    { name: "apps", args: {} },
+    { name: "del", args: { deployment_id: "dep_1" } },
+  ] as const;
+
+  for (const mode of ["abort", "revoked"] as const) {
+    it.each(cases)(`blocks $name after authentication is gated and ${mode}`, async ({ name, args }) => {
+      const { promise: authenticating, resolve: entered } = Promise.withResolvers<void>();
+      const { promise: response, resolve: release } = Promise.withResolvers<Response>();
+      // Deliberately ignores abort: the adapter must fence even a prerequisite
+      // that completes successfully after cancellation.
+      const fetchImpl = vi.fn(async () => { entered(); return response; });
+      const run = fakeRun({});
+      const selected = tools({ run, fetchImpl });
+      const controller = new AbortController();
+      let authorized = true;
+      const assertBusinessDispatch = vi.fn(() => {
+        if (!authorized) throw new Error("Business dispatch revoked");
+      });
+      const pending = selected[name].spec.execute(args, { ...ctx, assertBusinessDispatch }, controller.signal);
+      await authenticating;
+      if (mode === "abort") controller.abort(new Error("Task cancelled"));
+      else authorized = false;
+      release(new Response(JSON.stringify({ access_token: "test-token", expires_in: 900 }), { status: 200 }));
+      const result = await pending;
+      expect(result).toMatchObject({ isError: true });
+      expect(text(result)).toContain(mode === "abort" ? "Task cancelled" : "Business dispatch revoked");
+      expect(assertBusinessDispatch).toHaveBeenCalledOnce();
+      expect(run).not.toHaveBeenCalled();
+    });
+  }
+
+  it("fences every project planning step before a subsequent deployment", async () => {
+    let authorized = true;
+    const run = scriptedRun({ plan: { stdout: TWO_SERVICES } }, () => { authorized = false; });
+    const { deploy } = tools({ run });
+    const result = await deploy.spec.execute({ path: "apps/bake-sale" }, {
+      ...ctx,
+      assertBusinessDispatch: () => {
+        if (!authorized) throw new Error("Source changed after planning");
+      },
+    });
+    expect(result).toMatchObject({ isError: true });
+    expect(text(result)).toContain("Source changed after planning");
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run.mock.calls[0]![0]).toContain("--offline");
+  });
+
+  it("rechecks the fence after refused-token authentication before retrying", async () => {
+    const { promise: refreshing, resolve: entered } = Promise.withResolvers<void>();
+    const { promise: refreshed, resolve: release } = Promise.withResolvers<Response>();
+    const fetchImpl = tokenFetch();
+    fetchImpl.mockImplementationOnce(async () =>
+      new Response(JSON.stringify({ access_token: "first-token", expires_in: 900 }), { status: 200 }),
+    );
+    fetchImpl.mockImplementationOnce(async () => { entered(); return refreshed; });
+    const run = fakeRun({ exitCode: 1, stdout: JSON.stringify({ http_status: 401 }) });
+    const { del } = tools({ run, fetchImpl });
+    let authorized = true;
+    const pending = del.spec.execute({ deployment_id: "dep_1" }, {
+      ...ctx,
+      assertBusinessDispatch: () => {
+        if (!authorized) throw new Error("Business dispatch revoked");
+      },
+    });
+    await refreshing;
+    authorized = false;
+    release(new Response(JSON.stringify({ access_token: "second-token", expires_in: 900 }), { status: 200 }));
+    expect(await pending).toMatchObject({ isError: true });
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("logs, apps and delete", () => {
   it("reads logs with bounded arguments and refuses IDs that look like flags", async () => {
     const run = fakeRun({ stdout: JSON.stringify([{ message: "listening on 8080" }]) });
@@ -280,6 +356,26 @@ describe("logs, apps and delete", () => {
 });
 
 describe("spawnCli", () => {
+  it("rejects pre-abort without spawning a process that writes a harmless marker", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "ample-preabort-"));
+    const marker = path.join(root, "spawned");
+    const run = spawnCli(process.execPath);
+    const args = ["-e", `require("node:fs").writeFileSync(${JSON.stringify(marker)}, "spawned")`];
+    try {
+      // Positive control proves the fixture really has an observable side effect.
+      expect((await run(args, { env: {}, timeoutMs: 10_000 })).exitCode).toBe(0);
+      expect(readFileSync(marker, "utf8")).toBe("spawned");
+      rmSync(marker);
+      const controller = new AbortController();
+      const reason = new Error("Already cancelled");
+      controller.abort(reason);
+      await expect(run(args, { env: {}, timeoutMs: 10_000, signal: controller.signal })).rejects.toBe(reason);
+      expect(existsSync(marker)).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("returns exit code and output, and kills a run that times out", async () => {
     const run = spawnCli(process.execPath);
     const ok = await run(["-e", "process.stdout.write('{\"ok\":true}'); process.exit(2)"], { env: {}, timeoutMs: 10_000 });

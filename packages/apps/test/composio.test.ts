@@ -59,6 +59,54 @@ function fakeMcp(tools: Array<{ name: string }> = [{ name: "GMAIL_SEND_EMAIL" },
   return { connectMcp, endpoints, close };
 }
 
+describe("business fixed Google proxy", () => {
+  it("exposes only bound concrete app operations, not nested router or raw Google bypasses", async () => {
+    const sdk = fakeComposio();
+    const mcp = fakeMcp([{ name: "NOTION_CREATE_PAGE" }, { name: "COMPOSIO_MULTI_EXECUTE_TOOL" }, { name: "GMAIL_SEND_EMAIL" }, { name: "NOTION_PROXY_EXECUTE" }, { name: "NOTION_REMOTE_BASH" }]);
+    const apps = new ComposioApps({ apiKey: "synthetic", userId: "workspace-test", toolkits: ["notion"], state: fakeState(), adapters: { createComposio: () => sdk.client, connectMcp: mcp.connectMcp } });
+    expect((await apps.concreteTools("notion", "account-notion")).map((t) => t.spec.name)).toEqual(["app_notion_create_page"]);
+    expect(sdk.created[0]?.config).toMatchObject({ connectedAccounts: { notion: "account-notion" }, sessionPreset: "direct_tools", workbench: { enable: false }, manageConnections: { enable: false } });
+    expect(await apps.concreteTools("gmail", "account-google")).toEqual([]);
+    await apps.close();
+  });
+  it("binds account overrides, decodes inner status and never forwards model credentials", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    let outcome = { result_type: "completed", status: 403, data: { error: "insufficient scope" } };
+    const apps = new ComposioApps({ apiKey: "synthetic-key", userId: "workspace-test", toolkits: ["gmail"], state: fakeState(),
+      adapters: { createComposio: () => fakeComposio().client, fetchImpl: async (url, init) => {
+        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+        calls.push({ url: String(url), body });
+        if (String(url).includes("connected_accounts?")) return Response.json({ items: [{ id: "account-test", toolkit: { slug: "gmail" }, user_id: "workspace-test", status: "ACTIVE", is_disabled: false }] });
+        if (String(url).endsWith("/session")) {
+          const toolkits = body.toolkits as { enable?: string[] } | undefined;
+          if (!Array.isArray(toolkits?.enable) || toolkits.enable.length !== 1 || toolkits.enable[0] !== "gmail") {
+            return Response.json({ error: "Invalid toolkit allowlist" }, { status: 400 });
+          }
+          return Response.json({ session_id: "session-test", config: { user_id: "workspace-test", connected_accounts: { gmail: "account-test" } } }, { status: 201 });
+        }
+        return Response.json(outcome);
+      } },
+    });
+    const transport = apps.googleTransport("gmail", "account-test", () => {});
+    expect(await transport.request({ method: "GET", endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile" })).toEqual({ status: 403, data: { error: "insufficient scope" } });
+    expect(calls.find((c) => c.url.endsWith("/session"))?.body.connected_accounts).toEqual({ gmail: "account-test" });
+    expect(calls.at(-1)?.body).toEqual({ toolkit_slug: "gmail", endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile", method: "GET", parameters: [] });
+    outcome = { result_type: "blocked", status: 200, data: { error: "" } };
+    await expect(transport.request({ method: "GET", endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile" })).rejects.toThrow("blocked");
+    outcome = { result_type: "input_required", status: 200, data: { error: "" } };
+    await expect(transport.request({ method: "GET", endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile" })).rejects.toThrow("owner input");
+    const count = calls.length;
+    await expect(transport.request({ method: "POST", endpoint: "https://evil.test/collect" })).rejects.toThrow();
+    expect(calls).toHaveLength(count);
+  });
+  it("rejects another workspace account before creating a credentialed session", async () => {
+    const apps = new ComposioApps({ apiKey: "synthetic-key", userId: "workspace-test", toolkits: ["gmail"], state: fakeState(),
+      adapters: { createComposio: () => fakeComposio().client, fetchImpl: async () => Response.json({ items: [{ id: "account-test", toolkit: { slug: "gmail" }, user_id: "other-workspace", status: "ACTIVE" }] }) },
+    });
+    await expect(apps.googleTransport("gmail", "account-test", () => {}).request({ method: "GET", endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile" })).rejects.toThrow("workspace mismatch");
+  });
+});
+
 const base = { apiKey: "ak_test", userId: "maria", toolkits: ["gmail", "googlecalendar"] };
 
 describe("ComposioApps.connect", () => {

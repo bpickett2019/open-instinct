@@ -1,0 +1,27 @@
+{
+  "status": "expected_failure_verified",
+  "exitCode": 1,
+  "assertions": [
+    "persisted owner text and rendered history redact known credential",
+    "intentional failure while the canary remains in an unsent ordinary textarea",
+    "failure screenshot visually inspected: all inputs masked; rendered history redacted",
+    "public trace contains sanitized JSON events/DOM only; no resources or screencast frames",
+    "exact published HTML embedded report and trace scan passed"
+  ],
+  "traceMembers": [
+    "test.trace",
+    "0-trace.trace",
+    "0-trace.network",
+    "0-trace.stacks"
+  ],
+  "traceEvents": 378,
+  "traceSha256": "373f3090bb72b71759045ac1c0274335f87a70299f8df223a37db8010116e821",
+  "publicationScan": {
+    "files": 7,
+    "archiveEntries": 6,
+    "expandedBytes": 171755,
+    "status": "passed"
+  },
+  "historicalFinding": "SEC-7 confirmed synthetic canary in earlier raw screencast. Old public evidence replaced, not considered safe by prior string scan. No live secret used.",
+  "liveProviderEvidence": false
+}

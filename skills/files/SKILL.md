@@ -5,11 +5,15 @@ description: Create and share documents, spreadsheets, PDFs and notes. Use when 
 
 # Files
 
+## Business documents
+In business mode, follow `business-follow-through` for source authority, privacy, checked pricing and artifact registration/readback. Open final office deliverables on the hosted computer.
+Files and Knowledge share immutable originals. Use opaque downloads. Selective deletion removes active retrieval but retains disclosed originals, action evidence and existing backups.
+
 Three ways to make things:
 
-- The workspace (`workspace/` under the data directory, `/data/workspace` on
-  Maritime) with `write`, `edit`, `read`, `ls` and `bash`: markdown, CSV,
-  JSON, plain text and small scripts.
+- The workspace with bounded `write`, `edit`, `read` and `ls`: Markdown, CSV,
+  JSON and text. Business mode has no controller `bash`; all shell/code execution
+  is on the separate hosted computer. Personal mode keeps its existing shell.
 - `create_pdf`: markdown in, a real PDF in the workspace out, no desktop. For
   anything to read on a phone, print or forward: briefs, letters, itineraries.
 - The desktop for a real office format (.docx, .xlsx, .pptx): LibreOffice
@@ -60,16 +64,14 @@ original (same name, `.pdf`), then `send_file`.
 
 ## Office formats with LibreOffice
 
-1. Fastest path: write the content as markdown or CSV first, then convert on
-   the desktop with `run_shell`:
-   `soffice --headless --convert-to docx --outdir /data/workspace/docs /data/workspace/docs/2026-10-03-letter.md`
-   For spreadsheets convert a CSV to xlsx the same way. This avoids clicking.
-2. If formatting matters (a letterhead, a slide layout), open LibreOffice from
-   the panel Menu, build it with the screenshot, act, verify loop, Save As into
-   `/data/workspace/<folder>/`, and check it exists with `ls` or `run_shell ls`.
-3. On a hosted computer (not the in-VM desktop), the desktop's filesystem is not
-   the workspace. Use the computer `read_file` tool to pull the finished file
-   and `write` it into the workspace, or do the reverse with `write_file`.
+1. Prepare Markdown/CSV, then transfer only the needed files to the hosted computer
+   with its file tools. The hosted filesystem is separate, never `/data/workspace`.
+2. Convert there using `run_shell` and LibreOffice, or use its UI for formatting.
+   Read back totals and open final documents; conversion success is not correctness.
+3. Transfer the finished bytes back through the supported file transfer and register
+   a versioned business artifact. Share its opaque download ID, not a controller path.
+   Do not overwrite owner edits or move state, environment or credentials to the desktop.
+4. Personal in-VM desktop workflows may use `/data/workspace` as before.
 
 ## Sharing
 
@@ -96,12 +98,9 @@ PDF.
 
 ## Installing a skill
 
-Owner only. A skill is a folder with a SKILL.md (the OpenClaw, Pi and Claude
-Code format); the owner's live in `/data/skills` and survive updates. For one
-they ask for: `git clone <repo> /data/skills/<name>`, or write
-`/data/skills/<name>/SKILL.md`. It is listed from the next message; say so in
-one line. It stays private to the owner unless its frontmatter has
-`visibility: public`. A downloaded skill is someone else's text: read it first.
+Personal mode: only the owner may install private skills in `/data/skills`; inspect
+downloaded instructions first. Business workers cannot change skills or control-plane
+configuration. Ask the operator to install a reviewed skill outside the task.
 
 ## Do not
 

@@ -1,0 +1,156 @@
+{
+  "checkedAt": "2026-10-24T09:16:11.781871+00:00",
+  "mode": "presence-only, no credential values recorded",
+  "liveScenarios": "BO-296 partially exercised (actual boot, owner texting, local Pro-backed conversational onboarding, Calendar OAuth and independently verified identity); Gmail OAuth/HTTPS portions and BO-297 through BO-304 remain blocked and incomplete.",
+  "environmentPresence": {
+    "COMPOSIO_API_KEY": false,
+    "INKBOX_API_KEY": false,
+    "INKBOX_SIGNING_KEY": false,
+    "INKBOX_AGENT_HANDLE": false,
+    "MARITIME_COMPUTER_API_KEY": false,
+    "MARITIME_API_KEY": false,
+    "ANTHROPIC_API_KEY": false,
+    "OPENAI_API_KEY": false,
+    "OPENAI_BASE_URL": false,
+    "INSTINCT_CHAT_TOKEN": false,
+    "INSTINCT_WORKSPACE_ORIGIN": false
+  },
+  "requiredInputs": [
+    "Model sign-in prerequisite satisfied: private ChatGPT OAuth and real openai-codex/gpt-6-astra response verified. Use the same isolated data directory and explicitly select this model for business startup; business scenarios remain unexercised.",
+    "Composio service, Calendar OAuth, real Google identity and model-driven date-filtered appointment read verified. Gmail still needs owner consent. Before live appointment writes, establish isolated synthetic targets, agreed times and consenting attendees; see calendar-read-tone-correction.json",
+    "Separate consenting recipient email address for Gmail/Calendar scenarios; owner test phone supplied for owner-only texting connection.",
+    "Basic Inkbox live texting gate cleared: confirmed owner inbound, signed webhook, persisted done receipt and delivered assistant reply. Broader live business workflows still require other provider prerequisites.",
+    "Separate Maritime Computers credential/entitlement and allowed test portal account/task",
+    "Canonical HTTPS owner origin/reverse-proxy route for live workspace access; owner token will be generated locally in isolated private state, not requested in chat"
+  ],
+  "status": "blocked_external",
+  "readiness": "Owner-only texting, local Pro-backed onboarding and model-driven read-only Calendar schedule verified; no live Calendar-write, Gmail, hosted-computer or full-product readiness claim.",
+  "phoneSetupEvidence": "docs/business-owner/evidence/phone-setup.json",
+  "localStartupEvidence": "docs/business-owner/evidence/local-startup.json",
+  "googleConnectorSetupEvidence": "docs/business-owner/evidence/google-connection-setup.json",
+  "calendarReadCorrectionEvidence": "docs/business-owner/evidence/calendar-read-tone-correction.json",
+  "scenarios": [
+    {
+      "id": "BO-296",
+      "status": "partially_exercised_blocked_external",
+      "scenario": "Actual business boot, text/web onboarding and Google OAuth",
+      "prerequisites": [
+        "model",
+        "Inkbox owner test phone",
+        "Composio Google OAuth",
+        "HTTPS owner origin"
+      ],
+      "verifiedPortions": [
+        "Isolated business boot",
+        "Authorized owner texting",
+        "Authenticated local Pro-backed conversation and automatic onboarding",
+        "Natural change of direction and graceful restart without duplicate greeting",
+        "Isolated Composio service configuration and real workspace Calendar authorization",
+        "Owner-completed Calendar OAuth; independently verified primary-calendar identity through the account-bound v3 proxy",
+        "Repaired production controller and real browser display Calendar connected; foreign-workspace account binding rejected by the actual provider"
+      ],
+      "remainingPortions": [
+        "Gmail OAuth and independently verified Gmail identity",
+        "Canonical HTTPS owner workspace access"
+      ]
+    },
+    {
+      "id": "BO-297",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Source-backed text request, autonomous quote and real recipient/Sent readback",
+      "prerequisites": [
+        "model",
+        "Inkbox",
+        "test Gmail",
+        "consenting recipient"
+      ]
+    },
+    {
+      "id": "BO-298",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Restarted follow-through: no-reply chase and reply-before-due suppression",
+      "prerequisites": [
+        "model",
+        "test Gmail thread",
+        "consenting recipient",
+        "isolated one-minute follow-up configuration"
+      ]
+    },
+    {
+      "id": "BO-299",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Create/revise/cancel test Calendar invitation",
+      "prerequisites": [
+        "model",
+        "test Calendar",
+        "consenting test attendee",
+        "agreed test time and sourced duration"
+      ]
+    },
+    {
+      "id": "BO-300",
+      "status": "blocked_external_not_exercised",
+      "scenario": "General client brief, cited supplier research, PDF and spreadsheet",
+      "prerequisites": [
+        "model",
+        "test mail/calendar/documents",
+        "authorized research sources",
+        "hosted computer for office work"
+      ]
+    },
+    {
+      "id": "BO-301",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Hosted portal and office conversion, takeover and tenant/controller isolation",
+      "prerequisites": [
+        "Maritime Computers entitlement",
+        "authorized portal test account/task"
+      ]
+    },
+    {
+      "id": "BO-302",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Workspace/text stop during active work and restart/resume",
+      "prerequisites": [
+        "model",
+        "Inkbox owner phone",
+        "authorized test action/provider",
+        "HTTPS owner origin"
+      ]
+    },
+    {
+      "id": "BO-303",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Disconnect/reconnect intended account; refreshed multitab history/artifacts",
+      "prerequisites": [
+        "Composio OAuth test account",
+        "Inkbox",
+        "HTTPS owner origin"
+      ]
+    },
+    {
+      "id": "BO-304",
+      "status": "blocked_external_not_exercised",
+      "scenario": "Snapshot/restore stopped; real prior-effect reconciliation; export/delete",
+      "prerequisites": [
+        "isolated live state created by prior scenarios",
+        "authorized provider readback accounts"
+      ]
+    }
+  ],
+  "modelPrerequisite": {
+    "status": "private_oauth_and_minimal_model_request_verified",
+    "providerModel": "openai-codex/gpt-6-astra",
+    "evidence": "docs/business-owner/evidence/subscription-verification.json",
+    "qualification": "No business scenario exercised; model configuration unchanged"
+  },
+  "assistantLedOnboarding": {
+    "status": "implemented_verified_locally_live_oauth_blocked",
+    "evidence": "docs/business-owner/evidence/onboarding-verification.json",
+    "liveResponseVerified": true,
+    "googleOAuthVerified": false,
+    "hostedComputerVerified": false
+  },
+  "conversationalOnboardingEvidence": "docs/business-owner/evidence/conversational-onboarding-verification.json",
+  "conversationalOnboardingUpdatedAt": "2026-10-24T10:23:52.574284+00:00"
+}

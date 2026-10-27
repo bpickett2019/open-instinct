@@ -1,9 +1,16 @@
 ---
 name: dining
-description: Find and reserve restaurants. Use when the owner or a trusted person asks for a dinner, lunch, brunch or drinks reservation, a restaurant recommendation, or a table for a group. Pulls preferences and dietary notes from memory, searches, proposes two or three places, holds a table on OpenTable or Resy with the computer when there is no API, and confirms with the owner before committing.
+description: Find and reserve restaurants using source-backed preferences, current availability and confirmation evidence. Business-owner tasks use standing authority; personal and nonowner commitments retain their approval rules.
 ---
 
 # Dining
+
+Business mode: a bound owner task or enabled routine authorizes ordinary bookings
+without a fresh yes. Ask for genuinely missing facts, especially dietary needs,
+identity, total or scope; do not guess those. Honor actual owner constraints, not
+personal default spend thresholds. Use only the hosted computer and verify the
+confirmation. Provider login/payment challenges and Stripe Link consent remain.
+Personal and nonowner rules below otherwise stay unchanged.
 
 ## Gather
 
@@ -30,15 +37,15 @@ what you assumed.
    opentable.com. Search the restaurant, pick the date, party size and time.
 2. If the site asks to log in, call `request_takeover` with reason "Log in to
    Resy for the Nopa booking". Never type a password or a card number.
-3. If a deposit or card hold is required, stop before the payment step. Tell the
-   owner the amount and get a yes with `ask_owner`, then `request_takeover` for
-   the card entry.
+3. For deposits or card holds, personal mode requires `ask_owner` and takeover.
+   Business mode uses actual owner limits without a routine yes; provider-required
+   payment consent still needs the owner. Never expose card details.
 4. Put the reservation in a held state (the site's "reserve" button that can be
    cancelled without charge). Read the confirmation screen before you believe
    it. Zoom on the time and party size.
-5. `ask_owner` with the exact details: "Nopa, Thu Oct 9, 7:00pm, table for 2,
-   no deposit. Go ahead?" If the owner already said "book whatever
-   is free at 7", skip this step and tell them what you booked.
+5. Personal mode: `ask_owner` with exact details unless already authorized to
+   choose. Business mode: commit within the bound task's scope without asking again,
+   then report the confirmation, total and cancellation terms.
 6. On no: cancel the hold on the site and offer the next option.
 
 ## After booking
@@ -73,6 +80,6 @@ Thursday noon. Added to your calendar and sent Sam the details.
 
 ## Do not
 
-- Do not pay a deposit or enter card details yourself.
+- Do not enter card secrets; use provider consent/takeover when payment requires it.
 - Do not book two places for the same slot "just in case".
 - Do not promise a table until the confirmation screen shows it.

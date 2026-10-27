@@ -14,7 +14,7 @@ export interface OwnerNoticeDeps {
   state: StateDir;
   audit: AuditLog;
   /** Deliver the text to the owner. Throws are swallowed and audited. */
-  send: (text: string) => Promise<void>;
+  send: (text: string, messageId: string) => Promise<void>;
   now?: () => Date;
   windowMs?: number;
 }
@@ -63,7 +63,7 @@ export class OwnerNotifier {
 
     const text = OwnerNotifier.text(notice, who);
     try {
-      await this.deps.send(text);
+      await this.deps.send(text, `owner-notice:${notice.conversationKey}:${sent[notice.conversationKey]}`);
       this.deps.audit.append({ kind: "policy", conversationKey: notice.conversationKey, principal: notice.principal, detail: { ownerNotified: true, action: notice.action, outcome: notice.outcome } });
       return true;
     } catch (error) {

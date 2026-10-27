@@ -1,0 +1,13 @@
+{
+  "command": "pnpm --filter @open-instinct/server exec node scripts/check-evidence.mjs",
+  "cwd": "/tmp/open-instinct",
+  "result": {
+    "status": "passed",
+    "files": 260,
+    "archiveEntries": 4,
+    "expandedBytes": 2605284,
+    "verificationMode": "emulated",
+    "limitations": "Pattern/canary scan of exact publication bytes and expanded traces/report data; not OCR or a complete vulnerability review."
+  },
+  "scope": "Final rescan after the post-scroll affected browser checks; this does not silently merge their captures into the earlier full-run manifest."
+}

@@ -19,7 +19,7 @@ cd packages/cli && pnpm link --global
 instinct --help
 ```
 
-Node 22.19 or newer is required.
+Node >=22.22.3 and pnpm 10.6.1 are required.
 
 ## Environment
 
@@ -76,6 +76,7 @@ instinct init --name <you> [--phone +1...] [--email you@x.com] [--handle <handle
 | `--rotate-signing-key` | explicitly replace the identity's webhook signing key; update any other receivers too |
 | `--apps`, `--no-apps` | turn Composio apps (`apps.enabled`) on or off. Apps also turn on by themselves when `COMPOSIO_API_KEY` or `COMPOSIO_TOOLKITS` is in the environment |
 | `--toolkits` | comma-separated Composio toolkit slugs (default `gmail,googlecalendar,googlecontacts`); setting them turns apps on |
+| `--business` | enable full-autonomy business mode; seed Gmail/Google Calendar unless explicit toolkits were supplied; rerunning init preserves enabled mode |
 
 Running `init` again updates the existing config instead of replacing it. If the handle is
 already taken, Inkbox assigns a suffixed one and `init` saves that handle in the config.
@@ -112,9 +113,42 @@ up either way.
 If `COMPOSIO_API_KEY` is set but `config.json` has `apps.enabled: false`, `dev` warns and
 names the fix (`instinct init --name <you> --apps`) instead of booting without app tools.
 
+
+### `instinct business`
+
+`status`, `tasks`, `task <id>`, `pause`, `resume`, `stop [id]` and `close <id>`
+use the same durable owner service as authenticated text and the workspace. Local
+calls require `INSTINCT_CHAT_TOKEN`, even on loopback; `--url` requires HTTPS except
+explicit loopback HTTP. `--agent <id>` authenticates to Maritime with
+`MARITIME_API_KEY`, but that relay must also satisfy the controller's bearer check.
+If it cannot forward the owner token, use `--url https://<owner-origin>` instead;
+never disable the controller token. Global stop persists across restart, does not
+undo accepted external operations and never authorizes replay of unknown effects.
+
+Recovery is an offline operator command, never a worker tool:
+
+```bash
+instinct business backup --destination /private/backups --retention 7
+instinct business export --destination /private/exports/business.json
+instinct business restore --source /private/backups/<snapshot-id> --destination /private/restored-business
+instinct business delete --confirm-workspace <workspace-uuid>
+```
+
+Stop the controller process first. `--business-dir` selects the configured business
+directory for backup/export/delete; otherwise the command reads configuration and
+defaults to `<dataDir>/business`. Restore targets a business directory, not the whole
+personal data directory. It refuses running/unstopped destinations, retains any
+replaced stopped directory, and always installs stopped, blocked work for investigation.
+Backup retention is an explicit snapshot count, not a time or erasure guarantee.
+Deletion requires durable stop and all provider disconnect/revocation requests.
+Backups, provider data and hosted browser sessions remain separate. See
+[operational recovery](../../docs/SELF-HOST.md#business-owner-operation).
+
 ### `instinct chat`
 
-Sends one message and prints the reply.
+Sends one message and prints deferred `pending` replies in server order before the
+current reply, for both local and Maritime transports. A pending-only response is
+shown rather than discarded; a current error is still reported.
 
 ```
 instinct chat "<message>" [--url http://127.0.0.1:8080] [--agent <maritimeAgentId>] [--conversation <id>]

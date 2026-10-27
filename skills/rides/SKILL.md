@@ -8,6 +8,11 @@ description: Request an Uber or Lyft for the owner through the desktop browser a
 Rides happen on the desktop in a logged-in mobile web session. The session is
 persistent, so after one takeover to log in, later rides usually need none.
 
+Business mode: the bound owner task or enabled routine authorizes the ride without
+a fresh yes. Check current price against actual owner limits, not personal defaults.
+Only the hosted computer is available. Missing pickup/identity or provider challenges
+become durable waits. Nonowner and personal rules below still apply to those modes.
+
 ## Gather
 
 Pickup (exact address or "where I am"), destination, when (now or a time),
@@ -27,10 +32,9 @@ to?"
    field is focused before typing. Pick the suggestion that matches the full
    address. Zoom to confirm the pin is on the right side of the street.
 3. Read the ride options. Note the price and ETA for the chosen service.
-4. Text the owner the price before you request: "UberX from home to Logan
-   Terminal B, $34, car 4 minutes away. Request it?" Wait for a yes unless the
-   owner already said "just get me a car" in this conversation and the price is
-   under the spend policy's `askAbove`.
+4. Personal mode: show price and ask unless already authorized under spend policy.
+   Business mode: verify pickup, destination, current total and actual owner limits,
+   then request without a fresh yes. Report the price with the result.
 5. Request. If a payment or card prompt appears, `request_takeover` with reason
    "Confirm payment for the Uber". Do not add or select a card yourself.
 6. Read the screen after requesting: driver name, car, plate, ETA. Text the
@@ -38,10 +42,9 @@ to?"
 
 ## While waiting
 
-Check the screen every minute or two with a `screenshot` and `wait`. Text only
-on changes that matter: driver reassigned, ETA moved by more than 3 minutes,
-driver arrived, ride cancelled. When the driver is one minute away, send one
-text: "Your Toyota Camry, plate 7ABC123, is pulling up."
+Personal mode: check periodically and text only meaningful changes. Business mode:
+use durable timed checks, not a model call sleeping for minutes. Verify driver,
+car, plate and ETA from current state before reporting arrival or reassignment.
 
 ## Scheduled rides
 
@@ -68,7 +71,7 @@ Agent: Priya is outside.
 
 ## Do not
 
-- Do not request a ride without the owner seeing the price first.
+- Personal mode: do not request before showing the price. Business: honor actual limits.
 - Do not select or add payment methods, or enter verification codes.
 - Do not guess the pickup location.
 - Do not keep texting while nothing changes.

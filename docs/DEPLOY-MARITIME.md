@@ -1,6 +1,6 @@
 # Deploying Open Instinct on Maritime
 
-This is the Instinct-shaped deployment. Each person gets their own agent in its own microVM, with a Linux desktop the agent can click on. The VM sleeps when nobody is talking to it and wakes when a message arrives.
+The personal-mode deployment runs each agent in its own microVM with an optional local desktop and sleep/wake. Business mode instead requires an always-on controller and a separate Maritime hosted computer. Sleeping VMs do not provide continuous proactive business execution.
 
 Open Instinct is unrelated to OpenInstinct, a separate project published by Merit Systems.
 
@@ -39,7 +39,7 @@ An analogy: the VM is a desk that folds into the wall when nobody is sitting at 
 | Stripe Link (optional) | A wallet the agent can pay from, one-time cards per approved amount | Set `LINK_CLIENT_ID`, `LINK_CLIENT_SECRET` and `STRIPE_PUBLISHABLE_KEY`. All three are required for payment tools to appear. The client id and secret come from Stripe's application form, reviewed every 3 to 5 days: apply early ([PAYMENTS.md](PAYMENTS.md#registering-an-oauth-client)). |
 | A container registry | Maritime pulls the agent image from it | GitHub Container Registry (`ghcr.io`) through the included workflow. |
 
-A note on the Maritime key. If an agent will also use the hosted Computers MCP instead of the in-VM desktop, the same key must also carry `computers`. A key with only `computers` is refused by the agents API, so a deployment that needs both uses `manage` or `*`.
+Personal deployments may use a key with both agent and computer scopes. Business controllers use a separate `MARITIME_COMPUTER_API_KEY` with only the required computer access; never give the hosted desktop the controller environment, storage, model keys or app credentials. Browser sessions on that desktop remain sensitive access.
 
 ## Build and publish the image
 
@@ -75,12 +75,19 @@ docker compose -f deploy/docker-compose.yml up --build
 
 The agent image sets no `PORT`. Maritime injects `PORT=18789`. Docker Compose sets `PORT=8080`. The server binds whatever it is given. Do not set `PORT=8080` inside a Maritime VM; that port is reserved there.
 
+Business deployments must run Node >=22.22.3 with persistent local SQLite/artifact
+storage, disable controller sleep through a supported always-on hosting configuration,
+and use `--no-desktop`. Do not assume a sleeping agent or an undocumented idle value
+provides continuous execution. Use an independently secured HTTPS owner origin and a
+nonempty `INSTINCT_CHAT_TOKEN`; keep Inkbox ingress webhook-only. If the selected
+hosting plan cannot provide these conditions, use an always-on host instead.
+
 ## One user: `instinct deploy`
 
 This creates one agent for you. No gateway. The steps mirror the example session in [../packages/cli/README.md](../packages/cli/README.md).
 
 ```bash
-export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 22.20.0
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use
 pnpm install && pnpm -r build
 cd packages/cli && pnpm link --global && cd ../..
 

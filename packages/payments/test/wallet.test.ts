@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { LINK_REVOKE_URL, LINK_TOKEN_URL, challengeS256 } from "../src/oauth.js";
 import { LinkWallet, OAUTH_FILE, PENDING_TTL_MS, REFRESH_AHEAD_MS, TOKENS_FILE, writeSecret, type PendingAuthorization, type StoredTokens } from "../src/wallet.js";
 import type { LinkClientLike, LinkClientOptions } from "../src/link-types.js";
@@ -329,5 +329,60 @@ describe("LinkWallet.revoke", () => {
     const wallet = new LinkWallet(walletOpts(tempState(), { fetchImpl }));
     await wallet.revoke();
     expect(fetchImpl.calls).toHaveLength(0);
+  });
+});
+
+describe("LinkWallet scoped SDK transport", () => {
+  it.each(["token", "refresh"] as const)("rechecks dispatch after the real SDK awaits %s", async (prerequisite) => {
+    const entered = Promise.withResolvers<void>();
+    const released = Promise.withResolvers<void>();
+    const fetchImpl = fakeFetch(() => json({ error: "expired" }, 401));
+    const wallet = new LinkWallet(walletOpts(tempState(), { fetchImpl }));
+    vi.spyOn(wallet, "getAccessToken").mockImplementation(async (options) => {
+      if (prerequisite === "token" || options?.forceRefresh) {
+        entered.resolve();
+        await released.promise;
+      }
+      return "synthetic-token";
+    });
+    let active = true;
+    const client = wallet.client(() => { if (!active) throw new Error("dispatch revoked"); });
+    const result = client.spendRequests.create({ context: "synthetic transport fence regression" }).catch((error: unknown) => error);
+    await entered.promise;
+    active = false;
+    released.resolve();
+    expect(await result).toBeInstanceOf(Error);
+    // A 401 was submitted before revocation; no retry is allowed after refresh.
+    expect(fetchImpl.calls).toHaveLength(prerequisite === "token" ? 0 : 1);
+  });
+
+  it("keeps concurrent invocation fences isolated and forwards cancellation to fetch", async () => {
+    const entered = Promise.withResolvers<void>();
+    const released = Promise.withResolvers<void>();
+    const seenSignals: Array<AbortSignal | null | undefined> = [];
+    const fetchImpl: typeof fetch = async (_input, init) => {
+      seenSignals.push(init?.signal);
+      return json({ id: "lsrq_scoped", status: "created", created_at: NOW.toISOString(), updated_at: NOW.toISOString() });
+    };
+    const wallet = new LinkWallet(walletOpts(tempState(), { fetchImpl }));
+    let tokenCalls = 0;
+    vi.spyOn(wallet, "getAccessToken").mockImplementation(async () => {
+      if (++tokenCalls === 1) {
+        entered.resolve();
+        await released.promise;
+      }
+      return "synthetic-token";
+    });
+    const canceled = new AbortController();
+    const live = new AbortController();
+    const first = wallet.client(() => {}, canceled.signal);
+    const second = wallet.client(() => {}, live.signal);
+    const result = first.spendRequests.create({ context: "canceled invocation" }).catch((error: unknown) => error);
+    await entered.promise;
+    canceled.abort();
+    await second.spendRequests.create({ context: "independent live invocation" });
+    released.resolve();
+    expect(await result).toBeInstanceOf(Error);
+    expect(seenSignals).toEqual([live.signal]);
   });
 });

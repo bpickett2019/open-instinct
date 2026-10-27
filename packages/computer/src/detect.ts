@@ -9,7 +9,7 @@
  * up to a minute before we conclude it is absent. Plain "auto" keeps the single fast probe.
  */
 import { DEFAULT_DESKTOPD_URL, DesktopdBackend, DesktopdClient, type DesktopdHealth } from "./desktopd.js";
-import { DEFAULT_MARITIME_MCP_URL, MaritimeMcpBackend } from "./maritime.js";
+import { DEFAULT_MARITIME_MCP_URL, MaritimeMcpBackend, type MaritimeMcpBackendOptions } from "./maritime.js";
 import type { ComputerBackend, ComputerMode, Logger } from "./types.js";
 
 export interface DetectComputerOptions {
@@ -18,6 +18,8 @@ export interface DetectComputerOptions {
   maritimeMcpUrl?: string;
   maritimeApiKey?: string;
   externalUserId?: string;
+  business?: MaritimeMcpBackendOptions["business"];
+  credentials?: MaritimeMcpBackendOptions["credentials"];
   /** Maritime agent id for the dashboard link in takeover hints. */
   agentId?: string;
   /**
@@ -88,6 +90,8 @@ export async function detectComputer(opts: DetectComputerOptions): Promise<Compu
       externalUserId: opts.externalUserId,
       fetchImpl: opts.fetchImpl,
       logger: log,
+      ...(opts.business ? { business: opts.business } : {}),
+      ...(opts.credentials ? { credentials: opts.credentials } : {}),
     });
   };
   const probe = (waitMs: number) =>
@@ -99,6 +103,12 @@ export async function detectComputer(opts: DetectComputerOptions): Promise<Compu
       logger: log,
     });
   const waitMs = opts.desktopdWaitMs ?? DESKTOPD_WAIT_MS;
+  if (opts.business) {
+    if (opts.mode === "none") return undefined;
+    if (opts.mode === "desktopd") throw new Error("Business computers must use the hosted backend");
+    if (opts.externalUserId !== opts.business.workspaceId) throw new Error("Computer workspace mismatch");
+    return maritime();
+  }
 
   switch (opts.mode) {
     case "none":

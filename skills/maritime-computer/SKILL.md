@@ -10,11 +10,11 @@ tasks, so a site you logged into last week is still logged in. It wakes in a
 few seconds on the first action. The owner can watch it live and take the
 controls from their dashboard.
 
-Two deployments, same tools: the in-VM desktop (`desktopd`, screenshots saved
-under `/data/desktop/screenshots/`) and the hosted Maritime Computers MCP
-(tools may be prefixed `computer_`, and you may need `get_computer` first).
-Screenshots are 1200 px wide. Coordinates are pixels of the most recent
-screenshot; the result reports width and height.
+Personal mode supports in-VM desktopd or hosted Maritime MCP. Business mode uses
+only the separate hosted computer with a task lease, never controller-local shell.
+Transfer only task-required files; controller state and credentials stay off it.
+Tools may be prefixed `computer_`; `get_computer` alone does not prove entitlement.
+Coordinates use the most recent screenshot's reported dimensions.
 
 ## The loop
 
@@ -55,27 +55,26 @@ Rules that save time:
 
 ## Takeover
 
-Call `request_takeover` with a short reason whenever you reach a login, a
-2FA or verification code, a CAPTCHA, a payment or card form, a signature, or
-anything the owner should do themselves. Screenshots stop while the owner has
-the desktop. The result is `{success, note, screenshot}`. On `success: false`
-the task has failed; do not retry, tell the owner what happened.
+Use `request_takeover` for provider-required login, MFA, CAPTCHA and unsupported
+credential/payment entry. Business standing authority needs no fresh ordinary yes;
+Stripe Link still requires per-purchase provider consent. Screenshots/control stop
+while the human owns the desktop. Failure is a durable provider blocker, not success
+or permission to retry. After handback, verify actual provider state.
 
 Text the owner right before you call it, in one line: "I'm at the Resy login.
-Take over from your dashboard and hand back when you're in." If the tool
-returns `human_in_control`, the owner still holds the desktop; wait and ask
-them to click Hand back.
+Take over from your dashboard and hand back when you're in." Keep takeover links
+owner-only. In business mode persist a provider-challenge wait across restarts;
+the owner's "done" means verify `takeover_status`, not assume success.
 
 Never type a code the owner texts you into a site. That is what takeover is
 for.
 
 ## Files and screenshots
 
-- Save evidence of outcomes (confirmation pages, receipts). In the VM:
-  `run_shell` `cp /data/desktop/screenshots/latest.png /data/workspace/<folder>/<name>.png`.
-  Hosted: `read_file` the screenshot path and `write` it into the workspace.
-- Downloads land in the desktop's Downloads folder; move them to
-  `/data/workspace/` with `run_shell` or `read_file` and `write`.
+- Save confirmation evidence, excluding credentials and sensitive takeover screens.
+  Business mode transfers only final required bytes from hosted storage and registers
+  immutable artifacts; never assume the desktop mounts `/data/workspace`.
+- Personal in-VM mode may copy screenshots/downloads into `/data/workspace`.
 - `run_shell` is for short commands (convert, copy, curl). It is not a place to
   run long jobs.
 
@@ -103,5 +102,5 @@ workspace/dining/2026-10-09-nopa.png.
 - Do not act on a stale screenshot.
 - Do not keep clicking the same spot. Three failed attempts means stop and
   tell the owner.
-- Do not leave a purchase half done; either finish through takeover or cancel
-  the cart and say so.
+- An uncertain submission or shell batch is never automatically replayed. Stop blocks
+  future dispatch, not already-launched remote effects. Record outstanding operations.

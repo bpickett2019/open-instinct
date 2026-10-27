@@ -1,0 +1,95 @@
+bg_207 [bash] — completed — pnpm --filter @open-instinct/server exec vitest run test/scenarios/messaging-feedback.test.ts && pnpm test:e2e && pnp...
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+ ✓ test/scenarios/messaging-feedback.test.ts (17 tests) 1507ms
+   ✓ Business iMessage feedback through production boot and signed ingress > uses all seven registered named tapbacks without tasks and lets a reaction-only turn stay text-free  307ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  11:02:10
+   Duration  2.45s (transform 226ms, setup 0ms, collect 701ms, tests 1.51s, environment 0ms, prepare 33ms)
+
+
+> open-instinct@0.1.0 test:e2e /private/tmp/open-instinct
+> pnpm --filter @open-instinct/server run test:e2e
+
+
+> @open-instinct/server@0.1.0 test:e2e /private/tmp/open-instinct/packages/server
+> playwright test --config playwright.config.ts
+
+
+Running 34 tests using 1 worker
+
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (4.8s)
+  ✓   2 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.5s)
+  ✓   3 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (697ms)
+  ✓   4 [desktop] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (3.1s)
+  ✓   5 [desktop] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.5s)
+  ✓   6 [desktop] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (655ms)
+  ✓   7 [desktop] › e2e/changed-flows.spec.ts:267:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (395ms)
+  ✓   8 [desktop] › e2e/changed-flows.spec.ts:355:1 › owner changes and closes queued work without losing prior versions (712ms)
+  ✓   9 [desktop] › e2e/changed-flows.spec.ts:409:1 › hostile source content stays inert and selective deletion removes retrieval (914ms)
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  10 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.2s)
+  ✓  11 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.2s)
+  ✓  12 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (931ms)
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:54832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  13 [desktop] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.1s)
+  ✓  14 [desktop] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.2s)
+  ✓  15 [desktop] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (916ms)
+  ✓  16 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.3s)
+  ✓  17 [desktop] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.2s)
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  18 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication light (3.3s)
+  ✓  19 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart light (3.5s)
+  ✓  20 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest light (641ms)
+  ✓  21 [mobile] › e2e/changed-flows.spec.ts:5:3 › settings errors offline and expired authentication dark (2.9s)
+  ✓  22 [mobile] › e2e/changed-flows.spec.ts:107:3 › direct stop fences active work and survives restart dark (3.5s)
+  ✓  23 [mobile] › e2e/changed-flows.spec.ts:169:3 › unknown hosted effect and disconnected account remain honest dark (648ms)
+  ✓  24 [mobile] › e2e/changed-flows.spec.ts:267:1 › owner security boundary rejects origin CSRF Host tunnel and cookie legacy bypass (395ms)
+  ✓  25 [mobile] › e2e/changed-flows.spec.ts:355:1 › owner changes and closes queued work without losing prior versions (711ms)
+  ✓  26 [mobile] › e2e/changed-flows.spec.ts:409:1 › hostile source content stays inert and selective deletion removes retrieval (780ms)
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  27 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart light (2.1s)
+  ✓  28 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop light (4.1s)
+  ✓  29 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend light (902ms)
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+(node:54925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+  ✓  30 [mobile] › e2e/customer-lifecycle.spec.ts:45:3 › source quote PDF Gmail and reply suppression survive refresh and restart dark (2.0s)
+  ✓  31 [mobile] › e2e/customer-lifecycle.spec.ts:210:3 › calendar lifecycle stale revision and direct provider stop dark (4.1s)
+  ✓  32 [mobile] › e2e/customer-lifecycle.spec.ts:390:3 › Gmail acceptance uncertainty reconciles after restart without resend dark (886ms)
+  ✓  33 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix light (10.0s)
+  ✓  34 [mobile] › e2e/workspace.spec.ts:5:3 › owner workspace complete screen matrix dark (10.1s)
+
+  34 passed (1.9m)
+{"status":"passed","files":260,"archiveEntries":4,"expandedBytes":2617106,"verificationMode":"emulated","limitations":"Pattern/canary scan of exact publication bytes and expanded traces/report data; not OCR or a complete vulnerability review."}
+
+
+Wall time: 116.94 seconds

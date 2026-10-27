@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-25T18:08:38.913Z",
+  "authentication": "owner session created using private token; credential excluded",
+  "controller": "http://127.0.0.1:8787",
+  "busy": 0,
+  "feedbackActivityCount": 0,
+  "feedbackActivityKinds": [],
+  "scope": "Read-only live controller status and durable feedback activity, not a fabricated carrier event or recipient-display proof"
+}

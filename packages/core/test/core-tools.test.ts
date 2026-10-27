@@ -476,6 +476,34 @@ describe("create_pdf", () => {
   });
 });
 
+describe("document and image workspace confinement", () => {
+  it.each(["create_pdf", "image_generate"])("refuses private-state file and directory symlinks through %s", async name => {
+    const state = tempState(), workspace = state.path("workspace"), privateDir = state.path("private-fixture");
+    fs.mkdirSync(privateDir); const extension = name === "create_pdf" ? "pdf" : "png";
+    const privateFile = path.join(privateDir, `original.${extension}`); fs.writeFileSync(privateFile, "private bytes must remain unchanged");
+    fs.symlinkSync(privateFile, path.join(workspace, `linked.${extension}`)); fs.symlinkSync(privateDir, path.join(workspace, "linked-dir"));
+    let requests = 0;
+    const { run } = setup({ workspaceDir: workspace, images: { apiKey: "synthetic-image-key" }, fetchImpl: (async () => { requests++; throw new Error("Unexpected image request"); }) as typeof fetch });
+    for (const destination of [`linked.${extension}`, `linked-dir/new.${extension}`]) {
+      const result = await run(name, { path: destination, markdown: "Synthetic document", prompt: "Synthetic image" });
+      expect(typeof result !== "string" && result.isError).toBe(true);
+    }
+    expect(fs.readFileSync(privateFile, "utf8")).toBe("private bytes must remain unchanged");
+    expect(fs.existsSync(path.join(privateDir, `new.${extension}`))).toBe(false); expect(requests).toBe(0);
+  });
+  it("embeds a real workspace image but never follows an image symlink into private state", async () => {
+    const state = tempState(), workspace = state.path("workspace");
+    const pixel = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==", "base64");
+    fs.writeFileSync(path.join(workspace, "allowed.png"), pixel); fs.writeFileSync(state.path("private.png"), pixel);
+    fs.symlinkSync(state.path("private.png"), path.join(workspace, "private-image.png"));
+    const { run } = setup({ workspaceDir: workspace });
+    await run("create_pdf", { path: "allowed.pdf", markdown: "![public pixel](allowed.png)" });
+    await run("create_pdf", { path: "confined.pdf", markdown: "![private pixel](private-image.png)" });
+    expect(fs.readFileSync(path.join(workspace, "allowed.pdf"), "latin1")).toMatch(/\/Subtype\s*\/Image/);
+    expect(fs.readFileSync(path.join(workspace, "confined.pdf"), "latin1")).not.toMatch(/\/Subtype\s*\/Image/);
+  });
+});
+
 describe("image_generate", () => {
   const PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==";
 

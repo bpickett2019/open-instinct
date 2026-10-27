@@ -34,6 +34,7 @@ export class CliMissingError extends Error {
 export function spawnCli(bin: string): RunCli {
   return (args, { env, timeoutMs, signal }) =>
     new Promise((resolve, reject) => {
+      signal?.throwIfAborted();
       // stdin is closed so a prompt the CLI might show can never hang the agent.
       const child = spawn(bin, args, { env, stdio: ["ignore", "pipe", "pipe"] });
       let stdout = "";

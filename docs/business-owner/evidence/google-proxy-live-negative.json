@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-25T18:50:21.189Z",
+  "scenario": "Binding the authorized account to a different synthetic user in the isolated project",
+  "httpStatus": 400,
+  "errorCode": 4306,
+  "errorSlug": "ToolRouterV2_InvalidConnectedAccountIds",
+  "sessionCreated": false,
+  "providerOperationsExecuted": false
+}

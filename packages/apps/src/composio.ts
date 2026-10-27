@@ -2,6 +2,15 @@ import type { RegisteredTool, StateDir } from "@open-instinct/core";
 import { Composio } from "@composio/core";
 import { McpClient, StreamableHttpTransport } from "@earendil-works/pi-mcp";
 import { wrapMcpTools, type McpToolSource } from "./wrap.js";
+import { GoogleProviderError, googleToolkit, type GoogleTransport } from "./google-transport.js";
+
+interface ComposioRestResponse {
+  items?: Array<{ id: string; toolkit: { slug: string }; user_id?: string; status: string; is_disabled?: boolean }>;
+  next_cursor?: string | null; revoke_job_id?: string; session_id?: string;
+  config?: { user_id: string; connected_accounts?: Record<string, string> };
+  result_type?: string; status?: number; data?: unknown;
+  success?: boolean;
+}
 
 /** File under the StateDir that remembers the Composio session for this owner. */
 export const APPS_STATE_FILE = "apps.json";
@@ -79,6 +88,7 @@ export interface ComposioAppsOptions {
   adapters?: {
     createComposio?: (apiKey: string) => ComposioClientLike;
     connectMcp?: (mcp: McpEndpoint) => Promise<McpToolSource>;
+    fetchImpl?: typeof fetch;
   };
 }
 
@@ -125,6 +135,8 @@ export interface SessionCreateConfig {
   manageConnections: { enable: boolean };
   mcp: true;
   sessionPreset?: "direct_tools";
+  connectedAccounts?: Record<string, string>;
+  workbench?: { enable: boolean };
 }
 
 /** Pages of connected toolkits fetched in all mode before giving up. */
@@ -139,7 +151,9 @@ export class ComposioApps {
   private client?: McpToolSource;
   private connecting?: Promise<void>;
   private cachedTools?: RegisteredTool[];
+  private readonly businessClients = new Map<string, Promise<McpToolSource>>();
   /** Toolkits dropped this run because the Composio project has no auth config for them. */
+  private readonly boundSessions = new Map<string, Promise<string>>();
   private readonly unavailable = new Set<string>();
 
   constructor(opts: ComposioAppsOptions) {
@@ -173,6 +187,76 @@ export class ComposioApps {
 
   get sessionId(): string | undefined {
     return this.session?.sessionId;
+  }
+
+  /** Private REST boundary. Never return raw account records, which may contain tokens. */
+  private async api(path: string, init: RequestInit = {}): Promise<ComposioRestResponse> {
+    const response = await (this.opts.adapters?.fetchImpl ?? fetch)(`https://backend.composio.dev/api/v3${path}`, {
+      ...init, redirect: "error", headers: { "x-api-key": this.opts.apiKey, "content-type": "application/json" },
+    });
+    if (!response.ok) throw new Error(`Composio request failed (${response.status})`);
+    if (response.status === 204) return {};
+    const data: unknown = await response.json();
+    if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("Invalid Composio response");
+    return data as ComposioRestResponse;
+  }
+
+  async accounts(): Promise<Array<{ id: string; toolkit: string; active: boolean }>> {
+    const accounts: Array<{ id: string; toolkit: string; active: boolean }> = [];
+    let cursor: string | undefined;
+    do {
+      const query = new URLSearchParams({ user_ids: this.opts.userId, limit: "50" });
+      if (cursor) query.set("cursor", cursor);
+      const page = await this.api(`/connected_accounts?${query}`);
+      if (!Array.isArray(page.items)) throw new Error("Invalid connected account response");
+      for (const item of page.items) {
+        if (item.user_id && item.user_id !== this.opts.userId) throw new Error("Connected account workspace mismatch");
+        if (typeof item.id !== "string" || typeof item.toolkit?.slug !== "string") throw new Error("Invalid connected account");
+        accounts.push({ id: item.id, toolkit: item.toolkit.slug, active: item.status === "ACTIVE" && item.is_disabled !== true });
+      }
+      if (page.next_cursor === cursor && cursor) throw new Error("Repeated account cursor");
+      cursor = page.next_cursor || undefined;
+    } while (cursor);
+    return accounts;
+  }
+
+  async revokeAccount(accountId: string): Promise<{ jobId: string | null }> {
+    const data = await this.api(`/connected_accounts/${encodeURIComponent(accountId)}?revoke_on_delete=true`, { method: "DELETE" });
+    if (data.success !== true) throw new Error("Connected account deletion was not accepted");
+    this.boundSessions.delete(accountId);
+    return { jobId: typeof data.revoke_job_id === "string" ? data.revoke_job_id : null };
+  }
+
+  googleTransport(toolkit: "gmail" | "googlecalendar", accountId: string, assertActive: () => void, signal?: AbortSignal): GoogleTransport {
+    return { request: async (input) => {
+      if (googleToolkit(input) !== toolkit) throw new Error("Google account toolkit mismatch");
+      signal?.throwIfAborted(); assertActive();
+      const accounts = await this.accounts();
+      if (!accounts.some((a) => a.id === accountId && a.toolkit === toolkit && a.active)) throw new GoogleProviderError(401);
+      let pending = this.boundSessions.get(accountId);
+      if (!pending) {
+        pending = this.api("/tool_router/session", { method: "POST", body: JSON.stringify({
+          user_id: this.opts.userId, toolkits: { enable: [toolkit] }, connected_accounts: { [toolkit]: accountId },
+          manage_connections: { enable: false }, workbench: { enable: false }, proxy_execute: { enable: true },
+        }) }).then((session) => {
+          if (session.config?.user_id !== this.opts.userId || session.config?.connected_accounts?.[toolkit] !== accountId || typeof session.session_id !== "string") throw new Error("Proxy session account binding mismatch");
+          return session.session_id as string;
+        });
+        this.boundSessions.set(accountId, pending);
+        pending.catch(() => this.boundSessions.delete(accountId));
+      }
+      const sessionId = await pending;
+      signal?.throwIfAborted(); assertActive();
+      const parameters = Object.entries(input.query ?? {}).map(([name, value]) => ({ name, value, type: "query" }));
+      if (input.ifMatch) parameters.push({ name: "If-Match", value: input.ifMatch, type: "header" });
+      const result = await this.api(`/tool_router/session/${encodeURIComponent(sessionId)}/proxy_execute`, {
+        method: "POST", ...(signal ? { signal } : {}), body: JSON.stringify({ toolkit_slug: toolkit, endpoint: input.endpoint, method: input.method,
+          ...(input.body ? { body: input.body } : {}), parameters }),
+      });
+      if (result.result_type !== "completed") throw new Error(result.result_type === "input_required" ? "Provider requires owner input" : "Provider proxy blocked");
+      if (typeof result.status !== "number" || !Number.isInteger(result.status) || result.status < 100 || result.status > 599) throw new Error("Invalid proxy status");
+      return { status: result.status, data: result.data };
+    } };
   }
 
   /** Reuse the stored session when it still matches; otherwise create one and save it. Then open MCP. */
@@ -274,6 +358,13 @@ export class ComposioApps {
     return req.redirectUrl ?? undefined;
   }
 
+  async businessConnectLink(toolkit: string): Promise<string | undefined> {
+    const session = await this.composio.sessions.create(this.opts.userId, {
+      toolkits: [toolkit], manageConnections: { enable: true }, workbench: { enable: false }, mcp: true, sessionPreset: "direct_tools",
+    });
+    return (await session.authorize(toolkit)).redirectUrl ?? undefined;
+  }
+
   /**
    * Connection state of each configured toolkit. Toolkits missing from the response
    * count as not connected. In all mode there is no configured list, so this returns
@@ -306,11 +397,28 @@ export class ComposioApps {
     return [...slugs].sort().map((slug) => ({ slug, connected: true }));
   }
 
+  async concreteTools(toolkit: string, accountId: string): Promise<RegisteredTool[]> {
+    if (["gmail", "googlecalendar", "composio"].includes(toolkit)) return [];
+    let pending = this.businessClients.get(accountId);
+    if (!pending) {
+      pending = this.composio.sessions.create(this.opts.userId, {
+        toolkits: [toolkit], connectedAccounts: { [toolkit]: accountId }, sessionPreset: "direct_tools",
+        workbench: { enable: false }, manageConnections: { enable: false }, mcp: true,
+      }).then((session) => (this.opts.adapters?.connectMcp ?? defaultConnectMcp)(session.mcp));
+      this.businessClients.set(accountId, pending);
+      pending.catch(() => this.businessClients.delete(accountId));
+    }
+    const client = await pending;
+    return (await wrapMcpTools(client)).filter((tool) => tool.spec.name.startsWith(`app_${toolkit}_`) && !/proxy|execute_code|remote_bash|workbench|multi_execute/i.test(tool.spec.name));
+  }
+
   async close(): Promise<void> {
     const client = this.client;
     this.client = undefined;
     this.cachedTools = undefined;
     if (client) await client.close();
+    await Promise.all([...this.businessClients.values()].map(async (pending) => (await pending).close()));
+    this.businessClients.clear();
   }
 
   private requireClient(): McpToolSource {
@@ -373,7 +481,8 @@ function escapeRegExp(s: string): string {
 
 function defaultCreateComposio(apiKey: string): ComposioClientLike {
   // The SDK's Session type is wider than ComposioSessionLike; the structural subset is all we call.
-  return new Composio({ apiKey });
+  // SDK telemetry re-sends SIGTERM and can interrupt the controller's durable shutdown.
+  return new Composio({ apiKey, allowTracking: false });
 }
 
 async function defaultConnectMcp(mcp: McpEndpoint): Promise<McpToolSource> {

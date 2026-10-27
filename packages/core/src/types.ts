@@ -2,6 +2,7 @@
  * Shared types for Open Instinct. Every package builds against these.
  * Keep this file dependency-free (no runtime imports).
  */
+import type { BusinessConfig } from "./business-types.js";
 
 // ---------------------------------------------------------------------------
 // Principals and trust
@@ -252,6 +253,7 @@ export interface InstinctConfig {
   model: { primary: string; fallback?: string; cheap?: string; thinking?: "off" | "minimal" | "low" | "medium" | "high" };
   computer: { mode: "auto" | "desktopd" | "maritime" | "none"; desktopdUrl?: string; maritimeMcpUrl?: string };
   apps: { enabled: boolean; toolkits: string[] };
+  business?: BusinessConfig;
   features: {
     typingIndicators: boolean;
     tapbacks: boolean;
@@ -287,6 +289,12 @@ export interface Approval {
 
 /** Side-channel metadata attached to every Pi tool we register. */
 export interface ToolMeta {
+  /** Unknown metadata is effectful in the durable business dispatcher. */
+  effect?: "read" | "write";
+  /** Task-control tools mutate coordinator state only; owner controls cannot run in workers. */
+  execution?: "operation" | "task" | "owner";
+  /** A separate model endpoint whose price is unavailable; configured model caps fail closed. */
+  unpricedModel?: boolean;
   /** Capabilities a call needs; all must be allowed. */
   capabilities: Capability[];
   /** Group used for prompt sections and filtering. */

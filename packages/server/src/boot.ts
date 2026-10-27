@@ -4,13 +4,19 @@
  * configured. Everything it builds is returned so main.ts, the smoke test and
  * embedders can drive it the same way.
  */
-import { resolve } from "node:path";
+import { mkdirSync, realpathSync } from "node:fs";
+import { resolve, relative, isAbsolute, sep } from "node:path";
 import { streamSimple } from "@earendil-works/pi-ai/compat";
 import type { Model } from "@earendil-works/pi-ai";
 import type { StreamFn } from "@earendil-works/pi-agent-core";
 import {
   AgentRuntime,
+  BusinessStore,
   A2AStore,
+  CredentialVault,
+  ChatGPTSubscription,
+  createBusinessBackup,
+  buildBusinessExport,
   ApprovalStore,
   AuditLog,
   ContactStore,
@@ -20,6 +26,7 @@ import {
   StateDir,
   ToolRegistry,
   coreTools,
+  defaultSpendPolicy,
   ensurePersona,
   loadConfig,
   ownerClaimStatus,
@@ -33,7 +40,7 @@ import { CALL_ORIGINATIONS, InkboxA2A, InkboxChannel, InkboxInboundHydrator, Ink
 import type { CallEndedEvent, CallOrigination } from "@open-instinct/inkbox";
 import { computerGuidance, detectComputer } from "@open-instinct/computer";
 import type { ComputerBackend } from "@open-instinct/computer";
-import { ComposioApps, DEFAULT_TOOLKITS, OPENAI_COMPLETIONS_TOOL_LIMIT, appsGuidance, appsTools, composioModeFor } from "@open-instinct/apps";
+import { ComposioApps, DEFAULT_TOOLKITS, OPENAI_COMPLETIONS_TOOL_LIMIT, appsGuidance, appsTools, composioModeFor, createBusinessProviders } from "@open-instinct/apps";
 import { ampleTools, type AmpleCredentials } from "@open-instinct/ample";
 import { AtomicMailBackend, atomicMailGuidance } from "@open-instinct/atomicmail";
 import { contextTools } from "@open-instinct/context";
@@ -45,24 +52,45 @@ import { appsNotConfiguredTool, setupSummaryFor } from "./setup-summary.js";
 import { createScheduleSync, type ScheduleSync } from "./maritime-schedules.js";
 import { loadPaymentsModule, paymentsEnv, type LinkWalletLike, type PaymentsModule } from "./payments.js";
 import { createSkillCatalog, formatSkillsIndex, loadSkillTool, ownerSkillsDir, resolveSkillsDir, skillsFor } from "./skills.js";
+import type { ComposioAppsOptions } from "@open-instinct/apps";
+import { BusinessCoordinator } from "./business-coordinator.js";
+import { BusinessService } from "./business-service.js";
+import { BusinessOnboarding } from "./business-onboarding.js";
+import { verifyBusinessFileTools } from "./business-files.js";
+import { businessTaskTools } from "./business-task-tools.js";
+import { businessOwnerTools } from "./business-owner-tools.js";
+import { businessUsageStream } from "./business-usage.js";
+import { BusinessOutbox } from "./business-outbox.js";
+import { BusinessKnowledge } from "./business-knowledge.js";
+import { businessKnowledgeTools } from "./business-knowledge-tools.js";
+import { createHostedArtifactTools } from "./business-hosted-artifacts.js";
+import { BusinessCommitments } from "./business-commitments.js";
+import { createBusinessCommitmentTools } from "./business-commitment-tools.js";
+import { sweepGoogleRoutines, recheckGooglePremise } from "./business-proactive-google.js";
+import { businessComputer } from "./business-computer.js";
+import type { WorkspaceOptions } from "./workspace-http.js";
 
 /** How often the skill folders are re-read; an owner-installed skill shows up within this. */
 const SKILLS_REFRESH_MS = 30_000;
 
 export interface BootOptions {
   streamFn?: StreamFn;
+  now?: () => Date;
   model?: Model<any>;
   outbox?: Outbox;
   logger?: (m: string) => void;
   skillsDir?: string;
   /** Override for tests. Default: real fetch. */
   fetchImpl?: typeof fetch;
+  appsAdapters?: ComposioAppsOptions["adapters"];
   /** Override for tests: the payments module to wire instead of importing @open-instinct/payments. */
   payments?: PaymentsModule;
 }
 
 export interface BootResult {
   runtime: AgentRuntime;
+  business?: BusinessService;
+  ownerWorkspace?: Pick<WorkspaceOptions, "artifacts" | "connections" | "computer" | "operations" | "commitments">;
   state: StateDir;
   config: InstinctConfig;
   scheduler: Scheduler;
@@ -86,6 +114,17 @@ export interface BootResult {
 
 export const DEFAULT_MARITIME_MCP_URL = "https://mcp.maritime.sh";
 
+function privateBusinessDirectory(directory: string, workspace: string): string {
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  const canonical = realpathSync(directory), readable = realpathSync(workspace);
+  const contains = (root: string, target: string) => {
+    const path = relative(root, target);
+    return path === "" || !isAbsolute(path) && path !== ".." && !path.startsWith(`..${sep}`);
+  };
+  if (contains(readable, canonical) || contains(canonical, readable)) throw new Error("Business state directory must not overlap the worker-readable workspace");
+  return directory; // Preserve BusinessStore's leaf-symlink rejection as well.
+}
+
 export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Promise<BootResult> {
   const log = opts.logger ?? ((m: string) => console.log(`[instinct] ${m}`));
   const startedAt = Date.now();
@@ -93,6 +132,20 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   const state = new StateDir(resolveDataDir(env));
   state.ensure();
   const config = loadConfig(state, env);
+  const businessStore = config.business ? new BusinessStore(privateBusinessDirectory(resolve(config.business.stateDirectory ?? state.path("business")), state.path("workspace")), () => (opts.now?.() ?? new Date()).getTime()) : undefined;
+  const credentials = new CredentialVault(() => (opts.now?.() ?? new Date()).getTime());
+  credentials.registerKnownSecrets(Object.entries(env).filter(([key]) => /(?:KEY|TOKEN|SECRET|PASSWORD)$/.test(key)).map(([, value]) => value).filter((value): value is string => Boolean(value)));
+  let subscription: Promise<ChatGPTSubscription> | undefined;
+  const subscriptionKey = async () => {
+    subscription ??= ChatGPTSubscription.open(state, { onSecrets: values => credentials.registerKnownSecrets(values) }).catch(() => {
+      subscription = undefined;
+      throw new Error("ChatGPT private authentication storage unavailable. Run instinct auth status for this data directory.");
+    });
+    return (await subscription).key();
+  };
+  const knowledge = businessStore ? new BusinessKnowledge(businessStore) : undefined;
+  let providers: ReturnType<typeof createBusinessProviders> | undefined;
+  let commitments: BusinessCommitments | undefined;
   if (config.owner.claimOnFirstContact && config.owner.phones.length === 0) {
     const claim = ownerClaimStatus(config);
     log(claim.enabled
@@ -106,10 +159,20 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   const instructions = syncInstructions(state, env.INSTINCT_INSTRUCTIONS);
   if (instructions === "created" || instructions === "updated") log(`${instructions} ${state.path("AGENTS.md")} from INSTINCT_INSTRUCTIONS`);
 
-  const audit = new AuditLog(state);
+  const audit = new AuditLog(state, value => credentials.redact(value));
   const policy = new PolicyEngine(loadPolicy(state), {
     spentTodayUsd: () => audit.spentTodayUsd(config.owner.timezone),
   });
+  if (businessStore) {
+    const defaults = defaultSpendPolicy(), saved = policy.spend;
+    const custom = (value: number, baseline: number): number | null => {
+      if (value === baseline) return null;
+      if (!Number.isFinite(value) || value < 0 || !Number.isSafeInteger(Math.round(value * 100))) throw new Error("Invalid saved owner purchase restriction");
+      return Math.round(value * 100);
+    };
+    const perAction = [custom(saved.perActionUsd, defaults.perActionUsd), custom(saved.askAbove, defaults.askAbove)].filter((value): value is number => value !== null);
+    businessStore.configureSavedPurchaseRules({ perActionMinor: perAction.length ? Math.min(...perAction) : null, perDayMinor: custom(saved.perDayUsd, defaults.perDayUsd), timezone: config.owner.timezone });
+  }
   const approvals = new ApprovalStore(state);
   const scheduler = new Scheduler(state);
   const contacts = new ContactStore(state, { warn: log });
@@ -126,7 +189,7 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     ...(env.INKBOX_BASE_URL ? { baseUrl: env.INKBOX_BASE_URL } : {}),
     ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
   }) : undefined;
-  const externalUserId = inkbox?.handle ?? config.agent.handle ?? "owner";
+  const externalUserId = businessStore?.settings().value.workspaceId ?? inkbox?.handle ?? config.agent.handle ?? "owner";
 
   // Outbox: Inkbox when configured, else console. A caller-supplied outbox wins (tests).
   // Whatever the transport, `chat` replies are buffered for the HTTP layer: that channel
@@ -156,6 +219,38 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     chatBuffer = console_.chat;
     log("Inkbox not configured: replies go to the console outbox");
   }
+  if (businessStore) outbox = new BusinessOutbox(businessStore, outbox, value => credentials.redact(value));
+  let runtime: AgentRuntime;
+  const coordinator: BusinessCoordinator | undefined = businessStore ? new BusinessCoordinator(businessStore, {
+    audit: (kind, detail) => audit.append({ kind: "tool_result", detail: { kind, event: detail } }),
+    worker: async (binding, task, signal) => {
+      const profile = businessStore.get("profile", "current");
+      if (profile) business!.coordinator.recordSource(binding, "profile:current", profile.version);
+      for (const fact of knowledge?.profiles.current().facts ?? []) {
+        const source = businessStore.get("knowledge", fact.citation.sourceId);
+        if (source) business!.coordinator.recordSource(binding, `knowledge:${source.id}`, source.version);
+      }
+      const before = new Set(businessStore.actions(task.id).filter(action => action.tool !== "model_turn").flatMap(action => action.evidenceRefs));
+      const text = await runtime.runBusinessTask(binding, task, signal);
+      const actions = businessStore.actions(task.id).filter(action => action.tool !== "model_turn");
+      return { checkpoint: { text, actionIds: actions.map(action => action.id) }, progress: actions.some(action => action.evidenceRefs.some(ref => !before.has(ref))) };
+    },
+    onTaskEvent: async (task, kind) => { await business?.taskEvent(task, kind); },
+    reconcile: action => providers?.reconcile(action) ?? Promise.resolve(undefined),
+    beforeDispatch: async (binding, action) => { await commitments?.assertDispatch(binding, action); },
+    cancelCommitments: (taskId, reason) => commitments?.cancelForTask(taskId, reason),
+    dueWork: async () => {
+      await business?.onboarding.checkPending();
+      if (commitments && providers) try { await sweepGoogleRoutines(commitments, providers); } catch { businessStore.recordActivity("routine.provider_unavailable", { detail: "Connected source could not be read; unrelated commitments continue" }); }
+      await commitments?.sweep();
+    },
+  }) : undefined;
+  const business = coordinator ? new BusinessService(coordinator, outbox, value => credentials.redact(value), knowledge?.profiles) : undefined;
+  if (coordinator) {
+    commitments = new BusinessCommitments(coordinator, { recheckPremise: commitment => providers ? recheckGooglePremise(commitments!, providers, commitment) : Promise.resolve({ valid: false, reason: "Connected provider unavailable" }) });
+    commitments.seedDefaults();
+  }
+  const computerBoundary: ReturnType<typeof businessComputer> | undefined = business ? businessComputer(business, (): ComputerBackend | undefined => computer) : undefined;
 
   const registry = new ToolRegistry();
   const promptSections: string[] = [];
@@ -203,7 +298,7 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   // Voice AI speaks as the owner's assistant. Only a chosen voice (INKBOX_VOICE or config.json agent.voice)
   // triggers the write: the config is a full replace on Inkbox, and an unset voice keeps the org default.
   const voice = env.INKBOX_VOICE?.trim() || config.agent.voice?.trim();
-  if (channel && voice) {
+  if (channel && voice && !config.business) {
     const ch = channel;
     const set = await safely(log, "phone voice", async () => {
       await ch.setVoiceConfig({ voice, instructions: voiceInstructions(config.owner.name) });
@@ -217,7 +312,8 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
   }) : undefined;
 
-  registry.registerMany(fileTools(state.path("workspace"), { env }));
+  const localFiles = fileTools(state.path("workspace"), { env });
+  registry.registerMany(config.business ? verifyBusinessFileTools(localFiles, state.path("workspace"), knowledge) : localFiles);
 
   // Web app deploys through Ample: with the deployer's credential, or with an
   // account this agent signs up for itself on the first deploy (AMPLE_SIGNUP=1),
@@ -250,15 +346,17 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   }
 
   // Computer: in-VM desktopd, hosted Maritime Computers MCP, or nothing.
-  const computer = await safely(log, "computer", () =>
+  const computer: ComputerBackend | undefined = await safely(log, "computer", () =>
     detectComputer({
-      mode: config.computer.mode,
+      mode: config.business ? "maritime" : config.computer.mode,
       desktopdUrl: config.computer.desktopdUrl,
       maritimeMcpUrl: config.computer.maritimeMcpUrl ?? env.MARITIME_COMPUTERS_MCP_URL ?? DEFAULT_MARITIME_MCP_URL,
-      maritimeApiKey: env.MARITIME_API_KEY,
+      maritimeApiKey: config.business ? env.MARITIME_COMPUTER_API_KEY : env.MARITIME_API_KEY,
       externalUserId,
+      credentials: credentials.createResolver("hosted-computer"),
+      ...(computerBoundary ? { business: computerBoundary.boundary } : {}),
       // Maritime starts the desktop stack in the background; desktopd may still be coming up.
-      expectDesktopd: env.MARITIME_DESKTOP === "1",
+      expectDesktopd: !config.business && env.MARITIME_DESKTOP === "1",
       ...(env.MARITIME_AGENT_ID ? { agentId: env.MARITIME_AGENT_ID } : {}),
       ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
       logger: log,
@@ -283,18 +381,24 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     // Direct mode lists one tool per app action; router mode lists Composio's meta tools only.
     // OpenAI-style chat completions (the Maritime LLM proxy) cap a request at 128 tools.
     const { mode, reason } = composioModeFor(env, model.api);
-    const composio = new ComposioApps({ apiKey: env.COMPOSIO_API_KEY, userId: externalUserId, toolkits, mode, state, logger: log });
+    const composio = new ComposioApps({ apiKey: env.COMPOSIO_API_KEY, userId: externalUserId, toolkits, mode: config.business ? "direct" : mode, state, logger: log, adapters: { ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}), ...opts.appsAdapters } });
     log(`apps: composio ${composio.mode} mode (${composio.allToolkits ? "all toolkits always use router" : reason})`);
     const connected = await safely(log, "apps", async () => {
       await composio.connect();
-      const tools = await composio.tools();
+      const tools = config.business ? [] : await composio.tools();
       const status = await composio.connectedToolkits();
       return { tools, status };
     });
     if (connected) {
       apps = composio;
-      registry.registerMany(connected.tools);
-      registry.registerMany(appsTools({ apps: composio }));
+      if (businessStore) {
+        providers = createBusinessProviders({ apps: composio, store: businessStore, ...(knowledge ? { artifacts: knowledge } : {}), ownerNotice: async (id, text) => { await business?.ownerNotice(id, text); } });
+        await providers.connections.list();
+        registry.registerMany(await providers.tools());
+      } else {
+        registry.registerMany(connected.tools);
+        registry.registerMany(appsTools({ apps: composio }));
+      }
       const on = connected.status.filter((s: ToolkitStatus) => s.connected).map((s: ToolkitStatus) => s.slug);
       const missing = connected.status.filter((s: ToolkitStatus) => !s.connected).map((s: ToolkitStatus) => s.slug);
       appsConnected = on;
@@ -364,7 +468,7 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
           ...(config.agent.handle ? { statePrefix: config.agent.handle } : {}),
           ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
         });
-        return { wallet: w, tools: mod.paymentsTools({ wallet: w, outbox, config, audit, state }) };
+        return { wallet: w, tools: mod.paymentsTools({ wallet: w, outbox, config, audit, state, credentialVault: credentials, workspaceId: externalUserId }) };
       });
       if (built) {
         wallet = built.wallet;
@@ -389,6 +493,18 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   skillCatalog.list();
   // Registered even with no skill yet, and even when every skill is hidden: those load by name.
   registry.register(loadSkillTool(skillCatalog.list));
+  if (business) {
+    business.onboarding = new BusinessOnboarding(business.coordinator.store, providers?.connections, () => computer?.kind === "maritime", (id, text) => business.ownerNotice(id, text));
+    registry.registerMany(businessTaskTools(business));
+    registry.registerMany(businessOwnerTools(business, providers?.connections));
+    if (knowledge) registry.registerMany(businessKnowledgeTools(knowledge, business.coordinator, state.path("workspace")));
+    if (knowledge) registry.registerMany(createHostedArtifactTools({ knowledge, backend: () => computer }));
+    if (commitments) registry.registerMany(createBusinessCommitmentTools(commitments));
+    for (const tool of registry.all()) {
+      if (["read", "ls", "grep", "web_fetch", "web_search", "load_skill", "audit_read", "memory_read"].includes(tool.spec.name)) tool.spec.meta.effect = "read";
+      if (["contacts_upsert", "trust_set_tier", "trust_grant", "trust_revoke", "approval_settle", "apps_connect", "payment_connect"].includes(tool.spec.name)) tool.spec.meta.execution = "owner";
+    }
+  }
   const staticSections = promptSections.join("\n\n");
   // Built per conversation, so each principal's index lists only the skills they may load.
   const skillsPrompt = (principal: Principal) => {
@@ -396,8 +512,6 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     return parts.length > 0 ? parts.join("\n\n") : undefined;
   };
 
-  // eslint-disable-next-line prefer-const
-  let runtime: AgentRuntime;
   runtime = new AgentRuntime({
     state,
     config,
@@ -411,15 +525,29 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     model,
     outbox,
     a2aStore,
+    ...(opts.now ? { now: opts.now } : {}),
+    redact: value => credentials.redact(value),
+    ...(business ? { business: {
+      dispatch: business.coordinator,
+      assertActive: (binding) => { business.coordinator.assertActive(binding); },
+      intake: (message, principal) => business.intake(message, principal),
+      context: mode => business.context(mode),
+      stream: (binding, source) => businessUsageStream(business.coordinator, binding, source),
+      sourceRevisions: taskId => business.coordinator.sourceRevisions(taskId),
+      recordSource: (binding, id, revision) => business.coordinator.recordSource(binding, id, revision),
+      foregroundStream: source => businessUsageStream(business.coordinator, undefined, source),
+      reactToOwnerMessage: (sourceId, messageId, reaction, signal) => business.reactToOwnerMessage(sourceId, messageId, reaction, signal),
+    } } : {}),
     ...(a2a ? { loadA2ATask: (taskId: string) => a2a.getTask(taskId) } : {}),
     skillsPrompt,
     streamFn: opts.streamFn ?? (streamSimple as StreamFn),
-    getApiKey: (provider: string) => apiKeyFor(provider, env),
+    getApiKey: (provider: string) => provider === "openai-codex" ? subscriptionKey() : apiKeyFor(provider, env),
     // Core cannot import the network package; the server bridges OIP and the network guidance.
     describeData: describeDataPart,
-    promptExtra: promptExtraFor,
+    promptExtra: (principal, channel) => promptExtraFor(principal, channel, Boolean(config.business)),
     setupSummary: () =>
       setupSummaryFor({
+        business: Boolean(config.business),
         inkbox: inkbox ? { handle: inkbox.handle } : undefined,
         computerKind: computer?.kind,
         apps: apps ? { connected: appsConnected ?? [], anyApp: apps.allToolkits, toolkits: apps.toolkitSlugs } : undefined,
@@ -427,11 +555,16 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
       }),
     ...(env.INSTINCT_REPLY_BUDGET_MS ? { replyBudgetMs: Number(env.INSTINCT_REPLY_BUDGET_MS) } : {}),
   });
+  if (business) {
+    business.foreground = (message, principal, authorityRef, mode) => runtime.runBusinessOwner(message, principal, authorityRef, mode);
+    business.cancelForeground = () => runtime.closeBusinessForeground();
+  }
 
-  const stopScheduler = scheduler.start((entry) => runtime.runScheduled(entry));
+  const stopScheduler = config.business ? () => {} : scheduler.start((entry) => runtime.runScheduled(entry));
+  coordinator?.start();
 
   let sync: ScheduleSync | undefined;
-  if (env.MARITIME_BACKEND_URL && env.MARITIME_INTERNAL_TOKEN && env.MARITIME_AGENT_ID) {
+  if (!config.business && env.MARITIME_BACKEND_URL && env.MARITIME_INTERNAL_TOKEN && env.MARITIME_AGENT_ID) {
     sync = createScheduleSync({
       backendUrl: env.MARITIME_BACKEND_URL,
       token: env.MARITIME_INTERNAL_TOKEN,
@@ -445,7 +578,7 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
   }
 
   const toolCount = registry.all().length;
-  if (model.api === "openai-completions" && toolCount > OPENAI_COMPLETIONS_TOOL_LIMIT) {
+  if (!config.business && model.api === "openai-completions" && toolCount > OPENAI_COMPLETIONS_TOOL_LIMIT) {
     log(
       `warning: ${toolCount} tools registered, but ${modelSpec} accepts at most ${OPENAI_COMPLETIONS_TOOL_LIMIT} per request, ` +
         "so owner replies will fail. Set COMPOSIO_MODE=router or shorten COMPOSIO_TOOLKITS.",
@@ -455,6 +588,14 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
 
   return {
     runtime,
+    ...(business ? { business } : {}),
+    ...(businessStore ? { ownerWorkspace: {
+      artifacts: knowledge, connections: providers?.connections, computer: computerBoundary?.owner, commitments,
+      operations: {
+        backup: async () => createBusinessBackup(businessStore, { destination: resolve(businessStore.root, "..", "business-backups"), retention: businessStore.settings().value.backupRetention }),
+        export: async () => buildBusinessExport(businessStore),
+      },
+    } } : {}),
     state,
     config,
     scheduler,
@@ -471,9 +612,15 @@ export async function boot(env: NodeJS.ProcessEnv, opts: BootOptions = {}): Prom
     async close() {
       stopScheduler();
       sync?.stop();
+      coordinator?.beginClose();
+      await business?.close();
+      await coordinator?.close();
       await safely(log, "computer close", () => computer?.close());
       await safely(log, "apps close", () => apps?.close());
       await safely(log, "atomicmail close", () => mailbox?.close());
+      await knowledge?.close();
+      credentials.close();
+      businessStore?.close();
     },
   };
 }
@@ -488,7 +635,7 @@ export const PROVIDER_KEY_ENV: Record<string, string[]> = {
   "anthropic": ["ANTHROPIC_API_KEY", "ANTHROPIC_OAUTH_TOKEN"],
   "openai": ["OPENAI_API_KEY"],
   "openai-compatible": ["OPENAI_API_KEY"],
-  "openai-codex": ["OPENAI_API_KEY"],
+  "openai-codex": [], // Subscription-only. Never treat an API key as a ChatGPT login.
   "google": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
   "google-gemini-cli": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
   "groq": ["GROQ_API_KEY"],

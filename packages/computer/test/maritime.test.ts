@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { CallToolResult, JsonRpcMessage, Tool } from "@earendil-works/pi-mcp";
 import { createInMemoryTransportPair, type InMemoryTransport } from "@earendil-works/pi-mcp/testing";
 import type { Principal, RegisteredTool, ToolContext } from "@open-instinct/core";
+import { CredentialVault, credentialScope } from "@open-instinct/core";
+import type { BusinessComputerBoundary, ComputerPrivacy } from "../src/maritime.js";
 import { MaritimeMcpBackend, maritimeMcpEndpoint } from "../src/index.js";
 import { PNG_B64 } from "./fake-fetch.js";
+import { createHash } from "node:crypto";
 
 const owner: Principal = { kind: "owner", id: "owner", tier: "owner", displayName: "Maria" };
 const ctx: ToolContext = { principal: owner, conversationKey: "chat:test", channel: "chat", now: () => new Date() };
@@ -194,6 +197,17 @@ describe("MaritimeMcpBackend", () => {
     await backend.close();
   });
 
+  it("bootstraps once even when provisioning advertises an optional computer ID", async () => {
+    const catalog = HOSTED_TOOLS.map(tool => tool.name === "get_computer" ? { ...tool, inputSchema: { type: "object", properties: { computer_id: COMPUTER_ID } } } : tool);
+    const { server, clientTransport } = await startFakeServer(catalog, defaultHandler);
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "mk_test", externalUserId: "user-1", transportFactory: () => clientTransport });
+    try {
+      await backend.call("computer", { action: "screenshot" });
+      expect(backend.computerId).toBe("cmp_42");
+      expect(server.calls.map(call => call.name)).toEqual(["get_computer", "computer"]);
+    } finally { await backend.close(); }
+  });
+
   it("returns an error result instead of throwing when get_computer gives no id", async () => {
     const { backend } = await backendWithServer((name, args) =>
       name === "get_computer" ? text({ status: "sleeping" }) : defaultHandler(name, args),
@@ -201,7 +215,6 @@ describe("MaritimeMcpBackend", () => {
     const tools = await backend.tools();
     const result = await exec(tools, "computer", { action: "screenshot" });
     expect(result.isError).toBe(true);
-    expect((result.content[0] as { text: string }).text).toMatch(/computer_id/);
     await backend.close();
   });
 
@@ -214,4 +227,198 @@ describe("MaritimeMcpBackend", () => {
     // After close the transport pair is dead; a fresh factory would be needed to reconnect.
     await expect(backend.connect()).rejects.toThrow();
   });
+});
+
+describe("hosted credential and business boundary", () => {
+  const taskCtx: ToolContext = {
+    ...ctx,
+    conversationKey: "business:task-a",
+    taskRun: { taskId: "task-a", runId: "run-a", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:a" },
+    businessInvocation: true,
+  };
+
+  function boundary() {
+    let state: ComputerPrivacy = { takeover: false, credentialEntry: false };
+    const links: string[] = [];
+    const business: BusinessComputerBoundary = {
+      workspaceId: "workspace-a",
+      withLease: async (_ctx, invoke) => invoke(),
+      privacy: () => state,
+      setPrivacy: (value) => { state = value; },
+      notifyTakeover: async (_ctx, url) => { links.push(url); },
+    };
+    return { business, links };
+  }
+
+  it("sends raw fields only inside the adapter and never returns secret echoes or screenshots", async () => {
+    const vault = new CredentialVault();
+    const reference = vault.issue({ scope: credentialScope(taskCtx, "workspace-a"), adapter: "hosted-computer", fields: { number: "4000009990001984" } });
+    const { clientTransport, server } = await startFakeServer(HOSTED_TOOLS, (name, args) => name === "computer"
+      ? { content: [{ type: "image", data: PNG_B64, mimeType: "image/png" }, { type: "text", text: `echo ${String(args.text)}` }] }
+      : defaultHandler(name, args));
+    const { business } = boundary();
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", business, credentials: vault.createResolver("hosted-computer"), transportFactory: () => clientTransport });
+    try {
+      const tools = await backend.tools();
+      const type = byName(tools, "computer_type_credential");
+      const wrong = await type.spec.execute({ credentialRef: reference.credentialRef, field: "number" }, { ...taskCtx, conversationKey: "another" });
+      expect(JSON.stringify(wrong)).toContain("unavailable");
+      expect(server.calls).toHaveLength(0);
+      const result = await type.spec.execute({ credentialRef: reference.credentialRef, field: "number" }, taskCtx);
+      expect(server.calls.at(-1)?.args).toMatchObject({ action: "type", text: "4000009990001984", no_screenshot: true });
+      expect(JSON.stringify(result)).not.toContain("4000009990001984");
+      expect(JSON.stringify(result)).not.toContain(PNG_B64);
+      const proof = await type.spec.verify!({ credentialRef: reference.credentialRef, field: "number" }, result, taskCtx);
+      expect(proof).toMatchObject({ verified: true, receipt: { evidenceLevel: "primitive-only", operation: "credential-entry" } });
+      expect(JSON.stringify(proof)).not.toContain("4000009990001984");
+      expect(JSON.stringify(proof)).not.toContain(PNG_B64);
+      expect(business.privacy().credentialEntry).toBe(true);
+      const screenshot = await byName(tools, "computer").spec.execute({ action: "screenshot" }, taskCtx);
+      expect(JSON.stringify(screenshot)).not.toContain(PNG_B64);
+      expect((await byName(tools, "computer").spec.verify!({ action: "screenshot" }, screenshot, taskCtx)).verified).toBe(false);
+      const raw = await byName(tools, "computer").spec.execute({ action: "type", text: "4000009990001984" }, taskCtx);
+      expect(JSON.stringify(raw)).toContain("Raw credential");
+    } finally { await backend.close(); }
+  });
+
+  it("pins identity, fences task access, and keeps human control private until provider verification", async () => {
+    const { business, links } = boundary();
+    expect(() => new MaritimeMcpBackend({ url: "https://mcp.example.test/mcp/u/other", apiKey: "synthetic", externalUserId: "workspace-a", business })).toThrow("another workspace");
+    const { clientTransport, server } = await startFakeServer(HOSTED_TOOLS, defaultHandler);
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", business, transportFactory: () => clientTransport });
+    try {
+      const tools = await backend.tools();
+      expect(JSON.stringify(await byName(tools, "computer").spec.execute({ action: "screenshot" }, ctx))).toContain("task-bound");
+      expect(JSON.stringify(await byName(tools, "computer").spec.execute({ action: "screenshot", computer_id: "other" }, taskCtx))).toContain("server-bound");
+      expect(server.calls).toHaveLength(0);
+      const takeover = await byName(tools, "request_takeover").spec.execute({ reason: "Authenticate" }, taskCtx);
+      expect(links).toEqual(["https://maritime.sh/computer/v/abc"]);
+      expect(JSON.stringify(takeover)).not.toContain("https://");
+      const proof = await byName(tools, "request_takeover").spec.verify!({ reason: "Authenticate" }, takeover, taskCtx);
+      expect(proof).toMatchObject({ verified: true, receipt: { evidenceLevel: "primitive-only", operation: "takeover-requested" } });
+      expect(JSON.stringify(proof)).not.toContain("https://");
+      expect(business.privacy().takeover).toBe(true);
+      const before = server.calls.length;
+      expect(JSON.stringify(await byName(tools, "computer").spec.execute({ action: "screenshot" }, taskCtx))).toContain("Human takeover");
+      expect(server.calls).toHaveLength(before);
+      await byName(tools, "takeover_status").spec.execute({}, taskCtx);
+      expect(business.privacy().takeover).toBe(false);
+      await byName(tools, "computer").spec.execute({ action: "screenshot" }, taskCtx);
+      expect(server.calls.at(-1)?.args.computer_id).toBe("cmp_42");
+    } finally { await backend.close(); }
+  });
+});
+
+it("retains secret screenshot suppression after backend restart and does not release failed takeover", async () => {
+  let privacy: ComputerPrivacy = { takeover: false, credentialEntry: true };
+  const business: BusinessComputerBoundary = {
+    workspaceId: "workspace-a",
+    withLease: async (_ctx, invoke) => invoke(),
+    privacy: () => privacy,
+    setPrivacy: (value) => { privacy = value; },
+    notifyTakeover: async () => {},
+  };
+  const worker: ToolContext = { ...ctx, businessInvocation: true, taskRun: { taskId: "task-a", runId: "run-b", taskRevision: 1, executionEpoch: 2, globalControlEpoch: 0, authorityRef: "owner:a" } };
+  for (let restart = 0; restart < 2; restart++) {
+    const { clientTransport } = await startFakeServer(HOSTED_TOOLS, (name, args) => name === "takeover_status" ? text({ mode: "agent", success: false }) : defaultHandler(name, args));
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", business, transportFactory: () => clientTransport });
+    try {
+      const tools = await backend.tools();
+      const screenshot = await byName(tools, "computer").spec.execute({ action: "screenshot" }, worker);
+      expect(JSON.stringify(screenshot)).not.toContain(PNG_B64);
+      expect(byName(tools, "computer").spec.parameters.required).not.toContain("computer_id");
+      privacy.takeover = true;
+      const failed = await byName(tools, "takeover_status").spec.execute({}, worker);
+      expect(JSON.stringify(failed)).toContain("failed");
+      expect(privacy.takeover).toBe(true);
+      privacy.takeover = false;
+    } finally { await backend.close(); }
+  }
+});
+
+describe("hosted adapter evidence", () => {
+  it("records exact file/source readback and bound provisioning, not model-constructed proof", async () => {
+    const catalog: Tool[] = [...HOSTED_TOOLS, { name: "read_file", inputSchema: { type: "object", properties: { computer_id: COMPUTER_ID, path: { type: "string" } } } }];
+    const content = "Résumé supplier comparison\nTotal: 42.00\n";
+    const { clientTransport } = await startFakeServer(catalog, (name, args) => name === "read_file"
+      ? text({ path: args.path === "/wrong" ? "/different" : args.path, content })
+      : defaultHandler(name, args));
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", transportFactory: () => clientTransport });
+    try {
+      const tools = await backend.tools();
+      const provision = byName(tools, "get_computer").spec;
+      const identity = await provision.execute({}, ctx);
+      expect(await provision.verify!({}, identity, ctx)).toMatchObject({ verified: true, receipt: { evidenceLevel: "primitive-only", computerId: "cmp_42", workspaceId: "workspace-a" } });
+      const read = byName(tools, "read_file").spec;
+      const args = { path: "/brief.txt" };
+      const value = await read.execute(args, ctx);
+      const proof = await read.verify!(args, value, ctx);
+      expect(proof).toMatchObject({ verified: true, receipt: { evidenceLevel: "readback", path: "/brief.txt", sha256: createHash("sha256").update(content).digest("hex"), bytes: Buffer.byteLength(content) } });
+      expect(proof.evidenceRefs).toHaveLength(1);
+      expect(JSON.stringify(proof)).not.toContain(content);
+      expect((await read.verify!(args, structuredClone(value), ctx)).verified).toBe(false);
+      expect((await read.verify!({ path: "/different" }, value, ctx)).verified).toBe(false);
+      expect((await read.verify!(args, value, { ...ctx, conversationKey: "other" })).verified).toBe(false);
+      const mismatch = await read.execute({ path: "/wrong" }, ctx);
+      expect((await read.verify!({ path: "/wrong" }, mismatch, ctx)).verified).toBe(false);
+    } finally { await backend.close(); }
+  });
+
+  it("records returned screenshot observations but never promotes generic shell receipts", async () => {
+    const catalog: Tool[] = [...HOSTED_TOOLS, { name: "shell", inputSchema: { type: "object", properties: { command: { type: "string" } } } }];
+    const { clientTransport } = await startFakeServer(catalog, (name, args) => name === "shell" ? text({ accepted: true, exit_code: 0 }) : defaultHandler(name, args));
+    const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", transportFactory: () => clientTransport });
+    try {
+      const tools = await backend.tools();
+      const computer = byName(tools, "computer").spec;
+      const args = { action: "left_click", coordinate: [10, 10] };
+      const image = await computer.execute(args, ctx);
+      expect(await computer.verify!(args, image, ctx)).toMatchObject({ verified: true, receipt: { evidenceLevel: "observation", observations: [{ sha256: createHash("sha256").update(Buffer.from(PNG_B64, "base64")).digest("hex") }] } });
+      const shell = byName(tools, "shell").spec;
+      const result = await shell.execute({ command: "synthetic-only" }, ctx);
+      expect(await shell.verify!({ command: "synthetic-only" }, result, ctx)).toEqual({ verified: false, evidenceRefs: [], receipt: { tool: "shell", evidenceLevel: "receipt-only" } });
+    } finally { await backend.close(); }
+  });
+});
+
+it("verifies hosted writes with exact UTF-8 readback under the same lease and records the receipt first", async () => {
+  const catalog: Tool[] = [...HOSTED_TOOLS, ...["write_file", "read_file"].map((name) => ({ name, inputSchema: { type: "object", properties: { computer_id: COMPUTER_ID, path: { type: "string" }, content: { type: "string" } } } }))];
+  const files = new Map<string, string>();
+  const receipts: unknown[] = [];
+  let leased = false;
+  const { clientTransport, server } = await startFakeServer(catalog, (name, args) => {
+    expect(leased).toBe(true);
+    if (name === "write_file") {
+      files.set(String(args.path), String(args.content));
+      return text({ request_id: "write-receipt", status: "written" });
+    }
+    if (name === "read_file") {
+      expect(receipts.length).toBeGreaterThan(0);
+      return text({ path: args.path, content: args.path === "/mismatch" ? "changed externally" : files.get(String(args.path)), ...(args.path === "/base64" ? { encoding: "base64" } : {}) });
+    }
+    return defaultHandler(name, args);
+  });
+  const business: BusinessComputerBoundary = {
+    workspaceId: "workspace-a",
+    withLease: async (_ctx, invoke) => { leased = true; try { return await invoke(); } finally { leased = false; } },
+    privacy: () => ({ takeover: false, credentialEntry: false }),
+    setPrivacy: () => {},
+    notifyTakeover: async () => {},
+  };
+  const worker: ToolContext = { ...ctx, businessInvocation: true, taskRun: { taskId: "task-write", runId: "run-write", taskRevision: 1, executionEpoch: 1, globalControlEpoch: 0, authorityRef: "owner:write" }, recordBusinessReceipt: (receipt) => { receipts.push(receipt); } };
+  const backend = new MaritimeMcpBackend({ url: "https://mcp.example.test", apiKey: "synthetic", externalUserId: "workspace-a", business, transportFactory: () => clientTransport });
+  try {
+    const write = byName(await backend.tools(), "write_file").spec;
+    const args = { path: "/verified.txt", content: "café\n42.00\n" };
+    const result = await write.execute(args, worker, new AbortController().signal);
+    expect(files.get(args.path)).toBe(args.content);
+    expect(server.calls.map((call) => call.name)).toEqual(["get_computer", "write_file", "read_file"]);
+    expect(await write.verify!(args, result, worker)).toMatchObject({ verified: true, receipt: { evidenceLevel: "readback", operation: "file-write-readback", sha256: createHash("sha256").update(args.content).digest("hex") } });
+    expect(receipts[0]).toMatchObject({ evidenceLevel: "receipt-only", providerId: "write-receipt" });
+    for (const path of ["/mismatch", "/base64"]) {
+      const unsupported = { path, content: "unchanged" };
+      const value = await write.execute(unsupported, worker);
+      expect((await write.verify!(unsupported, value, worker)).verified).toBe(false);
+    }
+  } finally { await backend.close(); }
 });

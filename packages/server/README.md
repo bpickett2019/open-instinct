@@ -121,6 +121,38 @@ acked are held per conversation (`ConsoleOutbox.chat`, or `ChatAwareOutbox` wrap
 the Inkbox channel) and handed back as `pending` on the next `/chat` for that conversation.
 `GET /status` lists them under `pendingReplies`.
 
+## ChatGPT subscription authentication
+
+The existing Pi runtime can use `openai-codex/<id>` with an eligible ChatGPT subscription,
+including Pro. This is Codex subscription access, not paid OpenAI API billing.
+Authenticate as the service user against the server's actual persistent data directory:
+
+```bash
+instinct auth login --device --data-dir /data
+instinct auth status --data-dir /data
+instinct auth models --data-dir /data
+```
+
+For a local browser use `auth login` without `--device`. Open the printed URL; the
+loopback callback completes without typing. A terminal offers hidden manual-code or
+redirect-URL input if needed. Device mode prints a verification URI and user code,
+then waits for approval. Ctrl-C aborts either flow.
+
+Choose a full ID from `auth models`, set `INSTINCT_MODEL` (or `config.json`
+`model.primary`), and restart this server with the same data directory. Login never
+switches models or changes configuration. `openai-codex` uses only the private OAuth
+store at `<dataDir>/model-auth/auth.json` (0600, parent 0700), never global Codex
+credentials or `OPENAI_API_KEY`. There is no paid API fallback. Other providers and
+services still need their own credentials.
+
+Status describes locally stored authentication, not live entitlement. The model list
+is the installed catalog; neither command sends a model request. OpenAI controls
+subscription eligibility, model access, and rate/usage limits. Logout with
+`instinct auth logout --data-dir /data`, then restart running servers to clear cached
+credentials. This removes only this local login, not global Codex authentication or
+the provider session. Authentication is excluded from business exports; protect full
+data-directory backups. See [KEYS.md](../../docs/KEYS.md#chatgpt-pro-through-codex-subscription-access).
+
 ## Payments
 
 With `LINK_CLIENT_ID`, `LINK_CLIENT_SECRET` and `STRIPE_PUBLISHABLE_KEY` set, `boot` imports
@@ -238,3 +270,176 @@ the unprivileged `instinct` user through `deploy/entrypoint.sh` (which fixes `/d
 ownership and drops privileges with `setpriv`), and health-checks `${PORT:-8080}`.
 `deploy/docker-compose.yml` runs it next to the gateway for a local trial, publishing the
 agent on `127.0.0.1:8080` only.
+
+## Durable business commitments
+
+Business mode uses `BusinessCommitments` and the coordinator's single nonoverlapping
+sweep. It does not start a second scheduling timer. Personal-mode schedules keep
+their existing behavior. Business `schedule_create/list/delete` use versioned
+commitments, durable occurrence keys, owner authority and the same task dispatcher.
+Admission is not completion; an occurrence completes only with task outcome evidence.
+
+The four visible standing routines are incoming requests, follow-through, daily
+brief and meeting preparation. They start disabled. Only an authenticated direct
+owner turn can enable or edit them. Select connected account IDs and source scopes
+explicitly. Enabling incoming requests records an activation time; connecting an
+account alone never authorizes historic mailbox processing. Historical research
+requires a separate owner request. Editing a routine revokes its previous authority.
+
+Customer follow-through defaults to two unanswered chases, 72 elapsed hours apart,
+Monday through Friday from 09:00 to 17:00 in the configured IANA timezone. Owners
+can edit contact hours and elapsed interval; workers cannot widen these rules.
+Quiet hours shift execution, not the meaning of elapsed hours. After downtime,
+each due commitment receives one fresh premise check, not a burst of missed sends.
+Replies, opt-outs, owner intervention, source changes, cancelled work, changed
+availability and disabled or substituted accounts suppress stale follow-through.
+The Google bridge re-reads the live thread before effects; unavailable verification
+does not authorize a chase.
+
+Owner cancellation requires the current record version and fences outstanding
+occurrence work. Already accepted provider effects cannot be recalled. Durable waits
+end model turns; workers never hold model calls open for hours.
+
+Integration exports are `createBusinessCommitmentTools`, `BusinessCommitments.sweep`,
+`assertDispatch`, `cancelForTask`, `sweepGoogleRoutines` and `recheckGooglePremise`.
+The coordinator owns lifecycle and invokes the sweep and pre-dispatch hooks.
+`test/business-commitments.test.ts` uses a controllable clock and the real SQLite
+store/coordinator for authority, event ordering, restart, downtime and suppression
+regressions. Those tests do not establish live-provider delivery.
+
+## Owner workspace and browser evidence
+
+Business mode serves the framework-free owner application at `/workspace` on the
+controller listener, never the webhook tunnel. Set a nonempty `INSTINCT_CHAT_TOKEN`
+and canonical `INSTINCT_WORKSPACE_ORIGIN` such as `https://assistant.example.test`.
+Plain HTTP is allowed only for an explicit loopback origin with
+`INSTINCT_WORKSPACE_ALLOW_HTTP=1`. Production requires HTTPS and persistent storage.
+
+The sign-in form exchanges the token through `POST /api/owner/session`. The server
+keeps only hashes of opaque session cookies in memory. Production cookies are
+host-only `__Host-` cookies with Secure, HttpOnly and SameSite=Strict; loopback
+development uses a different cookie name. Sessions expire after 24 hours absolute
+or 30 minutes without authenticated requests. Restart invalidates browser sessions,
+not admitted work. Tokens are not saved in browser storage. Session cookies never
+authenticate legacy `/chat`, `/status` or `/schedules` bearer routes.
+
+Owner API mutations require the exact origin, JSON and the session CSRF header.
+Tasks, profile, sources, settings, routines and connection changes use expected
+versions. Resume also checks the current settings version. Priority stop always
+fences future work, including when the initiating tab is stale. Already dispatched
+external effects may finish and remain visible. The computer's separate privacy
+release requires an explicit owner attestation and a provider mode check.
+
+Overview and Settings project the same durable allowance balances: accounted
+usage, held reservations, optional owner limit and remaining amount. Purchase
+amounts use business-currency minor units; model amounts always use USD cents.
+Unconfigured limits are not zero-dollar caps. Unknown usage or pricing has no
+numeric remaining balance and is explicitly not free. No exchange rate or default
+owner cap is invented. Changing purchase currency cannot reinterpret prior spend
+or held purchase reservations.
+
+The application reads actual task/action, source/artifact, connection, notification
+and settings services. Browser messages use client idempotency keys and
+non-destructive monotonic cursors, polled every two seconds while visible with
+offline backoff. Browser reads never settle carrier delivery. Downloads are
+attachments addressed by opaque artifact IDs, not controller paths. Uploaded
+content is displayed as text, not active HTML. Files and Knowledge share originals
+and version history; deletion discloses retained evidence and backups.
+
+Owner texts are brief, conversational updates, without task-ID prefixes or internal
+handoff notes. Keep diagnostics in `task_checkpoint` and the task evidence view.
+`task_finish.result` is the owner-facing completion channel. `task_wait.question`
+is permitted only for owner-actionable `missing_information`, `provider_challenge`
+and `connection` waits; reconciliation/timer/external-event/constraint waits stay
+silent. Do not also send the same status through `send_message`. Durable notification
+IDs prevent replay of accepted or uncertain notifications across restart; this does
+not semantically deduplicate independently authorized message actions.
+
+Missing artifact/source records, including IDs from another workspace, return 404.
+A registered artifact whose original bytes are missing or corrupt remains a 500
+operation failure, not a fabricated missing record. Browser admission waits for the
+durable task ID and state, not particular acknowledgement wording; signed webhook
+admission returns 204 while work continues asynchronously.
+
+`pnpm --filter @open-instinct/server build` compiles `web/` into `dist/web` through
+`tsconfig.web.json` and copies the external stylesheet with the portable
+`scripts/copy-web-assets.mjs`. Assets resolve relative to the server module, not cwd.
+After the normal integrated build, install Chromium and run `pnpm test:e2e`.
+Vitest only discovers `test/**/*.test.ts`, not Playwright specs.
+
+Playwright drives the real controller and compiled application with fresh local
+provider state. Both 1440×1000 desktop and 390×844 mobile projects cover the thirteen
+required screens in light and dark mode, plus empty, validation, offline, expired,
+disconnected, unknown and stopped states. Checkpoints follow semantic assertions.
+No screenshots are pre-generated or used as invented pixel baselines.
+
+`e2e/customer-lifecycle.spec.ts` adds provider/document checkpoints without replacing
+the original screen matrix. It uploads authoritative rates through the browser,
+delegates a quote in owner chat, compares downloaded PDF bytes and extracted content
+with the independently stored Gmail MIME attachment, and displays persisted send
+evidence after refresh. It also exercises reply-before-follow-up suppression after
+restart, Calendar insert/update/cancel readback and stale-etag protection, direct
+stop during a gated model turn, and accepted-but-unseen Gmail reconciliation without
+a second send. Every flow runs on both viewports in both themes.
+
+The additional screenshot IDs are `quote-gmail-verified`, `quote-pdf-download`,
+`followup-suppressed`, `calendar-lifecycle`, `calendar-conflict`,
+`provider-stop-persisted`, `gmail-reconciling` and `gmail-reconciled`; filenames in
+`evidence/screenshots/` are `<desktop|mobile>-<light|dark>-<id>.png`.
+The shared `testing/document-lifecycle.ts` scripts only model decisions; real
+registered tools produce the artifacts, provider changes and durable receipts.
+These are emulator-backed orchestration and real-browser UI checks, not live
+Google or hosted LibreOffice execution. After an integrated build, target the new
+flow with `pnpm --filter @open-instinct/server exec playwright test --config playwright.config.ts e2e/customer-lifecycle.spec.ts`.
+The full `pnpm test:e2e` run is still required for matrix completeness.
+
+`test/scenarios/calendar-read.test.ts` exercises the production tool/coordinator
+against stateful Calendar fixtures: local-day bounds, all-day timezone boundaries,
+overlaps, ordered pagination, and explicit recurring instances. Recurrence fixtures
+declare their complete supported window; unsupported or out-of-window expansion
+fails rather than returning a misleading empty schedule. This is not an RRULE engine.
+Malformed filters are rejected before any provider call, including null bounds that
+the SDK would otherwise remove during argument normalization.
+
+The runner writes `evidence/index.html`, `evidence/manifest.json`,
+`evidence/screenshots/`, `evidence/traces/*.redacted.zip`,
+`playwright-report/index.html`, `playwright-report/results.json` and private
+`test-results/`. The manifest names missing checkpoints; CI fails if required
+evidence is missing. Set `INSTINCT_CHANGED_PATHS` to newline-separated changed
+source paths to prioritize affected cases. Missing or unmapped paths show the
+complete gallery. Raw trace attachments are removed before HTML/JSON reporters
+serialize them. Public trace exports remove credential fields and body resources;
+the failure index links only sanitized ZIPs and the actual failure screenshot,
+not an earlier successful checkpoint. Redaction/capture failure fails the evidence
+gate. CI uploads only explicitly allowlisted report files, evidence PNGs and
+sanitized trace ZIPs, never SQLite, browser auth state, downloads or raw ZIPs.
+
+After the parent integration build, run from the repository root:
+
+```bash
+pnpm --filter @open-instinct/server exec playwright install chromium
+pnpm --filter @open-instinct/server exec vitest run test/workspace-http.test.ts test/evidence-redaction.test.ts
+pnpm test:e2e
+INSTINCT_EVIDENCE_NEGATIVE_CASE=1 pnpm --filter @open-instinct/server exec playwright test --config playwright.config.ts --grep "intentional semantic assertion failure"
+```
+
+The final command must exit unsuccessfully: it deliberately expects two delegation
+controls in a real fresh workspace that has one. It writes separate
+`evidence-negative/`, `playwright-report-negative/` and `test-results-negative/`
+directories so it cannot overwrite the complete gallery. Inspect its report,
+failure screenshot and redacted trace; verify no session cookies, CSRF values,
+bearer tokens or private response bodies survived. This is an opt-in failed
+assertion, not a production fault or a routine CI test.
+
+Required visual inspection: open the changed-case index, then every desktop/mobile
+light/dark checkpoint. Check login and form labels, task IDs and action evidence,
+long source/version content, downloads, private takeover disclosure, allowance
+accounted/held/remaining labels and unknown/unconfigured states. On 390-pixel mobile,
+confirm no horizontal overflow and that stop/resume, navigation and form actions
+remain reachable. Inspect validation, offline/stale, expired authentication,
+disconnected provider, unknown action and globally stopped screenshots for honest
+status text and readable contrast. A generated manifest or screenshot count alone
+does not establish these visual checks passed.
+
+Local provider fixtures establish orchestration contracts; rendered browser evidence
+does not establish live Google/Inkbox/Maritime behavior or real-model reliability.

@@ -1,0 +1,420 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> pnpm -r --workspace-concurrency=1 --filter "./packages/*" run build
+
+Scope: 12 of 13 workspace projects
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json
+
+> tsc -p tsconfig.json && tsc -p tsconfig.web.json && node scripts/copy-web-assets.mjs
+
+> tsc -p tsconfig.json
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Scope: 12 of 13 workspace projects
+packages/core typecheck$ tsc -p tsconfig.json --noEmit
+packages/core typecheck: Done
+packages/apps typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck$ tsc -p tsconfig.json --noEmit
+packages/atomicmail typecheck: Done
+packages/context typecheck$ tsc -p tsconfig.json --noEmit
+packages/computer typecheck: Done
+packages/inkbox typecheck$ tsc -p tsconfig.json --noEmit
+packages/ample typecheck: Done
+packages/payments typecheck$ tsc -p tsconfig.json --noEmit
+packages/apps typecheck: Done
+packages/context typecheck: Done
+packages/payments typecheck: Done
+packages/inkbox typecheck: Done
+packages/gateway typecheck$ tsc -p tsconfig.json --noEmit
+packages/network typecheck$ tsc -p tsconfig.json --noEmit
+packages/gateway typecheck: Done
+packages/network typecheck: Done
+packages/server typecheck$ tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit
+packages/server typecheck: Done
+packages/cli typecheck$ tsc -p tsconfig.json --noEmit
+packages/cli typecheck: Done
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> pnpm -r --filter "./packages/*" run test
+
+Scope: 12 of 13 workspace projects
+packages/core test$ vitest run --passWithNoTests
+packages/core test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/core
+packages/core test:  ✓ test/config.test.ts (8 tests) 25ms
+packages/core test:  ✓ test/contacts.test.ts (18 tests) 71ms
+packages/core test:  ✓ test/memory.test.ts (5 tests) 83ms
+packages/core test:  ✓ test/business-lock.test.ts (3 tests) 156ms
+packages/core test:  ✓ test/approvals.test.ts (15 tests) 48ms
+packages/core test:  ✓ test/pdf.test.ts (12 tests) 305ms
+packages/core test:  ✓ test/core-tools.test.ts (32 tests) 130ms
+packages/core test:  ✓ test/prompt.test.ts (13 tests) 24ms
+packages/core test:  ✓ test/audit.test.ts (5 tests) 26ms
+packages/core test:  ✓ test/scheduler.test.ts (14 tests) 409ms
+packages/core test:  ✓ test/persona.test.ts (9 tests) 14ms
+packages/core test:  ✓ test/business-recovery.test.ts (13 tests) 424ms
+packages/core test:  ✓ test/state.test.ts (6 tests) 6ms
+packages/core test:  ✓ test/principal.test.ts (13 tests) 15ms
+packages/core test:  ✓ test/owner-claim.test.ts (4 tests) 30ms
+packages/core test:  ✓ test/notifier.test.ts (3 tests) 7ms
+packages/core test:  ✓ test/policy.test.ts (34 tests) 15ms
+packages/core test:  ✓ test/credential-vault.test.ts (3 tests) 4ms
+packages/core test:  ✓ test/model.test.ts (5 tests) 2ms
+packages/core test:  ✓ test/tools.test.ts (9 tests) 3ms
+packages/core test:  ✓ test/envelope.test.ts (4 tests) 2ms
+packages/core test:  ✓ test/prompt-reach.test.ts (3 tests) 2ms
+packages/core test:  ✓ test/runtime.test.ts (82 tests) 2491ms
+packages/core test:    ✓ AgentRuntime.handleInbound > acks a slow owner text once on the waitForCompletion path, never for the text queued behind it  352ms
+packages/core test:    ✓ AgentRuntime.handleInbound > does not ack a fast reply, a group text or a contact  408ms
+packages/core test:  Test Files  23 passed (23)
+packages/core test:       Tests  313 passed (313)
+packages/core test:    Start at  02:23:10
+packages/core test:    Duration  3.24s (transform 638ms, setup 0ms, collect 2.16s, tests 4.29s, environment 2ms, prepare 1.04s)
+packages/core test: Done
+packages/ample test$ vitest run --passWithNoTests
+packages/apps test$ vitest run --passWithNoTests
+packages/atomicmail test$ vitest run --passWithNoTests
+packages/computer test$ vitest run --passWithNoTests
+packages/ample test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/ample
+packages/atomicmail test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/atomicmail
+packages/computer test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/computer
+packages/apps test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/apps
+packages/atomicmail test:  ✓ test/capabilities.test.ts (10 tests) 9ms
+packages/atomicmail test:  ✓ test/guidance.test.ts (5 tests) 3ms
+packages/apps test:  ✓ test/wrap.test.ts (15 tests) 35ms
+packages/apps test:  ✓ test/composio.test.ts (37 tests) 69ms
+packages/atomicmail test:  ✓ test/wrap.test.ts (25 tests) 7ms
+packages/atomicmail test:  ✓ test/backend.test.ts (13 tests) 28ms
+packages/computer test:  ✓ test/schema.test.ts (7 tests) 6ms
+packages/atomicmail test:  Test Files  4 passed (4)
+packages/atomicmail test:       Tests  53 passed (53)
+packages/atomicmail test:    Start at  02:23:13
+packages/atomicmail test:    Duration  1.53s (transform 383ms, setup 0ms, collect 1.81s, tests 48ms, environment 0ms, prepare 501ms)
+packages/computer test:  ✓ test/maritime.test.ts (14 tests) 11ms
+packages/computer test:  ✓ test/detect.test.ts (17 tests) 32ms
+packages/apps test:  ✓ test/tools.test.ts (11 tests) 5ms
+packages/computer test:  ✓ test/desktopd.test.ts (12 tests) 18ms
+packages/apps test:  ✓ test/capabilities.test.ts (92 tests) 12ms
+packages/computer test:  Test Files  4 passed (4)
+packages/computer test:       Tests  50 passed (50)
+packages/computer test:    Start at  02:23:13
+packages/computer test:    Duration  1.68s (transform 395ms, setup 0ms, collect 3.15s, tests 67ms, environment 1ms, prepare 449ms)
+packages/ample test:  ✓ test/signup.test.ts (10 tests) 39ms
+packages/atomicmail test: Done
+packages/context test$ vitest run --passWithNoTests
+packages/apps test:  ✓ test/guidance.test.ts (8 tests) 2ms
+packages/computer test: Done
+packages/inkbox test$ vitest run --passWithNoTests
+packages/apps test:  ✓ test/business-providers.test.ts (2 tests) 27ms
+packages/apps test:  ✓ test/google-workspace.test.ts (7 tests) 303ms
+packages/apps test:  Test Files  7 passed (7)
+packages/apps test:       Tests  172 passed (172)
+packages/apps test:    Start at  02:23:13
+packages/apps test:    Duration  1.90s (transform 579ms, setup 0ms, collect 5.03s, tests 453ms, environment 1ms, prepare 746ms)
+packages/apps test: Done
+packages/payments test$ vitest run --passWithNoTests
+packages/context test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/context
+packages/ample test:  ✓ test/tools.test.ts (26 tests) 398ms
+packages/ample test:  Test Files  2 passed (2)
+packages/ample test:       Tests  36 passed (36)
+packages/ample test:    Start at  02:23:13
+packages/ample test:    Duration  2.11s (transform 399ms, setup 0ms, collect 1.71s, tests 438ms, environment 0ms, prepare 343ms)
+packages/inkbox test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/inkbox
+packages/ample test: Done
+packages/payments test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/payments
+packages/inkbox test:  ✓ test/a2a.test.ts (11 tests) 7ms
+packages/inkbox test:  ✓ test/http.test.ts (16 tests) 9ms
+packages/inkbox test:  ✓ test/provisioner.test.ts (24 tests) 18ms
+packages/inkbox test:  ✓ test/signature.test.ts (10 tests) 8ms
+packages/inkbox test:  ✓ test/channel.test.ts (45 tests) 112ms
+packages/inkbox test:  ✓ test/inbox.test.ts (10 tests | 1 skipped) 313ms
+packages/payments test:  ✓ test/oauth.test.ts (14 tests) 6ms
+packages/payments test:  ✓ test/wallet.test.ts (26 tests) 39ms
+packages/context test:  ✓ test/tools.test.ts (3 tests) 9ms
+packages/context test:  Test Files  1 passed (1)
+packages/context test:       Tests  3 passed (3)
+packages/context test:    Start at  02:23:15
+packages/context test:    Duration  1.14s (transform 277ms, setup 0ms, collect 731ms, tests 9ms, environment 0ms, prepare 80ms)
+packages/inkbox test:  ✓ test/calls.test.ts (12 tests) 3ms
+packages/inkbox test:  ✓ test/hydration.test.ts (9 tests) 19ms
+packages/inkbox test:  ✓ test/events.test.ts (25 tests) 5ms
+packages/context test: Done
+packages/inkbox test:  ✓ test/tools.test.ts (45 tests) 106ms
+packages/inkbox test:  Test Files  10 passed (10)
+packages/inkbox test:       Tests  206 passed | 1 skipped (207)
+packages/inkbox test:    Start at  02:23:15
+packages/inkbox test:    Duration  1.22s (transform 665ms, setup 0ms, collect 3.06s, tests 601ms, environment 1ms, prepare 613ms)
+packages/inkbox test: Done
+packages/payments test:  ✓ test/tools.test.ts (42 tests) 36ms
+packages/payments test:  Test Files  3 passed (3)
+packages/payments test:       Tests  82 passed (82)
+packages/payments test:    Start at  02:23:16
+packages/payments test:    Duration  953ms (transform 274ms, setup 0ms, collect 698ms, tests 81ms, environment 0ms, prepare 231ms)
+packages/payments test: Done
+packages/gateway test$ vitest run --passWithNoTests
+packages/network test$ vitest run --passWithNoTests
+packages/network test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/network
+packages/gateway test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/gateway
+packages/gateway test:  ✓ test/store.test.ts (4 tests) 12ms
+packages/network test:  ✓ test/oip.test.ts (12 tests) 15ms
+packages/network test:  ✓ test/principal.test.ts (13 tests) 4ms
+packages/gateway test:  ✓ test/limits.test.ts (3 tests) 5ms
+packages/gateway test:  ✓ test/validate.test.ts (6 tests) 2ms
+packages/gateway test:  ✓ test/main.test.ts (5 tests) 2ms
+packages/gateway test:  ✓ test/relay.test.ts (14 tests) 12ms
+packages/gateway test:  ✓ test/provision.test.ts (15 tests) 21ms
+packages/network test:  ✓ test/tools.test.ts (52 tests) 32ms
+packages/network test:  Test Files  3 passed (3)
+packages/network test:       Tests  77 passed (77)
+packages/network test:    Start at  02:23:17
+packages/network test:    Duration  1.01s (transform 316ms, setup 0ms, collect 700ms, tests 51ms, environment 4ms, prepare 212ms)
+packages/network test: Done
+packages/gateway test:  ✓ test/server.test.ts (17 tests) 390ms
+packages/gateway test:  ✓ test/inbox.test.ts (3 tests) 2704ms
+packages/gateway test:    ✓ webhook recovery > keeps an acknowledged event after all forwarding attempts fail  2582ms
+packages/gateway test:  Test Files  8 passed (8)
+packages/gateway test:       Tests  67 passed (67)
+packages/gateway test:    Start at  02:23:17
+packages/gateway test:    Duration  3.63s (transform 424ms, setup 0ms, collect 3.05s, tests 3.15s, environment 1ms, prepare 692ms)
+packages/gateway test: Done
+packages/server test$ vitest run --passWithNoTests
+packages/server test:  RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+packages/server test:  ✓ test/scenarios/open-thread-recovery.test.ts (5 tests) 483ms
+packages/server test:  ✓ test/business-acceptance-boundaries.test.ts (9 tests) 58ms
+packages/server test: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided. (×2)
+packages/server test:  ✓ test/business-hosted-artifacts.test.ts (25 tests) 1469ms
+packages/server test:    ✓ hosted document artifact transfer > runs the real registered wrapper and dispatcher, preserving bytes and source without transfer payload in action history  308ms
+packages/server test:    ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  358ms
+packages/server test:    ✓ hosted document artifact transfer > rejects oversized transfer before registration  345ms
+packages/server test: Warning: Indexing all PDF objects
+packages/server test:  ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2491ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1116ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  421ms
+packages/server test:    ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  708ms
+packages/server test:  ✓ test/scenarios/security.test.ts (10 tests) 1115ms
+packages/server test:    ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  361ms
+packages/server test:  ✓ test/scenarios/dispatch-boundaries.test.ts (11 tests) 2809ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request  497ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request  309ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'body line endings' sends once per task but permits an intentional distinct owner request  324ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  451ms
+packages/server test:    ✓ Registered operational boundaries (emulated) > G3/G4: a worker cannot promote retrieved source instructions into standing owner policy  376ms
+packages/server test:  ✓ test/business-extraction.test.ts (12 tests) 4240ms
+packages/server test:    ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  797ms
+packages/server test:    ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  524ms
+packages/server test:    ✓ bounded real document workers > rejects unsafe office entry 'xl/externalLinks/link.xml' before parsing  302ms
+packages/server test:    ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  737ms
+packages/server test:  ✓ test/scenarios/workflows.test.ts (23 tests) 3567ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  625ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  461ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  353ms
+packages/server test:    ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  313ms
+packages/server test:  ✓ test/business-knowledge.test.ts (17 tests) 4410ms
+packages/server test:    ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  733ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  474ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1227ms
+packages/server test:    ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  477ms
+packages/server test:  ✓ test/workspace-http.test.ts (2 tests) 413ms
+packages/server test:    ✓ returns 404 for absent records without turning missing stored bytes into a 404  384ms
+packages/server test:  ✓ test/http.test.ts (43 tests) 485ms
+packages/server test:  ✓ test/contracts/providers.test.ts (10 tests) 236ms
+packages/server test:  ✓ test/business-commitments.test.ts (21 tests) 177ms
+packages/server test:  ✓ test/http-lifecycle.test.ts (1 test) 74ms
+packages/server test:  ✓ test/business-image-accounting.test.ts (2 tests) 87ms
+packages/server test:  ✓ test/inbox.test.ts (2 tests) 152ms
+packages/server test:  ✓ test/file-tools.test.ts (11 tests) 59ms
+packages/server test:  ✓ test/slow-reply-ack.test.ts (2 tests) 813ms
+packages/server test:    ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  584ms
+packages/server test:  ✓ test/business-pricing.test.ts (5 tests) 22ms
+packages/server test:  ✓ test/workspace-session.test.ts (7 tests) 11ms
+packages/server test:  ✓ test/console-outbox.test.ts (7 tests) 4ms
+packages/server test:  ✓ test/maritime-schedules.test.ts (6 tests) 11ms
+packages/server test:  ✓ test/bind.test.ts (3 tests) 3ms
+packages/server test:  ✓ test/atomicmail.test.ts (5 tests) 64ms
+packages/server test:  ✓ test/webhook-setup.test.ts (7 tests) 22ms
+packages/server test:  ✓ test/hooks.test.ts (5 tests) 4ms
+packages/server test:  ✓ test/evidence-redaction.test.ts (1 test) 2ms
+packages/server test:  ✓ test/skills.test.ts (13 tests) 58ms
+packages/server test:  ✓ test/payments.test.ts (4 tests) 2ms
+packages/server test:  ✓ test/boot-phone.test.ts (5 tests) 28ms
+packages/server test:  ✓ test/setup-summary.test.ts (3 tests) 1ms
+packages/server test:  ❯ test/scenarios/operational-limits.test.ts (13 tests | 1 failed) 5630ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO095: signed stop bypasses an already blocked durable inbox and fences the next provider effect across restart  346ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: two actual runtime workers run while a third remains queued; releasing them frees a worker 101ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: two runtime workers cannot hold the hosted computer lease concurrently 175ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: only twelve operational dispatches execute in a slice and useful work requeues without completion  3714ms
+packages/server test:    × Operational bounds and ingress authority (real boot, emulated providers) > BO097: the contract's exact 60-second reasoning boundary prevents the next provider operation 317ms
+packages/server test:      → Timed out reasoning slice ended; tasks=[{"authorityRef":"owner:ac306c68-4181-441c-915d-4dffbfc48425","blocker":null,"checkpoint":null,"createdAt":1792747407400,"dispatches":0,"doneCriteria":["Reason only within the sixty-second slice"],"evidenceRefs":[],"executionEpoch":1,"id":"cd59ebc7-fc1a-4c64-95cb-f3017a77a325","nextWake":null,"noProgress":0,"objective":"Reason only within the sixty-second slice","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:ac306c68-4181-441c-915d-4dffbfc48425","replyRef":{},"requester":"owner"},"result":null,"runId":"7398719e-707f-4c22-aaad-c6d283aaaa4d","sourceRefs":[],"status":"running","updatedAt":1792747407401,"version":2,"workspaceId":"221f1abe-d512-49de-97e8-9cc3d849b259"}]
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: exactly three evidence-free runtime slices block rather than spin or fabricate completion 82ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO284: signed forged-email ingress cannot control/delegate business work through the actual runtime registry 73ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO284: signed group-owner ingress cannot control/delegate business work through the actual runtime registry 84ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO284: signed delegated-owner ingress cannot control/delegate business work through the actual runtime registry 94ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO284: signed nonowner ingress cannot control/delegate business work through the actual runtime registry 87ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO284: a nonowner's legitimate owner-relay capability still reaches the real carrier 89ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects missing-criterion and the owner detail never reports completed 263ms
+packages/server test:    ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects fabricated-reference and the owner detail never reports completed 206ms
+packages/server test:  ✓ test/scenarios/crash-phases.test.ts (8 tests) 11827ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  2205ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  2668ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1845ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1057ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  1022ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  1022ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  999ms
+packages/server test:    ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1008ms
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+packages/server test:  FAIL  test/scenarios/operational-limits.test.ts > Operational bounds and ingress authority (real boot, emulated providers) > BO097: the contract's exact 60-second reasoning boundary prevents the next provider operation
+packages/server test: Error: Timed out reasoning slice ended; tasks=[{"authorityRef":"owner:ac306c68-4181-441c-915d-4dffbfc48425","blocker":null,"checkpoint":null,"createdAt":1792747407400,"dispatches":0,"doneCriteria":["Reason only within the sixty-second slice"],"evidenceRefs":[],"executionEpoch":1,"id":"cd59ebc7-fc1a-4c64-95cb-f3017a77a325","nextWake":null,"noProgress":0,"objective":"Reason only within the sixty-second slice","origin":{"audience":"owner","channel":"chat","conversationKey":"chat:ac306c68-4181-441c-915d-4dffbfc48425","replyRef":{},"requester":"owner"},"result":null,"runId":"7398719e-707f-4c22-aaad-c6d283aaaa4d","sourceRefs":[],"status":"running","updatedAt":1792747407401,"version":2,"workspaceId":"221f1abe-d512-49de-97e8-9cc3d849b259"}]
+packages/server test:  ❯ Object.waitFor testing/scenario-app.ts:90:178
+packages/server test:  ❯ test/scenarios/operational-limits.test.ts:127:31
+packages/server test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+packages/server test:  Test Files  1 failed | 32 passed (33)
+packages/server test:       Tests  1 failed | 301 passed (302)
+packages/server test:    Start at  02:23:21
+packages/server test:    Duration  12.15s (transform 1.11s, setup 0ms, collect 17.46s, tests 40.83s, environment 3ms, prepare 1.56s)
+packages/server test: Failed
+/private/tmp/open-instinct/packages/server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @open-instinct/server@0.1.0 test: `vitest run --passWithNoTests`
+Exit status 1
+ ELIFECYCLE  Test failed. See above for more details.
+[raw output: artifact://216]
+
+
+Wall time: 53.92 seconds
+
+Command exited with code 1
+
+FOLLOW-UP AFTER MONOTONIC TEST WAIT FIX
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/server@0.1.0 test /private/tmp/open-instinct/packages/server
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/server
+
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/business-hosted-artifacts.test.ts (25 tests) 1465ms
+   ✓ hosted document artifact transfer > runs the real registered wrapper and dispatcher, preserving bytes and source without transfer payload in action history  303ms
+   ✓ hosted document artifact transfer > imports actual XLSX bytes over explicit base64 and checks extracted text and totals  378ms
+   ✓ hosted document artifact transfer > rejects oversized transfer before registration  320ms
+   ✓ hosted document artifact transfer > does not convert a primitive transfer into verified document evidence when extracted totals mismatch  326ms
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+ ✓ test/scenarios/security.test.ts (10 tests) 1091ms
+   ✓ Application and development-tool security boundaries > G7: declared oversized office expansion is reported failed, never indexed as empty success  331ms
+ ✓ test/http.test.ts (43 tests) 424ms
+ ✓ test/scenarios/document-lifecycle.test.ts (4 tests) 2333ms
+   ✓ Document-grounded customer lifecycle (emulated) > G1/G3/G4/G5/G8: cited quote PDF is registered, attached and verified; a real reply suppresses persisted follow-through after restart  1211ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: evidence-only rate sources cause a durable missing-information wait instead of a commercial send  363ms
+   ✓ Document-grounded customer lifecycle (emulated) > G4: superseded rate sources cause a durable missing-information wait instead of a commercial send  582ms
+Warning: Indexing all PDF objects
+ ✓ test/scenarios/dispatch-boundaries.test.ts (11 tests) 2731ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'References and In-Reply-To brackets/w…' sends once per task but permits an intentional distinct owner request  530ms
+   ✓ Registered operational boundaries (emulated) > G1/G2: normalized Gmail 'omitted versus empty optional fields' sends once per task but permits an intentional distinct owner request  378ms
+   ✓ Registered operational boundaries (emulated) > G1/G8: immediate foreground answers survive reload without admitting work; delegation creates one evidenced task  408ms
+ ✓ test/business-extraction.test.ts (12 tests) 3944ms
+   ✓ bounded real document workers > extracts Markdown, multiline CSV and PDF with stable source locations  709ms
+   ✓ bounded real document workers > extracts DOCX paragraphs and XLSX sheets without executing formulas  522ms
+   ✓ bounded real document workers > marks images as model-derived evidence and never empty extraction success  677ms
+ ✓ test/slow-reply-ack.test.ts (2 tests) 821ms
+   ✓ slow reply ack over the carrier path > texts one 'on it' while the owner's turn runs past the budget, then the answer  589ms
+ ✓ test/workspace-http.test.ts (2 tests) 382ms
+   ✓ returns 404 for absent records without turning missing stored bytes into a 404  357ms
+ ✓ test/scenarios/workflows.test.ts (23 tests) 3425ms
+   ✓ Integrated durable workflows (emulated) > G4: editing a business file preserves owner bytes and verifies a new revision  580ms
+   ✓ Integrated durable workflows (emulated) > G1/G8: duplicate authenticated client IDs admit once; real Pi tool writes persisted evidence/history  394ms
+   ✓ Integrated durable workflows (emulated) > G1/G3/G8: signed owner texting uses real Inkbox transport and duplicate ingress is not a second task  380ms
+   ✓ Integrated durable workflows (emulated) > G4/G9: separate business workspaces cannot retrieve another workspace's knowledge or computer  324ms
+ ✓ test/scenarios/open-thread-recovery.test.ts (5 tests) 622ms
+ ✓ test/business-knowledge.test.ts (17 tests) 4468ms
+   ✓ partial business profile and source authority > retains contradictory designated rules, isolates the contested scope, and rejects email policy  880ms
+   ✓ immutable shared artifacts and safe retrieval > preserves bytes, hashes, source versions, private modes and safe opaque downloads  535ms
+   ✓ immutable shared artifacts and safe retrieval > keeps extraction failures visible and supports retries without empty success  1138ms
+   ✓ immutable shared artifacts and safe retrieval > validates generated content and blocks credential-session imports before reading  504ms
+ ✓ test/contracts/providers.test.ts (10 tests) 329ms
+ ✓ test/business-commitments.test.ts (21 tests) 235ms
+ ✓ test/inbox.test.ts (2 tests) 118ms
+ ✓ test/business-image-accounting.test.ts (2 tests) 42ms
+ ✓ test/http-lifecycle.test.ts (1 test) 55ms
+ ✓ test/business-pricing.test.ts (5 tests) 19ms
+ ✓ test/maritime-schedules.test.ts (6 tests) 10ms
+ ✓ test/file-tools.test.ts (11 tests) 59ms
+ ✓ test/webhook-setup.test.ts (7 tests) 12ms
+ ✓ test/skills.test.ts (13 tests) 69ms
+ ✓ test/workspace-session.test.ts (7 tests) 9ms
+ ✓ test/console-outbox.test.ts (7 tests) 8ms
+ ✓ test/atomicmail.test.ts (5 tests) 77ms
+ ✓ test/business-acceptance-boundaries.test.ts (9 tests) 86ms
+ ✓ test/hooks.test.ts (5 tests) 4ms
+ ✓ test/bind.test.ts (3 tests) 3ms
+ ✓ test/boot-phone.test.ts (5 tests) 38ms
+ ✓ test/evidence-redaction.test.ts (1 test) 4ms
+ ✓ test/payments.test.ts (4 tests) 7ms
+ ✓ test/setup-summary.test.ts (3 tests) 1ms
+ ✓ test/scenarios/operational-limits.test.ts (13 tests) 5524ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: only twelve operational dispatches execute in a slice and useful work requeues without completion  3671ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > BO097: the contract's exact 60-second reasoning boundary prevents the next provider operation  306ms
+   ✓ Operational bounds and ingress authority (real boot, emulated providers) > completion rejects missing-criterion and the owner detail never reports completed  309ms
+ ✓ test/scenarios/crash-phases.test.ts (8 tests) 11705ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  2394ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  2361ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1921ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > gmail: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  1027ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-preparation, reopen SQLite and never replay an uncertain effect  1013ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at prepared, reopen SQLite and never replay an uncertain effect  996ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at provider-accepted, reopen SQLite and never replay an uncertain effect  1004ms
+   ✓ BO283/G2: abrupt controller process death at durable external-effect boundaries > browser: SIGKILL at before-commit, reopen SQLite and never replay an uncertain effect  989ms
+
+ Test Files  33 passed (33)
+      Tests  302 passed (302)
+   Start at  02:24:59
+   Duration  12.06s (transform 1.02s, setup 0ms, collect 17.56s, tests 40.12s, environment 3ms, prepare 1.61s)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> @open-instinct/cli@0.1.0 test /private/tmp/open-instinct/packages/cli
+> vitest run --passWithNoTests
+
+
+ RUN  v3.2.7 /private/tmp/open-instinct/packages/cli
+
+ ✓ test/units.test.ts (19 tests) 19ms
+ ✓ test/provision.test.ts (13 tests) 78ms
+ ✓ test/business.test.ts (19 tests) 78ms
+ ✓ test/cli.test.ts (40 tests) 100ms
+ ✓ test/dev-tunnel.test.ts (1 test) 92ms
+ ✓ test/persona.test.ts (13 tests) 635ms
+   ✓ persona > edit runs $EDITOR on the file and reports the result  330ms
+
+ Test Files  6 passed (6)
+      Tests  105 passed (105)
+   Start at  02:25:12
+   Duration  1.29s (transform 523ms, setup 0ms, collect 3.11s, tests 1.00s, environment 0ms, prepare 263ms)
+

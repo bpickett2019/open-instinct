@@ -4,6 +4,7 @@
  * the CLI posts the camelCase JSON body itself (see docs/BUILD-BRIEF.md).
  */
 import { CliError } from "./io.js";
+import type { ChatResponse } from "./local.js";
 
 export const MARITIME_API_URL = "https://api.maritime.sh";
 export const MARITIME_APP_URL = "https://maritime.sh";
@@ -71,6 +72,7 @@ async function request<T>(opts: MaritimeClientOptions, method: string, path: str
   try {
     res = await f(url, {
       method,
+      redirect: "error",
       headers: {
         Authorization: `Bearer ${opts.apiKey}`,
         "Content-Type": "application/json",
@@ -113,7 +115,7 @@ export async function chatWithAgent(
   agentId: string,
   message: string,
   conversationId?: string,
-): Promise<{ response: string | null; error?: string }> {
+): Promise<ChatResponse> {
   return request(opts, "POST", `/api/agents/${encodeURIComponent(agentId)}/chat`, {
     message,
     conversation_id: conversationId,

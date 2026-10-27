@@ -14,6 +14,6 @@ export function describeDataPart(data: Record<string, unknown>): string | undefi
 }
 
 /** Extra system prompt sections for a principal. Only the network guidance for now. */
-export function promptExtraFor(principal: Principal, _channel: Channel): string[] {
-  return [networkGuidance(principal)];
+export function promptExtraFor(principal: Principal, _channel: Channel, businessMode = false): string[] {
+  return [networkGuidance(principal, businessMode)];
 }

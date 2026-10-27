@@ -17,26 +17,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.20.0
+          node-version: 22.22.3
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm -r typecheck
-      - run: pnpm -r test
+      - run: pnpm -r --filter "./packages/*" run typecheck
+      - run: pnpm test
       - run: pnpm smoke
+      - run: pnpm --filter @open-instinct/server exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
       - name: No leftover secrets or personal identifiers
+        if: always()
+        id: source-secret-scan
         run: |
           ! grep -rIn --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git -E "ApiKey_[0-9a-f]{8}-[0-9a-f]{4}|sk-ant-[A-Za-z0-9_-]{20,}|mk_[A-Za-z0-9_-]{30,}|liwl(token|refresh)_" . | grep -vE "test/|\.gitleaks\.toml"
+      - name: Check exact public evidence before upload
+        if: always()
+        id: evidence-secret-scan
+        working-directory: packages/server
+        run: node scripts/check-evidence.mjs
+      - name: Upload synthetic browser evidence
+        if: always() && steps.source-secret-scan.outcome == 'success' && steps.evidence-secret-scan.outcome == 'success'
+        id: browser-evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: business-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: false
+          path: |
+            packages/server/playwright-report/index.html
+            packages/server/playwright-report/results.json
+            packages/server/playwright-report/data/*.png
+            packages/server/evidence/*.html
+            packages/server/evidence/*.json
+            packages/server/evidence/screenshots/*.png
+            packages/server/evidence/traces/*.redacted.zip
+      - name: Link browser evidence
+        if: always()
+        env:
+          EVIDENCE_URL: ${{ steps.browser-evidence.outputs.artifact-url }}
+        run: |
+          printf '## Business browser evidence\n\n[Run artifact](%s)\n\nChanged-case index: `packages/server/evidence/index.html` (or `evidence/index.html` after extraction). Read `manifest.json` and `playwright-report/results.json`, then inspect the complete gallery. Redacted failure traces are in `evidence/traces/`; raw traces, downloaded documents and private state are excluded. Synthetic fixtures only; live-provider scenarios are not CI proof.\n' "$EVIDENCE_URL" >> "$GITHUB_STEP_SUMMARY"
 
   windows-inkbox:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.20.0
+          node-version: 22.22.3
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @open-instinct/core build

@@ -1,0 +1,26 @@
+{
+  "kind": "standalone-authenticated-application-smoke",
+  "verificationMode": "real HTTP/Pi/registry/SQLite/artifact bytes with explicit isolated stateful provider emulation and faux model; not live provider",
+  "status": "passed",
+  "action": {
+    "id": "f3ce4571-2b4e-4c70-b3df-9e8384ddedc1",
+    "status": "verified",
+    "evidenceRefs": [
+      "file:sha256:61f6b28f1cbb374dee7516541a994b3e7fb0f2a61946da8cf45c2a66da51d17c",
+      "artifact:dd7c623b-4733-40f8-ab16-b83c3423ff56"
+    ]
+  },
+  "artifact": {
+    "id": "dd7c623b-4733-40f8-ab16-b83c3423ff56",
+    "sha256": "61f6b28f1cbb374dee7516541a994b3e7fb0f2a61946da8cf45c2a66da51d17c"
+  },
+  "checks": [
+    "authenticated owner message admitted",
+    "registered Pi write persisted before/after dispatch",
+    "independent artifact download matches requested bytes",
+    "global Stop persisted",
+    "restart retains one verified action without replay",
+    "artifact still downloads after restart"
+  ],
+  "taskCompletedClaimed": false
+}
